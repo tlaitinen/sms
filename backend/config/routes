@@ -1,0 +1,6 @@
+/static StaticR Static appStatic
+/auth   AuthR   Auth   getAuth
+/ HomeR GET
+/favicon.ico FaviconR GET
+/robots.txt RobotsR GET
+/db DBR DB getDB

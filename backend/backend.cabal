@@ -1,0 +1,143 @@
+name: backend
+version: 0.0.0
+cabal-version: >=1.8
+build-type: Simple
+license: UnspecifiedLicense
+
+flag dev
+    description:
+        Turn on development settings, like auto-reload templates.
+    default: False
+
+flag library-only
+    description:
+        Build for use with "yesod devel"
+    default: False
+
+library
+    
+    if (flag(dev) || flag(library-only))
+        cpp-options: -DDEVELOPMENT
+        ghc-options: -Wall -fwarn-tabs -O0
+    else
+        ghc-options: -Wall -fwarn-tabs -O2
+    exposed-modules:
+        Application
+        Foundation
+        Import
+        Import.NoFoundation
+        Model
+        Settings
+        Settings.StaticFiles
+        Handler.Common
+        Handler.File
+        Handler.DB
+        Handler.DB.Internal
+        Handler.DB.Enums
+        Handler.DB.Routes
+        Handler.DB.Esqueleto
+        Handler.DB.PathPieces
+        Handler.DB.Validation
+        Handler.DB.RouteFiles
+        Handler.DB.RouteFilesFile
+        Handler.DB.RouteFileusergroupcontents
+        Handler.DB.RouteUsergroupcontents
+        Handler.DB.RouteUsergroups
+        Handler.DB.RouteUsergroupsUserGroup
+        Handler.DB.RouteUsergroupitems
+        Handler.DB.RouteUsergroupitemsUserGroupItem
+        Handler.DB.RouteUsers
+        Handler.DB.RouteUsersUser
+        Handler.DB.RouteVersions
+        Handler.Home
+        Handler.Utils
+    build-depends:
+        unordered-containers -any,
+        transformers -any,
+        tagged -any,
+        blaze-builder -any,
+        http-types -any,
+        wai -any,
+        resourcet -any,
+        attoparsec -any,
+        time -any,
+        vector -any,
+        esqueleto -any,
+        yesod-persistent -any,
+        old-locale -any,
+        filepath -any,
+        unix -any,
+        path-pieces -any,
+        conduit-extra -any,
+        exceptions -any,
+        temporary -any,
+        mtl -any,
+        array -any,
+        tls -any,
+        base -any,
+        yesod -any,
+        classy-prelude-yesod -any,
+        file-embed -any,
+        yesod-core -any,
+        yesod-auth -any,
+        scientific -any,
+        yesod-static -any,
+        yesod-form -any,
+        bytestring -any,
+        process-listlike -any,
+        text -any,
+        persistent -any,
+        persistent-postgresql -any,
+        persistent-template -any,
+        template-haskell -any,
+        shakespeare -any,
+        hjsmin -any,
+        monad-control -any,
+        wai-extra -any,
+        yaml -any,
+        http-conduit -any,
+        directory -any,
+        warp -any,
+        data-default -any,
+        aeson -any,
+        conduit -any,
+        yesod-auth-hashdb -any,
+        monad-logger -any,
+        fast-logger -any,
+        wai-logger -any,
+        random -any,
+        blaze-html -any,
+        containers -any,
+        fuzzy-timings -any,
+        safe -any,
+        IfElse -any,
+        mime-mail -any,
+        smtp-mail -any,
+        wreq -any,
+        SHA -any,
+        double-conversion -any,
+        aeson-pretty -any,
+        base64-bytestring -any,
+        http-client -any,
+        zlib -any,
+        process -any,
+        async -any,
+        network -any
+    extensions: TemplateHaskell QuasiQuotes OverloadedStrings
+                NoImplicitPrelude CPP MultiParamTypeClasses TypeFamilies GADTs
+                GeneralizedNewtypeDeriving FlexibleContexts EmptyDataDecls
+                NoMonomorphismRestriction DeriveDataTypeable ViewPatterns
+                TupleSections RecordWildCards
+    hs-source-dirs: . app
+
+executable backend
+    
+    if flag(library-only)
+        buildable: False
+    main-is: main.hs
+    build-depends:
+        base -any,
+        backend -any
+    hs-source-dirs: app
+    ghc-options: -threaded -O2 -rtsopts -with-rtsopts=-N
+
