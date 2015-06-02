@@ -147,6 +147,7 @@ getUsergroupsR  = lift $ runDB $ do
         return $ (countRows' :: SqlExpr (Database.Esqueleto.Value Int))
     results <- select $ baseQuery True
     return $ A.object [
+        "success" .= ("true" :: Text),
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
                 ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3)) -> A.object [

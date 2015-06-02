@@ -1,5 +1,7 @@
 function __(k,d) {
     var strings = {
+        'saveError.title': 'Tietojen tallentaminen epäonnistui',
+        'saveError.message': 'Tietojen tallentaminen epäonnistui: ',
         'userpasswordform.title' : 'Käyttäjän salasanan muuttaminen',
         'ok' : 'OK',
         'cancel' : 'Peruuta',

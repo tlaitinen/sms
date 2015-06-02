@@ -42,14 +42,15 @@ Ext.define('Receipts.view.main.Main', {
                             align:'stretch'
                         },
                         items: [
-                            { xtype: 'usersgrid', flex:1, padding:5, autoscroll:true },
-                            { xtype: 'usergroupsgrid', flex:1, padding:5, autoscroll:true },
+                            { xtype: 'usersgrid', flex:1,  autoscroll:true },
+                            { xtype: 'usergroupsgrid', flex:1,  autoscroll:true },
                             {
                                 xtype:'panel',
                                 layout: {
                                     type:'hbox',
                                     align:'stretch'
                                 },
+                                
                                 items: [
                                     { 
                                         xtype:'button', 
@@ -64,7 +65,7 @@ Ext.define('Receipts.view.main.Main', {
                                 ]
                                  
                             },
-                            { xtype: 'usergroupitemsgrid', flex:1, padding:5, autoscroll:true }
+                            { xtype: 'usergroupitemsgrid', flex:1,  autoscroll:true }
                         ]
                     }
                 ]

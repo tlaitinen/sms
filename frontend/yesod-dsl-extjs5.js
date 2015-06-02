@@ -302,8 +302,12 @@ var yesodDsl = function(defs, __, config) {
                             rootProperty: 'result',
                             totalProperty: 'totalCount'
                         },
+                        writer: {
+                            writeAllFields: true
+                        },
                         listeners: {
                             exception: function (proxy, response, operation) {
+                                console.log(response);
                                 if (response.request.options.method != 'GET')
                                     saveError(response.responseText);
                             }
@@ -467,6 +471,8 @@ var yesodDsl = function(defs, __, config) {
                                                                                    });
                                                         } else if (tb.action == 'new') {
                                                             var record = Ext.create(modelName, entityDefaults(entityName));
+                                                            record.setId(0);
+
                                                             openFormWindow(gridCfg.form, 
                                                                            gridCfg.formWidth || config.formWidth || 610,
                                                                            gridCfg.formHeight || config.formHeight || 630,
@@ -606,7 +612,7 @@ var yesodDsl = function(defs, __, config) {
                                                                        } else {
                                                                            record.save({
                                                                                success: function(rec, op) {
-                                                                                   var r = JSON.parse(op.response.responseText)
+                                                                                   var r = JSON.parse(op.getResponse().responseText)
                                                                                    if (!record.getId()) {
                                                                                        record.setId(r.id);
                                                                                        refreshGrids(entityRouteInfo.name);

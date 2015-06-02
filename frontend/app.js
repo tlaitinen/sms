@@ -3,6 +3,12 @@ $.get("backend.json").done(function(defs) {
     var config = {
         name: 'Receipts',
         urlBase: 'backend/db',
+        defaultStoreFilters: [
+            {
+                field:'hideDeleted',
+                value:"true"
+            }
+        ],
         routes: {
             users: {
                 grids : [
