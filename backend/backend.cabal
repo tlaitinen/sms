@@ -30,6 +30,7 @@ library
         Settings
         Settings.StaticFiles
         Handler.Common
+        Handler.SetUserPassword
         Handler.File
         Handler.DB
         Handler.DB.Internal

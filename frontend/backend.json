@@ -626,6 +626,11 @@
                         },
                         {
                             "references": null,
+                            "name": "admin",
+                            "type": "boolean"
+                        },
+                        {
+                            "references": null,
                             "name": "email",
                             "type": "string"
                         },
@@ -643,6 +648,11 @@
                             "references": null,
                             "name": "current",
                             "type": "boolean"
+                        },
+                        {
+                            "references": null,
+                            "name": "config",
+                            "type": "string"
                         },
                         {
                             "references": null,
@@ -921,6 +931,13 @@
                 },
                 {
                     "references": null,
+                    "default": false,
+                    "name": "admin",
+                    "type": "boolean",
+                    "optional": false
+                },
+                {
+                    "references": null,
                     "default": "",
                     "name": "email",
                     "type": "string",
@@ -945,6 +962,13 @@
                     "default": "Active",
                     "name": "current",
                     "type": "boolean",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": "{}",
+                    "name": "config",
+                    "type": "string",
                     "optional": false
                 },
                 {

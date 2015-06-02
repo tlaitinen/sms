@@ -15,18 +15,8 @@ Ext.define('Receipts.Application', {
     stores: [
     ],
     
-    launch: function () {
-        var app = this;
-        $.get("backend.json").done(function(defs) {
-            var config = {
-                name: 'Receipts',
-                routes: {
-                }
-            };
-            yesodDsl(defs, __, config);
-         
-        });
-    }
+    init: function () {
+   }
 });
 Ext.define('Receipts.GlobalState', {
     extend: 'Ext.util.Observable',
@@ -38,4 +28,4 @@ Ext.define('Receipts.CustomReader', {
     read: function(xhr)  {
         return {success:  xhr.status == 200 };
     }
-});
+}); 

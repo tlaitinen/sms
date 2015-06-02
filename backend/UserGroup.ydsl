@@ -31,6 +31,7 @@ entity User {
     firstName Text default "";
     lastName Text default "";
     organization Text default "";
+    admin Bool default False;
 
     email Text default "";
     password Text default "" internal;
@@ -41,6 +42,9 @@ entity User {
     timeZone Text default "Europe/Helsinki";
 
     current Checkmark default CheckmarkActive;
+
+    config Text default "{}";
+
     unique User current, name;
     deriving Typeable;
 }

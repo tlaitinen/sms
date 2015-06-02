@@ -9,6 +9,32 @@ var yesodDsl = function(defs, __, config) {
         day: 'datefield',
         timeofday: 'timefield'
     };
+    function createToolTip(view, tipFunction) {
+        view.tip = Ext.create('Ext.tip.ToolTip', {
+            // The overall target element.
+            target: view.el,
+            minWidth: 300,
+            // Each grid row causes its own seperate show and hide.
+            delegate: view.itemSelector,
+            // Moving within the row should not hide the tip.
+            trackMouse: true,
+            // Render immediately so that tip.body can be referenced prior to the first show.
+            renderTo: Ext.getBody(),
+            listeners: {
+                // Change content dynamically depending on which element triggered the show.
+                beforeshow: function (tip) {
+                    var tooltip = tipFunction(view.getRecord(tip.triggerElement));
+                    if(tooltip){
+                        tip.update(tooltip);
+                    } else {
+                         tip.on('show', function(){
+                             Ext.defer(tip.hide, 10, tip);
+                         }, tip, {single: true});
+                    }
+                }
+            }
+        });
+    }
     function createStore(storeCls, storeId) {
         var store = Ext.create(storeCls, { storeId:storeId });
         (config.defaultStoreFilters || []).forEach(function(cf) {
@@ -296,8 +322,9 @@ var yesodDsl = function(defs, __, config) {
                 }, function (model) {
                     Ext.define(storeName, {
                         extend: 'Ext.data.Store',
+                        filters: [],
                         model: modelName,
-                        pageSize: config.defaultPageSize,
+                        pageSize: config.defaultPageSize || 100,
                         remoteFilter: true,
                         remoteSort: true,
                         proxy: proxy
@@ -355,18 +382,20 @@ var yesodDsl = function(defs, __, config) {
                             });
                             var widgetName = gridWidgetName(name, gridCfg);
                             var listName  = config.name + '.view.' + name + '.' + widgetName;
+                            console.log(listName + " : " + widgetName);
                             Ext.define(listName, {
                                 extend: 'Ext.grid.Panel',
                                 alias: 'widget.' + widgetName,
                                 multiSelect: true,
                                 store: store,
                                 allowDeselect : true,
-                                requires: ['Ext.toolbar.Paging', 'Ext.ux.grid.FiltersFeature'],
+                                title: __(widgetName + '.title'),
+                                requires: ['Ext.toolbar.Paging'],
                                 viewConfig: {
                                     listeners: {
                                         render: function(view) {
                                             var tooltip = gridCfg.tooltip || idTooltip;
-                                            source.Utils.createToolTip(view, tooltip);
+                                            createToolTip(view, tooltip);
 
                                             if (gridCfg.preload != false) {
                                                 store.load();
@@ -374,6 +403,8 @@ var yesodDsl = function(defs, __, config) {
                                         },
                                         celldblclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts) {
                                             if (gridCfg.form) {
+
+                                            console.log("fuu");
                                                 openFormWindow(gridCfg.form, 
                                                                gridCfg.formWidth || config.formWidth || 610,
                                                                gridCfg.formHeight || config.formHeight || 630,
@@ -409,8 +440,8 @@ var yesodDsl = function(defs, __, config) {
                                                             "renderer" : renderer
                                                         };
                                                     });
-                                    var displayMsg = __(widgetName + '.paging', true);
-                                    if (displayMsg === true)
+                                    var displayMsg = __(widgetName + '.paging','x');
+                                    if (displayMsg === 'x')
                                         displayMsg = __(widgetName + '.title') + " {0} - {1} / {2}";
         
                                     this.bbar = Ext.create('Ext.PagingToolbar', {
@@ -450,7 +481,6 @@ var yesodDsl = function(defs, __, config) {
                                     this.callParent(arguments);
 
                                 },
-                                features: [{ ftype : 'filters', encode:true}],
                                 dockedItems: (function () { 
                                     var toolbar = _.map(gridCfg.toolbar || [], function(tb) {
                                             if (endsWith(tb.xtype, 'combo')) {

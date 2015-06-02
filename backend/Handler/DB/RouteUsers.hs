@@ -143,6 +143,9 @@ getUsersR  = lift $ runDB $ do
                 "organization" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserOrganization) ((val v'))
                     _        -> return ()
+                "admin" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserAdmin) ((val v'))
+                    _        -> return ()
                 "email" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserEmail) ((val v'))
                     _        -> return ()
@@ -154,6 +157,9 @@ getUsersR  = lift $ runDB $ do
                     _        -> return ()
                 "current" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserCurrent) ((val v'))
+                    _        -> return ()
+                "config" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserConfig) ((val v'))
                     _        -> return ()
                 "name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserName) ((val v'))
@@ -299,6 +305,8 @@ postUsersR  = lift $ runDB $ do
                     ,
                             userOrganization = attr_organization
                     ,
+                            userAdmin = False
+                    ,
                             userEmail = attr_email
                     ,
                             userPassword = ""
@@ -310,6 +318,8 @@ postUsersR  = lift $ runDB $ do
                             userTimeZone = attr_timeZone
                     ,
                             userCurrent = Active
+                    ,
+                            userConfig = "{}"
                     ,
                             userName = attr_name
                     ,

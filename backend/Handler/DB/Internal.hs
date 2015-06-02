@@ -165,12 +165,14 @@ User json
     firstName Text  "default=''"
     lastName Text  "default=''"
     organization Text  "default=''"
+    admin Bool  "default=False"
     email Text  "default=''"
     password Text  "default=''"
     salt Text  "default=''"
     defaultUserGroupId UserGroupId  
     timeZone Text  "default='Europe/Helsinki'"
     current Checkmark  "default=True" nullable
+    config Text  "default='{}'"
     name Text  
     activeId UserId Maybe   default=NULL
     activeStartTime UTCTime Maybe  
@@ -227,12 +229,14 @@ newUser defaultUserGroupId_ name_ = User {
     userFirstName = "",
     userLastName = "",
     userOrganization = "",
+    userAdmin = False,
     userEmail = "",
     userPassword = "",
     userSalt = "",
     userDefaultUserGroupId = defaultUserGroupId_,
     userTimeZone = "Europe/Helsinki",
     userCurrent = Active,
+    userConfig = "{}",
     userName = name_,
     userActiveId = Nothing,
     userActiveStartTime = Nothing,

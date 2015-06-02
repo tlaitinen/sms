@@ -15,20 +15,60 @@ Ext.define('Receipts.view.main.Main', {
     
     controller: 'main',
 
-    layout: {
-        type: 'border'
-    },
+    layout: 'fit',
 
     items: [{
         region: 'center',
         xtype: 'tabpanel',
-        items:[{
-            title: __('tab/users')
-            items: [
-                {
-                    xtype: 'panel'
-                }
-            ]
-        }]
+        items:[
+            {
+                title: __('maintab.receipts'),
+                items: [
+                    {
+                        xtype: 'panel'
+                    }
+                ]
+            },
+            {
+                reference: 'usersTab',
+                hidden:true,
+                title: __('maintab.users'),
+                layout:'fit',
+                items: [
+                    {
+                        xtype: 'panel',
+                        layout: {
+                            type: 'vbox',
+                            align:'stretch'
+                        },
+                        items: [
+                            { xtype: 'usersgrid', flex:1, padding:5, autoscroll:true },
+                            { xtype: 'usergroupsgrid', flex:1, padding:5, autoscroll:true },
+                            {
+                                xtype:'panel',
+                                layout: {
+                                    type:'hbox',
+                                    align:'stretch'
+                                },
+                                items: [
+                                    { 
+                                        xtype:'button', 
+                                        name:'addReadPerm',
+                                        text: __('users.addReadPerm')
+                                    },
+                                    {
+                                        xtype:'button',
+                                        name:'addWritePerm',
+                                        text: __('users.addWritePerm')
+                                    }
+                                ]
+                                 
+                            },
+                            { xtype: 'usergroupitemsgrid', flex:1, padding:5, autoscroll:true }
+                        ]
+                    }
+                ]
+            }
+        ]
     }]
 });

@@ -1,10 +1,3 @@
-/**
- * This class is the main view for the application. It is specified in app.js as the
- * "autoCreateViewport" property. That setting automatically applies the "viewport"
- * plugin to promote that instance of this class to the body element.
- *
- * TODO - Replace this content of this view to suite the needs of your application.
- */
 Ext.define('Receipts.view.main.MainController', {
     extend: 'Ext.app.ViewController',
 
@@ -14,13 +7,17 @@ Ext.define('Receipts.view.main.MainController', {
 
     alias: 'controller.main',
 
-    onClickButton: function () {
-        Ext.Msg.confirm('Confirm', 'Are you sure?', 'onConfirm', this);
+    onLogin: function() {
+        if (Receipts.GlobalState.user.config.usersTab == true) {
+            this.lookupReference('usersTab').tab.show();
+        }
     },
 
-    onConfirm: function (choice) {
-        if (choice === 'yes') {
-            //
-        }
+    init: function() {
+        var controller = this;
+        Receipts.GlobalState.on('login', function() {
+            controller.onLogin();
+        });
     }
+
 });

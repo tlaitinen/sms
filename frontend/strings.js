@@ -1,14 +1,56 @@
 function __(k,d) {
     var strings = {
-        'login/title' : 'Kirjautuminen Tositteet-portaaliin',
-        'login/waittitle' : 'Kirjautuminen käynnissä',
-        'login/waitmessage' : 'Lähetetään tietoja',
-        'login/failedtitle' : 'Virhe',
-        'login/failedmessage' : 'Kirjautuminen epäonnistui',
-        'login/username' : 'Käyttäjänimi',
-        'login/password' : 'Salasana',
-        'login/login' : 'Kirjaudu sisään'
+        'userpasswordform.title' : 'Käyttäjän salasanan muuttaminen',
+        'ok' : 'OK',
+        'cancel' : 'Peruuta',
+        'passwordMinLength' : 'Salasanan tulee olla vähintään kuusi merkkiä pitkä',
+        'validationError.title' : 'Virheellisiä tietoja',
+        'validationError.message' : 'Lomakkeella on virheellisiä tietoja.',
+        'validationError.password' : 'Salasanat eivät täsmää.',
+        'login.title' : 'Kirjautuminen Tositteet-portaaliin',
+        'login.waittitle' : 'Kirjautuminen käynnissä',
+        'login.waitmessage' : 'Lähetetään tietoja',
+        'login.failedtitle' : 'Virhe',
+        'login.failedmessage' : 'Kirjautuminen epäonnistui',
+        'username' : 'Käyttäjänimi',
+        'password' : 'Salasana',
+        'login.login' : 'Kirjaudu sisään',
+        'receipts' : 'Tositteet',
+        'users' : 'Käyttäjät',
+        'usersgrid.title' : 'Käyttäjät',
+        'usersgrid.emptyPaging' : 'Ei käyttäjiä',
+        'usersgrid.new' : 'Uusi käyttäjä',
+        'usersgrid.remove' : 'Poista valitut käyttäjät',
+        'usergroupscombo.emptyText' : 'Käyttäjäryhmä',
+        'usergroupsgrid.title' : 'Käyttäjäryhmät',
+        'usergroupsgrid.emptyPaging' : 'Ei käyttäjäryhmiä',
+        'usergroupsgrid.new' : 'Uusi ryhmä',
+        'usergroupsgrid.remove' : 'Poista valitut ryhmät',
+        'userform.title' : 'Käyttäjän tietojen muokkaaminen',
+        'userform.defaultUserGroupId' : 'Oletusryhmä',
+        'userform.setUserPassword' : 'Vaihda salasana',
+        'search' : 'Haku',
+        'name' : 'Nimi',
+        'firstName' : 'Etunimi',
+        'lastName' : 'Sukunimi',
+        'email' : 'Sähköpostiosoite',
+        'timeZone' : 'Aikavyöhyke',
+        'passwordAgain' : 'Salasana uudestaan',
+        'userName' : 'Käyttäjä',
+        'userGroupName' : 'Käyttäjäryhmä',
+        'contentType' : 'Tiedostotyyppi',
+        'insertionTime' : 'Ladattu',
+        'save' : 'Tallenna muutokset',
+        'saveandclose' : 'Tallenna muutokset ja sulje',
+        'closewithoutsaving' : 'Sulje tallentamatta muutoksia',
+        'usergroupitemsgrid.title' : 'Oikeudet käyttäjäryhmissä',
+        'usergroupitemsgrid.emptyPaging' : 'Ei oikeuksia käyttäjäryhmissä',
+        'usergroupitemsgrid.remove' : 'Poista valitut käyttäjäoikeudet',
+        'users.addReadPerm' : 'Lisää lukuoikeus valituille käyttäjille valittuihin ryhmiin',
+        'users.addWritePerm' : 'Lisää luku- ja kirjoitusoikeus valituille käyttäjille valittuihin ryhmiin'
+
     };
+    console.log(k);
     var parts = k.split('.');
     if (k in strings) {
         while (k in strings) {
@@ -28,7 +70,7 @@ function __(k,d) {
         }
         return k;
     } else if (d) {
-        return translate(d);
+        return __(d);
     } else {
         return k;
     }

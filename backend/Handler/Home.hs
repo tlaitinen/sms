@@ -12,6 +12,7 @@ getHomeR = do
                 "name" .= userName u,
                 "firstName" .= userFirstName u,
                 "lastName" .= userLastName u,
-                "email" .= userEmail u
+                "email" .= userEmail u,
+                "config" .= userConfig u
             ]
         ]

@@ -12,23 +12,23 @@ Ext.define('Receipts.view.Login',{
         { 
             xtype: 'form',
             defaultType:'textfield',
-            title: __('login/title'),
+            title: __('login.title'),
             bodyPadding:10,
             items: [
                 {
-                    fieldLabel: __('login/username'),
+                    fieldLabel: __('login.username'),
                     name: 'username',
                     allowBlank:false
                 },
                 {
-                    fieldLabel : __('login/password'),
+                    fieldLabel : __('login.password'),
                     name : 'password',
                     inputType:'password',
                     allowBlank:false
                 }
             ],
             buttons:[{ 
-                text:__('login/login'),
+                text:__('login.login'),
                 name:'login'
             }]
         }
