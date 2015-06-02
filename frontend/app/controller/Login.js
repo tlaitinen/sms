@@ -5,7 +5,7 @@ Ext.define('Receipts.controller.Login', {
         Ext.Ajax.request({
             url: 'backend/',
             success: function(response){
-
+                var win = Ext.getCmp('login');
                 try {
                     var obj = JSON.parse(response.responseText)
                     if ("user" in obj) {
@@ -18,7 +18,9 @@ Ext.define('Receipts.controller.Login', {
                         }
                         Receipts.GlobalState.fireEvent('login');
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.log(e);
+                }
             }
         });
     },
@@ -52,8 +54,7 @@ Ext.define('Receipts.controller.Login', {
                             'Accept': 'application/json'
                         },
                         success:function(form, action) {
-                            win.close();
-                            t.loadUser();
+                            c.loadUser();
                         },
                         failure:function(form, action) {
                             Ext.Msg.alert(__('login.failedtitle'), __('login.failedmessage'));
