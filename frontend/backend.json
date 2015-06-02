@@ -1,0 +1,1034 @@
+{
+    "routes": [
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "files",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "File",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "contentType",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "size",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "captureUrl",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "captureInterval",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "captureWidth",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "captureHeight",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "insertionTime",
+                            "type": "date"
+                        },
+                        {
+                            "references": "User",
+                            "name": "insertedByUserId",
+                            "type": "integer"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "files",
+                    "type": "string"
+                },
+                {
+                    "references": "File",
+                    "type": "integer"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "File",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "contentType",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "size",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "captureUrl",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "captureInterval",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "captureWidth",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "captureHeight",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "insertionTime",
+                            "type": "date"
+                        },
+                        {
+                            "references": "User",
+                            "name": "insertedByUserId",
+                            "type": "integer"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "references": null,
+                            "name": "contentType",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "size",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "insertionTime",
+                            "type": "date"
+                        },
+                        {
+                            "references": null,
+                            "name": "captureUrl",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "captureInterval",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "captureWidth",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "captureHeight",
+                            "type": "integer"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "PUT",
+                    "public": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "references": null,
+                            "name": "contentType",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "size",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "insertionTime",
+                            "type": "date"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "DELETE",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "fileusergroupcontents",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [
+                        {
+                            "references": "UserGroup",
+                            "name": "userGroupId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "userGroupContentIdList",
+                            "type": null
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "DELETE",
+                    "public": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "references": "File",
+                            "name": "fileId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "userGroupIdList",
+                            "type": null
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "POST",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "usergroupcontents",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "UserGroupContent",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "userGroupName",
+                            "type": "string"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "usergroups",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "UserGroup",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "current",
+                            "type": "boolean"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "name": "id",
+                            "type": null
+                        }
+                    ],
+                    "type": "POST",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "usergroups",
+                    "type": "string"
+                },
+                {
+                    "references": "UserGroup",
+                    "type": "integer"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "PUT",
+                    "public": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "DELETE",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "usergroupitems",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "UserGroupItem",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "User",
+                            "name": "userId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "userName",
+                            "type": "string"
+                        },
+                        {
+                            "references": "UserGroup",
+                            "name": "userGroupId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "userGroupName",
+                            "type": "string"
+                        },
+                        {
+                            "references": "UserGroupMode",
+                            "name": "mode",
+                            "type": "string"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "references": "UserGroup",
+                            "name": "userGroupId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "User",
+                            "name": "userId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "UserGroupMode",
+                            "name": "mode",
+                            "type": "string"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "POST",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "usergroupitems",
+                    "type": "string"
+                },
+                {
+                    "references": "UserGroupItem",
+                    "type": "integer"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [
+                        {
+                            "references": "UserGroup",
+                            "name": "userGroupId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "User",
+                            "name": "userId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "UserGroupMode",
+                            "name": "mode",
+                            "type": "string"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "DELETE",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "users",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "User",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "firstName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "lastName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "organization",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "timeZone",
+                            "type": "string"
+                        },
+                        {
+                            "references": "UserGroup",
+                            "name": "defaultUserGroupId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "email",
+                            "type": "string"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "references": null,
+                            "name": "firstName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "lastName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "organization",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "email",
+                            "type": "string"
+                        },
+                        {
+                            "references": "UserGroup",
+                            "name": "defaultUserGroupId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "timeZone",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "name": "id",
+                            "type": null
+                        }
+                    ],
+                    "type": "POST",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "users",
+                    "type": "string"
+                },
+                {
+                    "references": "User",
+                    "type": "integer"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "User",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "firstName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "lastName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "organization",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "email",
+                            "type": "string"
+                        },
+                        {
+                            "references": "UserGroup",
+                            "name": "defaultUserGroupId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "timeZone",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "current",
+                            "type": "boolean"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "references": "UserGroup",
+                            "name": "defaultUserGroupId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "DELETE",
+                    "public": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "references": "UserGroup",
+                            "name": "defaultUserGroupId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "firstName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "lastName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "organization",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "email",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "timeZone",
+                            "type": "string"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "PUT",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "versions",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "Version",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "time",
+                            "type": "date"
+                        },
+                        {
+                            "references": "User",
+                            "name": "userId",
+                            "type": "integer"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                }
+            ]
+        }
+    ],
+    "entities": [
+        {
+            "name": "File",
+            "fields": [
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "contentType",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "size",
+                    "type": "integer",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "captureUrl",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "captureInterval",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "captureWidth",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "captureHeight",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "name",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "insertionTime",
+                    "type": "date",
+                    "optional": false
+                },
+                {
+                    "references": "User",
+                    "default": null,
+                    "name": "insertedByUserId",
+                    "type": "integer",
+                    "optional": true
+                }
+            ]
+        },
+        {
+            "name": "UserGroupContent",
+            "fields": [
+                {
+                    "references": "UserGroup",
+                    "default": null,
+                    "name": "userGroupId",
+                    "type": "integer",
+                    "optional": false
+                },
+                {
+                    "references": "File",
+                    "default": null,
+                    "name": "fileContentId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": "UserGroup",
+                    "default": null,
+                    "name": "userGroupContentId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": "User",
+                    "default": null,
+                    "name": "userContentId",
+                    "type": "integer",
+                    "optional": true
+                }
+            ]
+        },
+        {
+            "name": "UserGroup",
+            "fields": [
+                {
+                    "references": null,
+                    "default": "Active",
+                    "name": "current",
+                    "type": "boolean",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "name",
+                    "type": "string",
+                    "optional": false
+                }
+            ]
+        },
+        {
+            "name": "UserGroupItem",
+            "fields": [
+                {
+                    "references": "UserGroup",
+                    "default": null,
+                    "name": "userGroupId",
+                    "type": "integer",
+                    "optional": false
+                },
+                {
+                    "references": "User",
+                    "default": null,
+                    "name": "userId",
+                    "type": "integer",
+                    "optional": false
+                },
+                {
+                    "references": "UserGroupMode",
+                    "default": null,
+                    "name": "mode",
+                    "type": "string",
+                    "optional": false
+                }
+            ]
+        },
+        {
+            "name": "User",
+            "fields": [
+                {
+                    "references": null,
+                    "default": "",
+                    "name": "firstName",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": "",
+                    "name": "lastName",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": "",
+                    "name": "organization",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": "",
+                    "name": "email",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "references": "UserGroup",
+                    "default": null,
+                    "name": "defaultUserGroupId",
+                    "type": "integer",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": "Europe/Helsinki",
+                    "name": "timeZone",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": "Active",
+                    "name": "current",
+                    "type": "boolean",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "name",
+                    "type": "string",
+                    "optional": false
+                }
+            ]
+        },
+        {
+            "name": "Version",
+            "fields": [
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "time",
+                    "type": "date",
+                    "optional": false
+                },
+                {
+                    "references": "User",
+                    "default": null,
+                    "name": "userId",
+                    "type": "integer",
+                    "optional": false
+                }
+            ]
+        }
+    ],
+    "name": "DB",
+    "enums": [
+        {
+            "values": [
+                "ReadWrite",
+                "ReadOnly"
+            ],
+            "name": "UserGroupMode"
+        }
+    ],
+    "classes": [
+        {
+            "name": "Named",
+            "fields": [
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "name",
+                    "type": "string",
+                    "optional": false
+                }
+            ]
+        },
+        {
+            "name": "HasInsertInfo",
+            "fields": [
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "insertionTime",
+                    "type": "date",
+                    "optional": false
+                },
+                {
+                    "references": "User",
+                    "default": null,
+                    "name": "insertedByUserId",
+                    "type": "integer",
+                    "optional": true
+                }
+            ]
+        },
+        {
+            "name": "Restricted",
+            "fields": []
+        },
+        {
+            "name": "Versioned",
+            "fields": []
+        },
+        {
+            "name": "Deletable",
+            "fields": []
+        }
+    ]
+}

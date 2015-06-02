@@ -26,5 +26,7 @@ database:
   poolsize: "_env:PGPOOLSIZE:10"
 
 copyright: Copyright (C) 2015 Feriko Oy
-upload-dir: upload
+upload-dir: "_env:UPLOADDIR:upload"
+adminUser: "_env:ADMINUSER:Receipts"
+adminPassword: "_env:ADMINPASSWORD:Receipts"
 #analytics: UA-YOURCODE

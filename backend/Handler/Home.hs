@@ -2,7 +2,16 @@
 module Handler.Home where
 import Yesod.Auth
 import Import
-getHomeR :: Handler Text
+import Handler.DB
+getHomeR :: Handler Value
 getHomeR = do
-    _ <- requireAuthId
-    return "OK"
+    (Entity _ u) <- requireAuth
+
+    return $ object [
+            "user" .= object [
+                "name" .= userName u,
+                "firstName" .= userFirstName u,
+                "lastName" .= userLastName u,
+                "email" .= userEmail u
+            ]
+        ]

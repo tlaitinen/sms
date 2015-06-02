@@ -53,6 +53,8 @@ data AppSettings = AppSettings
     , appAnalytics              :: Maybe Text
     -- ^ Google Analytics code
     , appUploadDir              :: FP.FilePath
+    , appAdminUser              :: Text
+    , appAdminPassword          :: Text
     }
 
 instance FromJSON AppSettings where
@@ -79,6 +81,8 @@ instance FromJSON AppSettings where
         appCopyright              <- o .: "copyright"
         appAnalytics              <- o .:? "analytics"
         appUploadDir              <- fromString <$> o .: "upload-dir"
+        appAdminUser              <- o .: "adminUser"
+        appAdminPassword          <- o .: "adminPassword"
 
         return AppSettings {..}
 
