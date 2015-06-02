@@ -4,10 +4,6 @@ entity File {
     instance of Named, Versioned, Restricted, Deletable, HasInsertInfo;
     contentType Text;
     size    Int32;
-    captureUrl Maybe Text;
-    captureInterval Maybe Int32;
-    captureWidth Maybe Int32;
-    captureHeight Maybe Int32;
 }
 
 route /files {
@@ -46,10 +42,6 @@ route /files/#FileId {
         };
         update File identified by $1 with {
             name = $request.name,
-            captureInterval = $request.captureInterval,
-            captureUrl = $request.captureUrl,
-            captureWidth = $request.captureWidth,
-            captureHeight = $request.captureHeight,
             activeStartTime = now()
         };
     }

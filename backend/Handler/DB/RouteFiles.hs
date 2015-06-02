@@ -97,22 +97,6 @@ getFilesR  = lift $ runDB $ do
                                 "ASC"  -> orderBy [ asc (f  ^.  FileSize) ] 
                                 "DESC" -> orderBy [ desc (f  ^.  FileSize) ] 
                                 _      -> return ()
-                            "captureUrl" -> case (sortJsonMsg_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (f  ^.  FileCaptureUrl) ] 
-                                "DESC" -> orderBy [ desc (f  ^.  FileCaptureUrl) ] 
-                                _      -> return ()
-                            "captureInterval" -> case (sortJsonMsg_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (f  ^.  FileCaptureInterval) ] 
-                                "DESC" -> orderBy [ desc (f  ^.  FileCaptureInterval) ] 
-                                _      -> return ()
-                            "captureWidth" -> case (sortJsonMsg_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (f  ^.  FileCaptureWidth) ] 
-                                "DESC" -> orderBy [ desc (f  ^.  FileCaptureWidth) ] 
-                                _      -> return ()
-                            "captureHeight" -> case (sortJsonMsg_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (f  ^.  FileCaptureHeight) ] 
-                                "DESC" -> orderBy [ desc (f  ^.  FileCaptureHeight) ] 
-                                _      -> return ()
                             "name" -> case (sortJsonMsg_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (f  ^.  FileName) ] 
                                 "DESC" -> orderBy [ desc (f  ^.  FileName) ] 
@@ -149,18 +133,6 @@ getFilesR  = lift $ runDB $ do
                 "size" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileSize) ((val v'))
                     _        -> return ()
-                "captureUrl" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileCaptureUrl) (just ((val v')))
-                    _        -> return ()
-                "captureInterval" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileCaptureInterval) (just ((val v')))
-                    _        -> return ()
-                "captureWidth" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileCaptureWidth) (just ((val v')))
-                    _        -> return ()
-                "captureHeight" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileCaptureHeight) (just ((val v')))
-                    _        -> return ()
                 "name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileName) ((val v'))
                     _        -> return ()
@@ -194,7 +166,7 @@ getFilesR  = lift $ runDB $ do
                  
                 where_ $ (f ^. FileDeletedVersionId) `is` (nothing)
             else return ()
-        return (f ^. FileId, f ^. FileContentType, f ^. FileSize, f ^. FileCaptureUrl, f ^. FileCaptureInterval, f ^. FileCaptureWidth, f ^. FileCaptureHeight, f ^. FileName, f ^. FileInsertionTime, f ^. FileInsertedByUserId)
+        return (f ^. FileId, f ^. FileContentType, f ^. FileSize, f ^. FileName, f ^. FileInsertionTime, f ^. FileInsertedByUserId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -202,20 +174,15 @@ getFilesR  = lift $ runDB $ do
         return $ (countRows' :: SqlExpr (Database.Esqueleto.Value Int))
     results <- select $ baseQuery True
     return $ A.object [
-        "success" .= ("true" :: Text),
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9), (Database.Esqueleto.Value f10)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6)) -> A.object [
                     "id" .= toJSON f1,
                     "contentType" .= toJSON f2,
                     "size" .= toJSON f3,
-                    "captureUrl" .= toJSON f4,
-                    "captureInterval" .= toJSON f5,
-                    "captureWidth" .= toJSON f6,
-                    "captureHeight" .= toJSON f7,
-                    "name" .= toJSON f8,
-                    "insertionTime" .= toJSON f9,
-                    "insertedByUserId" .= toJSON f10                                    
+                    "name" .= toJSON f4,
+                    "insertionTime" .= toJSON f5,
+                    "insertedByUserId" .= toJSON f6                                    
                     ]
                 _ -> A.object []
             ) results)

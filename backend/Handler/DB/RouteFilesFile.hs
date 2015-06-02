@@ -78,7 +78,7 @@ getFilesFileIdR p1 = lift $ runDB $ do
 
                  
             else return ()
-        return (f ^. FileId, f ^. FileContentType, f ^. FileSize, f ^. FileCaptureUrl, f ^. FileCaptureInterval, f ^. FileCaptureWidth, f ^. FileCaptureHeight, f ^. FileName, f ^. FileInsertionTime, f ^. FileInsertedByUserId)
+        return (f ^. FileId, f ^. FileContentType, f ^. FileSize, f ^. FileName, f ^. FileInsertionTime, f ^. FileInsertedByUserId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -86,20 +86,15 @@ getFilesFileIdR p1 = lift $ runDB $ do
         return $ (countRows' :: SqlExpr (Database.Esqueleto.Value Int))
     results <- select $ baseQuery True
     return $ A.object [
-        "success" .= ("true" :: Text),
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9), (Database.Esqueleto.Value f10)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6)) -> A.object [
                     "id" .= toJSON f1,
                     "contentType" .= toJSON f2,
                     "size" .= toJSON f3,
-                    "captureUrl" .= toJSON f4,
-                    "captureInterval" .= toJSON f5,
-                    "captureWidth" .= toJSON f6,
-                    "captureHeight" .= toJSON f7,
-                    "name" .= toJSON f8,
-                    "insertionTime" .= toJSON f9,
-                    "insertedByUserId" .= toJSON f10                                    
+                    "name" .= toJSON f4,
+                    "insertionTime" .= toJSON f5,
+                    "insertedByUserId" .= toJSON f6                                    
                     ]
                 _ -> A.object []
             ) results)
@@ -119,46 +114,6 @@ putFilesFileIdR p1 = lift $ runDB $ do
     jsonBodyObj <- case jsonBody of
         A.Object o -> return o
         v -> sendResponseStatus status400 $ A.object [ "message" .= ("Expected JSON object in the request body, got: " ++ show v) ]
-    attr_captureHeight <- case HML.lookup "captureHeight" jsonBodyObj of 
-        Just v -> case A.fromJSON v of
-            A.Success v' -> return v'
-            A.Error err -> sendResponseStatus status400 $ A.object [
-                    "message" .= ("Could not parse value from attribute captureHeight in the JSON object in request body" :: Text),
-                    "error" .= err
-                ]
-        Nothing -> sendResponseStatus status400 $ A.object [
-                "message" .= ("Expected attribute captureHeight in the JSON object in request body" :: Text)
-            ]
-    attr_captureWidth <- case HML.lookup "captureWidth" jsonBodyObj of 
-        Just v -> case A.fromJSON v of
-            A.Success v' -> return v'
-            A.Error err -> sendResponseStatus status400 $ A.object [
-                    "message" .= ("Could not parse value from attribute captureWidth in the JSON object in request body" :: Text),
-                    "error" .= err
-                ]
-        Nothing -> sendResponseStatus status400 $ A.object [
-                "message" .= ("Expected attribute captureWidth in the JSON object in request body" :: Text)
-            ]
-    attr_captureUrl <- case HML.lookup "captureUrl" jsonBodyObj of 
-        Just v -> case A.fromJSON v of
-            A.Success v' -> return v'
-            A.Error err -> sendResponseStatus status400 $ A.object [
-                    "message" .= ("Could not parse value from attribute captureUrl in the JSON object in request body" :: Text),
-                    "error" .= err
-                ]
-        Nothing -> sendResponseStatus status400 $ A.object [
-                "message" .= ("Expected attribute captureUrl in the JSON object in request body" :: Text)
-            ]
-    attr_captureInterval <- case HML.lookup "captureInterval" jsonBodyObj of 
-        Just v -> case A.fromJSON v of
-            A.Success v' -> return v'
-            A.Error err -> sendResponseStatus status400 $ A.object [
-                    "message" .= ("Could not parse value from attribute captureInterval in the JSON object in request body" :: Text),
-                    "error" .= err
-                ]
-        Nothing -> sendResponseStatus status400 $ A.object [
-                "message" .= ("Expected attribute captureInterval in the JSON object in request body" :: Text)
-            ]
     attr_name <- case HML.lookup "name" jsonBodyObj of 
         Just v -> case A.fromJSON v of
             A.Success v' -> return v'
@@ -237,14 +192,6 @@ putFilesFileIdR p1 = lift $ runDB $ do
                     ]
     
             return $ e {
-                            fileCaptureUrl = attr_captureUrl
-                    ,
-                            fileCaptureInterval = attr_captureInterval
-                    ,
-                            fileCaptureWidth = attr_captureWidth
-                    ,
-                            fileCaptureHeight = attr_captureHeight
-                    ,
                             fileName = attr_name
                     ,
                             fileActiveStartTime = (Just __currentTime)

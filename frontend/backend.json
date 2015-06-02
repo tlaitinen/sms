@@ -29,33 +29,13 @@
                         },
                         {
                             "references": null,
-                            "name": "captureUrl",
-                            "type": "string"
-                        },
-                        {
-                            "references": null,
-                            "name": "captureInterval",
-                            "type": "integer"
-                        },
-                        {
-                            "references": null,
-                            "name": "captureWidth",
-                            "type": "integer"
-                        },
-                        {
-                            "references": null,
-                            "name": "captureHeight",
-                            "type": "integer"
-                        },
-                        {
-                            "references": null,
                             "name": "name",
                             "type": "string"
                         },
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "date"
+                            "type": "utctime"
                         },
                         {
                             "references": "User",
@@ -101,33 +81,13 @@
                         },
                         {
                             "references": null,
-                            "name": "captureUrl",
-                            "type": "string"
-                        },
-                        {
-                            "references": null,
-                            "name": "captureInterval",
-                            "type": "integer"
-                        },
-                        {
-                            "references": null,
-                            "name": "captureWidth",
-                            "type": "integer"
-                        },
-                        {
-                            "references": null,
-                            "name": "captureHeight",
-                            "type": "integer"
-                        },
-                        {
-                            "references": null,
                             "name": "name",
                             "type": "string"
                         },
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "date"
+                            "type": "utctime"
                         },
                         {
                             "references": "User",
@@ -158,27 +118,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "date"
-                        },
-                        {
-                            "references": null,
-                            "name": "captureUrl",
-                            "type": "string"
-                        },
-                        {
-                            "references": null,
-                            "name": "captureInterval",
-                            "type": "integer"
-                        },
-                        {
-                            "references": null,
-                            "name": "captureWidth",
-                            "type": "integer"
-                        },
-                        {
-                            "references": null,
-                            "name": "captureHeight",
-                            "type": "integer"
+                            "type": "utctime"
                         }
                     ],
                     "outputs": [],
@@ -205,7 +145,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "date"
+                            "type": "utctime"
                         }
                     ],
                     "outputs": [],
@@ -744,7 +684,7 @@
                         {
                             "references": null,
                             "name": "time",
-                            "type": "date"
+                            "type": "utctime"
                         },
                         {
                             "references": "User",
@@ -779,34 +719,6 @@
                 {
                     "references": null,
                     "default": null,
-                    "name": "captureUrl",
-                    "type": "string",
-                    "optional": true
-                },
-                {
-                    "references": null,
-                    "default": null,
-                    "name": "captureInterval",
-                    "type": "integer",
-                    "optional": true
-                },
-                {
-                    "references": null,
-                    "default": null,
-                    "name": "captureWidth",
-                    "type": "integer",
-                    "optional": true
-                },
-                {
-                    "references": null,
-                    "default": null,
-                    "name": "captureHeight",
-                    "type": "integer",
-                    "optional": true
-                },
-                {
-                    "references": null,
-                    "default": null,
                     "name": "name",
                     "type": "string",
                     "optional": false
@@ -815,7 +727,7 @@
                     "references": null,
                     "default": null,
                     "name": "insertionTime",
-                    "type": "date",
+                    "type": "utctime",
                     "optional": false
                 },
                 {
@@ -987,7 +899,7 @@
                     "references": null,
                     "default": null,
                     "name": "time",
-                    "type": "date",
+                    "type": "utctime",
                     "optional": false
                 },
                 {
@@ -1030,7 +942,7 @@
                     "references": null,
                     "default": null,
                     "name": "insertionTime",
-                    "type": "date",
+                    "type": "utctime",
                     "optional": false
                 },
                 {

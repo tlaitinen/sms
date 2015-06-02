@@ -131,10 +131,6 @@ share [mkPersist sqlOnlySettings, mkMigrate "migrateDB" ] [persistLowerCase|
 File json
     contentType Text  
     size Int32  
-    captureUrl Text Maybe  
-    captureInterval Int32 Maybe  
-    captureWidth Int32 Maybe  
-    captureHeight Int32 Maybe  
     name Text  
     activeId FileId Maybe   default=NULL
     activeStartTime UTCTime Maybe  
@@ -188,10 +184,6 @@ newFile :: Text -> Int32 -> Text -> UTCTime -> File
 newFile contentType_ size_ name_ insertionTime_ = File {
     fileContentType = contentType_,
     fileSize = size_,
-    fileCaptureUrl = Nothing,
-    fileCaptureInterval = Nothing,
-    fileCaptureWidth = Nothing,
-    fileCaptureHeight = Nothing,
     fileName = name_,
     fileActiveId = Nothing,
     fileActiveStartTime = Nothing,
