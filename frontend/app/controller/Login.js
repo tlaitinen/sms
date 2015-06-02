@@ -1,19 +1,7 @@
 Ext.define('Receipts.controller.Login', {
     extend: 'Ext.app.Controller',
     views: ['Login'],
-    init: function() {
-        var win = new Ext.Window({
-            id:'login',
-            layout:'fit',
-            width:'100%',
-            height:'100%',
-            closable:false,
-            resizable:false,
-            plain:true,
-            title: __('login.title'),
-            items: [{xtype:'login'}]
-        });
-        win.show();
+    loadUser: function() {
         Ext.Ajax.request({
             url: 'backend/',
             success: function(response){
@@ -33,7 +21,25 @@ Ext.define('Receipts.controller.Login', {
                 } catch (e) {}
             }
         });
+    },
+    init: function() {
+        var win = new Ext.Window({
+            id:'login',
+            layout:'fit',
+            width:'100%',
+            height:'100%',
+            closable:false,
+            resizable:false,
+            plain:true,
+            title: __('login.title'),
+            items: [{xtype:'login'}]
+        });
+        win.show();
+        this.loadUser();
+        var c = this;
+        
         this.control({
+            
             'login button[name=login]' : {
                 click: function(button) {
                     var win = button.up('window'),
@@ -47,7 +53,7 @@ Ext.define('Receipts.controller.Login', {
                         },
                         success:function(form, action) {
                             win.close();
-                            Receipts.GlobalState.fireEvent('login');
+                            t.loadUser();
                         },
                         failure:function(form, action) {
                             Ext.Msg.alert(__('login.failedtitle'), __('login.failedmessage'));
