@@ -29,6 +29,8 @@ import Handler.DB.RouteUsergroupitemsUserGroupItem
 import Handler.DB.RouteUsers
 import Handler.DB.RouteUsersUser
 import Handler.DB.RouteVersions
+import Handler.DB.RouteReceipts
+import Handler.DB.RouteReceiptsReceipt
 
 import Yesod.Auth (requireAuth, requireAuthId, YesodAuth, AuthId, YesodAuthPersist)
 import Yesod.Core
@@ -50,5 +52,7 @@ mkYesodSubData "DB" [parseRoutes|
 /users        UsersR      GET POST
 /users/#UserId        UsersUserIdR      GET DELETE PUT
 /versions        VersionsR      GET
+/receipts        ReceiptsR      GET POST
+/receipts/#ReceiptId        ReceiptsReceiptIdR      GET DELETE PUT
 |]
 

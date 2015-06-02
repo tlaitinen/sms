@@ -696,6 +696,187 @@
                     "public": false
                 }
             ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "receipts",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "Receipt",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "File",
+                            "name": "fileId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "amount",
+                            "type": "number"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "insertionTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": "User",
+                            "name": "insertedByUserId",
+                            "type": "integer"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "references": "File",
+                            "name": "fileId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "amount",
+                            "type": "number"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "name": "id",
+                            "type": null
+                        }
+                    ],
+                    "type": "POST",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "receipts",
+                    "type": "string"
+                },
+                {
+                    "references": "Receipt",
+                    "type": "integer"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "Receipt",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "File",
+                            "name": "fileId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "amount",
+                            "type": "number"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "insertionTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": "User",
+                            "name": "insertedByUserId",
+                            "type": "integer"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "references": "File",
+                            "name": "fileId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "amount",
+                            "type": "number"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "insertionTime",
+                            "type": "utctime"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "DELETE",
+                    "public": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "references": "File",
+                            "name": "fileId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "amount",
+                            "type": "number"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "insertionTime",
+                            "type": "utctime"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "PUT",
+                    "public": false
+                }
+            ]
         }
     ],
     "entities": [
@@ -767,6 +948,13 @@
                     "references": "User",
                     "default": null,
                     "name": "userContentId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": "Receipt",
+                    "default": null,
+                    "name": "receiptContentId",
                     "type": "integer",
                     "optional": true
                 }
@@ -908,6 +1096,46 @@
                     "name": "userId",
                     "type": "integer",
                     "optional": false
+                }
+            ]
+        },
+        {
+            "name": "Receipt",
+            "fields": [
+                {
+                    "references": "File",
+                    "default": null,
+                    "name": "fileId",
+                    "type": "integer",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "amount",
+                    "type": "number",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "name",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "insertionTime",
+                    "type": "utctime",
+                    "optional": false
+                },
+                {
+                    "references": "User",
+                    "default": null,
+                    "name": "insertedByUserId",
+                    "type": "integer",
+                    "optional": true
                 }
             ]
         }

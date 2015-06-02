@@ -25,6 +25,8 @@ import Handler.DB.RouteUsergroupitemsUserGroupItem
 import Handler.DB.RouteUsers
 import Handler.DB.RouteUsersUser
 import Handler.DB.RouteVersions
+import Handler.DB.RouteReceipts
+import Handler.DB.RouteReceiptsReceipt
 
 import Handler.DB.Routes
 import Yesod.Core

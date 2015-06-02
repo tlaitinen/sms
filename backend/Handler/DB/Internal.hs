@@ -143,6 +143,7 @@ UserGroupContent json
     fileContentId FileId Maybe   default=NULL
     userGroupContentId UserGroupId Maybe   default=NULL
     userContentId UserId Maybe   default=NULL
+    receiptContentId ReceiptId Maybe   default=NULL
     deletedVersionId VersionId Maybe   default=NULL
 UserGroup json
     current Checkmark  "default=True" nullable
@@ -179,6 +180,16 @@ User json
 Version json
     time UTCTime  
     userId UserId  
+Receipt json
+    fileId FileId  
+    amount Double  
+    name Text  
+    activeId ReceiptId Maybe   default=NULL
+    activeStartTime UTCTime Maybe  
+    activeEndTime UTCTime Maybe  
+    deletedVersionId VersionId Maybe   default=NULL
+    insertionTime UTCTime  
+    insertedByUserId UserId Maybe   default=NULL
 |]
 newFile :: Text -> Int32 -> Text -> UTCTime -> File
 newFile contentType_ size_ name_ insertionTime_ = File {
@@ -198,6 +209,7 @@ newUserGroupContent userGroupId_ = UserGroupContent {
     userGroupContentFileContentId = Nothing,
     userGroupContentUserGroupContentId = Nothing,
     userGroupContentUserContentId = Nothing,
+    userGroupContentReceiptContentId = Nothing,
     userGroupContentDeletedVersionId = Nothing
 }    
 newUserGroup :: Text -> UserGroup
@@ -240,6 +252,18 @@ newVersion time_ userId_ = Version {
     versionTime = time_,
     versionUserId = userId_
 }    
+newReceipt :: FileId -> Double -> Text -> UTCTime -> Receipt
+newReceipt fileId_ amount_ name_ insertionTime_ = Receipt {
+    receiptFileId = fileId_,
+    receiptAmount = amount_,
+    receiptName = name_,
+    receiptActiveId = Nothing,
+    receiptActiveStartTime = Nothing,
+    receiptActiveEndTime = Nothing,
+    receiptDeletedVersionId = Nothing,
+    receiptInsertionTime = insertionTime_,
+    receiptInsertedByUserId = Nothing
+}    
 class Named a where
     namedName :: a -> Text
 data NamedInstanceFieldName = NamedName 
@@ -249,14 +273,18 @@ instance Named UserGroup where
     namedName = userGroupName
 instance Named User where
     namedName = userName
+instance Named Receipt where
+    namedName = receiptName
 data NamedInstance = NamedInstanceFile (Entity File)
     | NamedInstanceUserGroup (Entity UserGroup)
     | NamedInstanceUser (Entity User)
+    | NamedInstanceReceipt (Entity Receipt)
 
 
 data NamedInstanceId = NamedInstanceFileId FileId
     | NamedInstanceUserGroupId UserGroupId
     | NamedInstanceUserId UserId
+    | NamedInstanceReceiptId ReceiptId
 
 
 instance Named NamedInstance where
@@ -264,6 +292,7 @@ instance Named NamedInstance where
         NamedInstanceFile (Entity _ e) -> fileName e
         NamedInstanceUserGroup (Entity _ e) -> userGroupName e
         NamedInstanceUser (Entity _ e) -> userName e
+        NamedInstanceReceipt (Entity _ e) -> receiptName e
     
 data NamedInstanceFilterType = NamedInstanceNameFilter (SqlExpr (Database.Esqueleto.Value (Text)) -> SqlExpr (Database.Esqueleto.Value Bool))
 selectNamed :: forall (m :: * -> *). 
@@ -297,11 +326,21 @@ selectNamed filters = do
             ) exprs
     
         return e
+    result_Receipt <- select $ from $ \e -> do
+        let _ = e ^. ReceiptId
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                NamedInstanceNameFilter op -> op $ e ^. ReceiptName
+    
+            ) exprs
+    
+        return e
 
     return $ concat [
         map NamedInstanceFile result_File
         , map NamedInstanceUserGroup result_UserGroup
         , map NamedInstanceUser result_User
+        , map NamedInstanceReceipt result_Receipt
 
         ]
 data NamedInstanceUpdateType = NamedInstanceUpdateName (SqlExpr (Database.Esqueleto.Value (Text)))
@@ -351,6 +390,20 @@ updateNamed filters updates = do
     
      
                 
+    update $ \e -> do
+        let _ = e ^. ReceiptId
+        set e $ map (\update -> case update of
+                    NamedInstanceUpdateName v -> ReceiptName =. v
+    
+            ) updates
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                NamedInstanceNameFilter op -> op $ e ^. ReceiptName
+    
+            ) exprs
+    
+     
+                
 
     return ()
 
@@ -361,18 +414,25 @@ data HasInsertInfoInstanceFieldName = HasInsertInfoInsertionTime    | HasInsertI
 instance HasInsertInfo File where
     hasInsertInfoInsertionTime = fileInsertionTime
     hasInsertInfoInsertedByUserId = fileInsertedByUserId
+instance HasInsertInfo Receipt where
+    hasInsertInfoInsertionTime = receiptInsertionTime
+    hasInsertInfoInsertedByUserId = receiptInsertedByUserId
 data HasInsertInfoInstance = HasInsertInfoInstanceFile (Entity File)
+    | HasInsertInfoInstanceReceipt (Entity Receipt)
 
 
 data HasInsertInfoInstanceId = HasInsertInfoInstanceFileId FileId
+    | HasInsertInfoInstanceReceiptId ReceiptId
 
 
 instance HasInsertInfo HasInsertInfoInstance where
     hasInsertInfoInsertionTime x = case x of
         HasInsertInfoInstanceFile (Entity _ e) -> fileInsertionTime e
+        HasInsertInfoInstanceReceipt (Entity _ e) -> receiptInsertionTime e
     
     hasInsertInfoInsertedByUserId x = case x of
         HasInsertInfoInstanceFile (Entity _ e) -> fileInsertedByUserId e
+        HasInsertInfoInstanceReceipt (Entity _ e) -> receiptInsertedByUserId e
     
 data HasInsertInfoInstanceFilterType = HasInsertInfoInstanceInsertionTimeFilter (SqlExpr (Database.Esqueleto.Value (UTCTime)) -> SqlExpr (Database.Esqueleto.Value Bool))    | HasInsertInfoInstanceInsertedByUserIdFilter (SqlExpr (Database.Esqueleto.Value (Maybe UserId)) -> SqlExpr (Database.Esqueleto.Value Bool))
 selectHasInsertInfo :: forall (m :: * -> *). 
@@ -389,9 +449,20 @@ selectHasInsertInfo filters = do
             ) exprs
     
         return e
+    result_Receipt <- select $ from $ \e -> do
+        let _ = e ^. ReceiptId
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                HasInsertInfoInstanceInsertionTimeFilter op -> op $ e ^. ReceiptInsertionTime
+                HasInsertInfoInstanceInsertedByUserIdFilter op -> op $ e ^. ReceiptInsertedByUserId
+    
+            ) exprs
+    
+        return e
 
     return $ concat [
         map HasInsertInfoInstanceFile result_File
+        , map HasInsertInfoInstanceReceipt result_Receipt
 
         ]
 data HasInsertInfoInstanceUpdateType = HasInsertInfoInstanceUpdateInsertionTime (SqlExpr (Database.Esqueleto.Value (UTCTime)))    | HasInsertInfoInstanceUpdateInsertedByUserId (SqlExpr (Database.Esqueleto.Value (Maybe UserId)))
@@ -415,6 +486,22 @@ updateHasInsertInfo filters updates = do
     
      
                 
+    update $ \e -> do
+        let _ = e ^. ReceiptId
+        set e $ map (\update -> case update of
+                    HasInsertInfoInstanceUpdateInsertionTime v -> ReceiptInsertionTime =. v
+                    HasInsertInfoInstanceUpdateInsertedByUserId v -> ReceiptInsertedByUserId =. v
+    
+            ) updates
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                HasInsertInfoInstanceInsertionTimeFilter op -> op $ e ^. ReceiptInsertionTime
+                HasInsertInfoInstanceInsertedByUserIdFilter op -> op $ e ^. ReceiptInsertedByUserId
+    
+            ) exprs
+    
+     
+                
 
     return ()
 
@@ -422,14 +509,17 @@ class Restricted a where
 instance Restricted File where
 instance Restricted UserGroup where
 instance Restricted User where
+instance Restricted Receipt where
 data RestrictedInstance = RestrictedInstanceFile (Entity File)
     | RestrictedInstanceUserGroup (Entity UserGroup)
     | RestrictedInstanceUser (Entity User)
+    | RestrictedInstanceReceipt (Entity Receipt)
 
 
 data RestrictedInstanceId = RestrictedInstanceFileId FileId
     | RestrictedInstanceUserGroupId UserGroupId
     | RestrictedInstanceUserId UserId
+    | RestrictedInstanceReceiptId ReceiptId
 
 
 instance Restricted RestrictedInstance where
@@ -449,11 +539,16 @@ selectRestricted  = do
         let _ = e ^. UserId
     
         return e
+    result_Receipt <- select $ from $ \e -> do
+        let _ = e ^. ReceiptId
+    
+        return e
 
     return $ concat [
         map RestrictedInstanceFile result_File
         , map RestrictedInstanceUserGroup result_UserGroup
         , map RestrictedInstanceUser result_User
+        , map RestrictedInstanceReceipt result_Receipt
 
         ]
 class Versioned a where
@@ -473,14 +568,20 @@ instance Versioned User where
     versionedActiveId = (fmap VersionedInstanceUserId) . userActiveId
     versionedActiveStartTime = userActiveStartTime
     versionedActiveEndTime = userActiveEndTime
+instance Versioned Receipt where
+    versionedActiveId = (fmap VersionedInstanceReceiptId) . receiptActiveId
+    versionedActiveStartTime = receiptActiveStartTime
+    versionedActiveEndTime = receiptActiveEndTime
 data VersionedInstance = VersionedInstanceFile (Entity File)
     | VersionedInstanceUserGroup (Entity UserGroup)
     | VersionedInstanceUser (Entity User)
+    | VersionedInstanceReceipt (Entity Receipt)
 
 
 data VersionedInstanceId = VersionedInstanceFileId FileId
     | VersionedInstanceUserGroupId UserGroupId
     | VersionedInstanceUserId UserId
+    | VersionedInstanceReceiptId ReceiptId
 
 
 instance Versioned VersionedInstance where
@@ -488,16 +589,19 @@ instance Versioned VersionedInstance where
         VersionedInstanceFile (Entity _ e) -> (fmap VersionedInstanceFileId) $ fileActiveId e
         VersionedInstanceUserGroup (Entity _ e) -> (fmap VersionedInstanceUserGroupId) $ userGroupActiveId e
         VersionedInstanceUser (Entity _ e) -> (fmap VersionedInstanceUserId) $ userActiveId e
+        VersionedInstanceReceipt (Entity _ e) -> (fmap VersionedInstanceReceiptId) $ receiptActiveId e
     
     versionedActiveStartTime x = case x of
         VersionedInstanceFile (Entity _ e) -> fileActiveStartTime e
         VersionedInstanceUserGroup (Entity _ e) -> userGroupActiveStartTime e
         VersionedInstanceUser (Entity _ e) -> userActiveStartTime e
+        VersionedInstanceReceipt (Entity _ e) -> receiptActiveStartTime e
     
     versionedActiveEndTime x = case x of
         VersionedInstanceFile (Entity _ e) -> fileActiveEndTime e
         VersionedInstanceUserGroup (Entity _ e) -> userGroupActiveEndTime e
         VersionedInstanceUser (Entity _ e) -> userActiveEndTime e
+        VersionedInstanceReceipt (Entity _ e) -> receiptActiveEndTime e
     
 data VersionedInstanceFilterType = VersionedInstanceActiveStartTimeFilter (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)) -> SqlExpr (Database.Esqueleto.Value Bool))    | VersionedInstanceActiveEndTimeFilter (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)) -> SqlExpr (Database.Esqueleto.Value Bool))
 selectVersioned :: forall (m :: * -> *). 
@@ -534,11 +638,22 @@ selectVersioned filters = do
             ) exprs
     
         return e
+    result_Receipt <- select $ from $ \e -> do
+        let _ = e ^. ReceiptId
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                VersionedInstanceActiveStartTimeFilter op -> op $ e ^. ReceiptActiveStartTime
+                VersionedInstanceActiveEndTimeFilter op -> op $ e ^. ReceiptActiveEndTime
+    
+            ) exprs
+    
+        return e
 
     return $ concat [
         map VersionedInstanceFile result_File
         , map VersionedInstanceUserGroup result_UserGroup
         , map VersionedInstanceUser result_User
+        , map VersionedInstanceReceipt result_Receipt
 
         ]
 data VersionedInstanceUpdateType = VersionedInstanceUpdateActiveStartTime (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)))    | VersionedInstanceUpdateActiveEndTime (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)))
@@ -594,6 +709,22 @@ updateVersioned filters updates = do
     
      
                 
+    update $ \e -> do
+        let _ = e ^. ReceiptId
+        set e $ map (\update -> case update of
+                    VersionedInstanceUpdateActiveStartTime v -> ReceiptActiveStartTime =. v
+                    VersionedInstanceUpdateActiveEndTime v -> ReceiptActiveEndTime =. v
+    
+            ) updates
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                VersionedInstanceActiveStartTimeFilter op -> op $ e ^. ReceiptActiveStartTime
+                VersionedInstanceActiveEndTimeFilter op -> op $ e ^. ReceiptActiveEndTime
+    
+            ) exprs
+    
+     
+                
 
     return ()
 
@@ -610,11 +741,14 @@ instance Deletable UserGroupItem where
     deletableDeletedVersionId = userGroupItemDeletedVersionId
 instance Deletable User where
     deletableDeletedVersionId = userDeletedVersionId
+instance Deletable Receipt where
+    deletableDeletedVersionId = receiptDeletedVersionId
 data DeletableInstance = DeletableInstanceFile (Entity File)
     | DeletableInstanceUserGroupContent (Entity UserGroupContent)
     | DeletableInstanceUserGroup (Entity UserGroup)
     | DeletableInstanceUserGroupItem (Entity UserGroupItem)
     | DeletableInstanceUser (Entity User)
+    | DeletableInstanceReceipt (Entity Receipt)
 
 
 data DeletableInstanceId = DeletableInstanceFileId FileId
@@ -622,6 +756,7 @@ data DeletableInstanceId = DeletableInstanceFileId FileId
     | DeletableInstanceUserGroupId UserGroupId
     | DeletableInstanceUserGroupItemId UserGroupItemId
     | DeletableInstanceUserId UserId
+    | DeletableInstanceReceiptId ReceiptId
 
 
 instance Deletable DeletableInstance where
@@ -631,6 +766,7 @@ instance Deletable DeletableInstance where
         DeletableInstanceUserGroup (Entity _ e) -> userGroupDeletedVersionId e
         DeletableInstanceUserGroupItem (Entity _ e) -> userGroupItemDeletedVersionId e
         DeletableInstanceUser (Entity _ e) -> userDeletedVersionId e
+        DeletableInstanceReceipt (Entity _ e) -> receiptDeletedVersionId e
     
 data DeletableInstanceFilterType = DeletableInstanceDeletedVersionIdFilter (SqlExpr (Database.Esqueleto.Value (Maybe VersionId)) -> SqlExpr (Database.Esqueleto.Value Bool))
 selectDeletable :: forall (m :: * -> *). 
@@ -682,6 +818,15 @@ selectDeletable filters = do
             ) exprs
     
         return e
+    result_Receipt <- select $ from $ \e -> do
+        let _ = e ^. ReceiptId
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                DeletableInstanceDeletedVersionIdFilter op -> op $ e ^. ReceiptDeletedVersionId
+    
+            ) exprs
+    
+        return e
 
     return $ concat [
         map DeletableInstanceFile result_File
@@ -689,6 +834,7 @@ selectDeletable filters = do
         , map DeletableInstanceUserGroup result_UserGroup
         , map DeletableInstanceUserGroupItem result_UserGroupItem
         , map DeletableInstanceUser result_User
+        , map DeletableInstanceReceipt result_Receipt
 
         ]
 data DeletableInstanceUpdateType = DeletableInstanceUpdateDeletedVersionId (SqlExpr (Database.Esqueleto.Value (Maybe VersionId)))
@@ -766,6 +912,20 @@ updateDeletable filters updates = do
     
      
                 
+    update $ \e -> do
+        let _ = e ^. ReceiptId
+        set e $ map (\update -> case update of
+                    DeletableInstanceUpdateDeletedVersionId v -> ReceiptDeletedVersionId =. v
+    
+            ) updates
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                DeletableInstanceDeletedVersionIdFilter op -> op $ e ^. ReceiptDeletedVersionId
+    
+            ) exprs
+    
+     
+                
 
     return ()
 
@@ -774,12 +934,15 @@ userGroupContentContentId e = listToMaybe $ catMaybes [
         userGroupContentFileContentId e >>= (return . RestrictedInstanceFileId)
         , userGroupContentUserGroupContentId e >>= (return . RestrictedInstanceUserGroupId)
         , userGroupContentUserContentId e >>= (return . RestrictedInstanceUserId)
+        , userGroupContentReceiptContentId e >>= (return . RestrictedInstanceReceiptId)
 
     ]
 
 class UserGroupContentContentIdField e where
     userGroupContentContentIdField :: SqlExpr (Database.Esqueleto.Value (Maybe (Key e))) -> EntityField UserGroupContent (Maybe (Key e)) 
 
+instance UserGroupContentContentIdField Receipt where
+    userGroupContentContentIdField _ = UserGroupContentReceiptContentId
 instance UserGroupContentContentIdField User where
     userGroupContentContentIdField _ = UserGroupContentUserContentId
 instance UserGroupContentContentIdField UserGroup where

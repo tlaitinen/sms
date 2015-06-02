@@ -351,6 +351,8 @@ postUsersR  = lift $ runDB $ do
                     ,
                             userGroupContentUserContentId = (Just result_userId)
                     ,
+                            userGroupContentReceiptContentId = Nothing
+                    ,
                             userGroupContentDeletedVersionId = Nothing
     
                 }

@@ -13,7 +13,7 @@
 {-# OPTIONS_GHC -fno-warn-overlapping-patterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
-module Handler.DB.RouteUsergroups where
+module Handler.DB.RouteReceipts where
 import Handler.DB.Enums
 import Handler.DB.Esqueleto
 import Handler.DB.Internal
@@ -59,13 +59,13 @@ import qualified Data.HashMap.Strict as HMS
 import Handler.Utils (nonEmpty)
 import Handler.Utils (hasWritePerm,hasReadPermMaybe,hasReadPerm)
 
-getUsergroupsR :: forall master. (
+getReceiptsR :: forall master. (
     YesodAuthPersist master,
     AuthEntity master ~ User,
     AuthId master ~ Key User,
     YesodPersistBackend master ~ SqlBackend)
     => HandlerT DB (HandlerT master IO) A.Value
-getUsergroupsR  = lift $ runDB $ do
+getReceiptsR  = lift $ runDB $ do
     authId <- lift $ requireAuthId
     defaultFilterParam <- lookupGetParam "filter"
     let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FilterJsonMsg]
@@ -76,11 +76,10 @@ getUsergroupsR  = lift $ runDB $ do
     let defaultOffset = (maybe Nothing PP.fromPathPiece defaultOffsetParam) :: Maybe Int64
     let defaultLimit = (maybe Nothing PP.fromPathPiece defaultLimitParam) :: Maybe Int64
     (filterParam_query) <- lookupGetParam "query"
-    (filterParam_musicPieceIdList) <- lookupGetParam "musicPieceIdList"
     (filterParam_hideDeleted :: Maybe Text) <- lookupGetParam "hideDeleted"
-    let baseQuery limitOffsetOrder = from $ \(ug ) -> do
-        let ugId' = ug ^. UserGroupId
-        where_ (hasReadPerm (val authId) (ug ^. UserGroupId))
+    let baseQuery limitOffsetOrder = from $ \(r ) -> do
+        let rId' = r ^. ReceiptId
+        where_ (hasReadPerm (val authId) (r ^. ReceiptId))
 
         _ <- if limitOffsetOrder
             then do 
@@ -88,18 +87,30 @@ getUsergroupsR  = lift $ runDB $ do
                 limit 10000
                 case defaultSortJson of 
                     Just xs -> mapM_ (\sjm -> case sortJsonMsg_property sjm of
-                            "current" -> case (sortJsonMsg_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupCurrent) ] 
-                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupCurrent) ] 
+                            "fileId" -> case (sortJsonMsg_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (r  ^.  ReceiptFileId) ] 
+                                "DESC" -> orderBy [ desc (r  ^.  ReceiptFileId) ] 
+                                _      -> return ()
+                            "amount" -> case (sortJsonMsg_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (r  ^.  ReceiptAmount) ] 
+                                "DESC" -> orderBy [ desc (r  ^.  ReceiptAmount) ] 
                                 _      -> return ()
                             "name" -> case (sortJsonMsg_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupName) ] 
-                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupName) ] 
+                                "ASC"  -> orderBy [ asc (r  ^.  ReceiptName) ] 
+                                "DESC" -> orderBy [ desc (r  ^.  ReceiptName) ] 
+                                _      -> return ()
+                            "insertionTime" -> case (sortJsonMsg_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (r  ^.  ReceiptInsertionTime) ] 
+                                "DESC" -> orderBy [ desc (r  ^.  ReceiptInsertionTime) ] 
+                                _      -> return ()
+                            "insertedByUserId" -> case (sortJsonMsg_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (r  ^.  ReceiptInsertedByUserId) ] 
+                                "DESC" -> orderBy [ desc (r  ^.  ReceiptInsertedByUserId) ] 
                                 _      -> return ()
                 
                             _ -> return ()
                         ) xs
-                    Nothing -> orderBy [ asc (ug ^. UserGroupName) ]
+                    Nothing -> orderBy [ asc (r ^. ReceiptName) ]
 
                 case defaultOffset of
                     Just o -> offset o
@@ -112,13 +123,22 @@ getUsergroupsR  = lift $ runDB $ do
         case defaultFilterJson of 
             Just xs -> mapM_ (\fjm -> case filterJsonMsg_field_or_property fjm of
                 "id" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupId) (val v')
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptId) (val v')
                     _        -> return ()
-                "current" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupCurrent) ((val v'))
+                "fileId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptFileId) ((val v'))
+                    _        -> return ()
+                "amount" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptAmount) ((val v'))
                     _        -> return ()
                 "name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupName) ((val v'))
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptName) ((val v'))
+                    _        -> return ()
+                "insertionTime" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptInsertionTime) ((val v'))
+                    _        -> return ()
+                "insertedByUserId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptInsertedByUserId) (just ((val v')))
                     _        -> return ()
 
                 _ -> return ()
@@ -127,19 +147,14 @@ getUsergroupsR  = lift $ runDB $ do
         case getDefaultFilter filterParam_query defaultFilterJson "query" of
             Just localParam -> do 
                 
-                where_ $ (ug ^. UserGroupName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))
-            Nothing -> return ()
-        case getDefaultFilter filterParam_musicPieceIdList defaultFilterJson "musicPieceIdList" of
-            Just localParam -> do 
-                
-                where_ $ (ug ^. UserGroupId) `in_` (subList_select $ from $ \(ugi) -> do {  ; where_ (((ugi ^. UserGroupItemUserId) `in_` (valList localParam)) &&. ((ugi ^. UserGroupItemDeletedVersionId) `is` (nothing))) ; return (ugi ^. UserGroupItemUserGroupId) ; })
+                where_ $ (r ^. ReceiptName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))
             Nothing -> return ()
         if hasDefaultFilter filterParam_hideDeleted defaultFilterJson "hideDeleted" 
             then do 
                  
-                where_ $ (ug ^. UserGroupDeletedVersionId) `is` (nothing)
+                where_ $ (r ^. ReceiptDeletedVersionId) `is` (nothing)
             else return ()
-        return (ug ^. UserGroupId, ug ^. UserGroupCurrent, ug ^. UserGroupName)
+        return (r ^. ReceiptId, r ^. ReceiptFileId, r ^. ReceiptAmount, r ^. ReceiptName, r ^. ReceiptInsertionTime, r ^. ReceiptInsertedByUserId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -149,21 +164,24 @@ getUsergroupsR  = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6)) -> A.object [
                     "id" .= toJSON f1,
-                    "current" .= toJSON f2,
-                    "name" .= toJSON f3                                    
+                    "fileId" .= toJSON f2,
+                    "amount" .= toJSON f3,
+                    "name" .= toJSON f4,
+                    "insertionTime" .= toJSON f5,
+                    "insertedByUserId" .= toJSON f6                                    
                     ]
                 _ -> A.object []
             ) results)
        ]
-postUsergroupsR :: forall master. (
+postReceiptsR :: forall master. (
     YesodAuthPersist master,
     AuthEntity master ~ User,
     AuthId master ~ Key User,
     YesodPersistBackend master ~ SqlBackend)
     => HandlerT DB (HandlerT master IO) A.Value
-postUsergroupsR  = lift $ runDB $ do
+postReceiptsR  = lift $ runDB $ do
     authId <- lift $ requireAuthId
     jsonResult <- parseJsonBody
     jsonBody <- case jsonResult of
@@ -172,6 +190,26 @@ postUsergroupsR  = lift $ runDB $ do
     jsonBodyObj <- case jsonBody of
         A.Object o -> return o
         v -> sendResponseStatus status400 $ A.object [ "message" .= ("Expected JSON object in the request body, got: " ++ show v) ]
+    attr_amount <- case HML.lookup "amount" jsonBodyObj of 
+        Just v -> case A.fromJSON v of
+            A.Success v' -> return v'
+            A.Error err -> sendResponseStatus status400 $ A.object [
+                    "message" .= ("Could not parse value from attribute amount in the JSON object in request body" :: Text),
+                    "error" .= err
+                ]
+        Nothing -> sendResponseStatus status400 $ A.object [
+                "message" .= ("Expected attribute amount in the JSON object in request body" :: Text)
+            ]
+    attr_fileId <- case HML.lookup "fileId" jsonBodyObj of 
+        Just v -> case A.fromJSON v of
+            A.Success v' -> return v'
+            A.Error err -> sendResponseStatus status400 $ A.object [
+                    "message" .= ("Could not parse value from attribute fileId in the JSON object in request body" :: Text),
+                    "error" .= err
+                ]
+        Nothing -> sendResponseStatus status400 $ A.object [
+                "message" .= ("Expected attribute fileId in the JSON object in request body" :: Text)
+            ]
     attr_name <- case HML.lookup "name" jsonBodyObj of 
         Just v -> case A.fromJSON v of
             A.Success v' -> return v'
@@ -187,18 +225,24 @@ postUsergroupsR  = lift $ runDB $ do
     runDB_result <- do
         e1 <- do
     
-            return $ UserGroup {
-                            userGroupCurrent = Active
+            return $ Receipt {
+                            receiptFileId = attr_fileId
                     ,
-                            userGroupName = attr_name
+                            receiptAmount = attr_amount
                     ,
-                            userGroupActiveId = Nothing
+                            receiptName = attr_name
                     ,
-                            userGroupActiveStartTime = (Just __currentTime)
+                            receiptActiveId = Nothing
                     ,
-                            userGroupActiveEndTime = Nothing
+                            receiptActiveStartTime = (Just __currentTime)
                     ,
-                            userGroupDeletedVersionId = Nothing
+                            receiptActiveEndTime = Nothing
+                    ,
+                            receiptDeletedVersionId = Nothing
+                    ,
+                            receiptInsertionTime = __currentTime
+                    ,
+                            receiptInsertedByUserId = Nothing
     
                 }
         vErrors <- lift $ validate e1
@@ -208,7 +252,7 @@ postUsergroupsR  = lift $ runDB $ do
                         "errors" .= toJSON xs 
                     ])
             _ -> return ()
-        result_ugId <- P.insert (e1 :: UserGroup)
+        result_rId <- P.insert (e1 :: Receipt)
         e2 <- do
     
             return $ UserGroupContent {
@@ -216,11 +260,11 @@ postUsergroupsR  = lift $ runDB $ do
                     ,
                             userGroupContentFileContentId = Nothing
                     ,
-                            userGroupContentUserGroupContentId = (Just result_ugId)
+                            userGroupContentUserGroupContentId = Nothing
                     ,
                             userGroupContentUserContentId = Nothing
                     ,
-                            userGroupContentReceiptContentId = Nothing
+                            userGroupContentReceiptContentId = (Just result_rId)
                     ,
                             userGroupContentDeletedVersionId = Nothing
     
@@ -233,5 +277,5 @@ postUsergroupsR  = lift $ runDB $ do
                     ])
             _ -> return ()
         P.insert (e2 :: UserGroupContent)
-        return $ A.object [ "id" .= (toJSON result_ugId) ]
+        return $ A.object [ "id" .= (toJSON result_rId) ]
     return $ runDB_result
