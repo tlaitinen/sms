@@ -4,4 +4,5 @@
 /favicon.ico FaviconR GET
 /robots.txt RobotsR GET
 /db DBR DB getDB
+/upload-files UploadFilesR POST
 /set-user-password/#UserId SetUserPasswordR POST

@@ -37,7 +37,7 @@ $.get("backend.json").done(function(defs) {
                             'timeZone',
                             'defaultUserGroupId',
                             { xtype:'button', name:'setUserPassword', 
-                             form:'userpasswordform', formHeight:200 },
+                             form:'userpasswordform', formHeight:200 }
                         ]
                     },
                     {

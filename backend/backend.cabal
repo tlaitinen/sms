@@ -54,6 +54,7 @@ library
         Handler.Utils
         Handler.DB.RouteReceipts
         Handler.DB.RouteReceiptsReceipt
+        Handler.UploadFiles
     build-depends:
         unordered-containers -any,
         transformers -any,

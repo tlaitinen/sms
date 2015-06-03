@@ -33,6 +33,7 @@ import Yesod.Auth.HashDB (setPassword)
 -- Don't forget to add new modules to your cabal file!
 import Handler.Common
 import Handler.SetUserPassword
+import Handler.UploadFiles
 import Handler.DB
 import Handler.Home
 -- This line actually creates our YesodDispatch instance. It is the second half
