@@ -42,7 +42,7 @@ Ext.define('Receipts.view.main.MainController', {
         this.control({
             'panel[name=users] button[name=addReadPerm]': {
                 click: function(button) {
-                    var panel = button.up('panel');
+                    var panel = button.up('panel[name=users]');
                     controller.addUserGroupItems(panel.down('usersgrid'),
                                                  panel.down('usergroupsgrid'),
                                                  panel.down('usergroupitemsgrid'),
@@ -52,7 +52,7 @@ Ext.define('Receipts.view.main.MainController', {
             },
             'panel[name=users] button[name=addWritePerm]': {
                 click: function(button) {
-                    var panel = button.up('panel');
+                    var panel = button.up('panel[name=users]');
                     controller.addUserGroupItems(panel.down('usersgrid'),
                                                  panel.down('usergroupsgrid'),
                                                  panel.down('usergroupitemsgrid'),
