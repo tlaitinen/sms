@@ -464,14 +464,8 @@ var yesodDsl = function(defs, __, config) {
                                                     click: function(button) {
                                                         if (tb.action == 'remove') {
                                                             var selected = button.up(widgetName).getSelectionModel().getSelection();
-                                                            Ext.MessageBox.confirm(__(widgetName + '.' + tb.name + '.title'), 
-                                                                                   __(widgetName + '.' + tb.name + '.message').replace('{0}', ''+selected.length), 
-                                                                                   function (btn) { 
-                                                                                        if (btn == 'yes') { 
-                                                                                            store.remove(selected);
-                                                                                            store.sync()
-                                                                                        }
-                                                                                   });
+                                                            store.remove(selected);
+                                                            store.sync();
                                                         } else if (tb.action == 'new') {
                                                             var record = Ext.create(modelName, entityDefaults(entityName));
                                                             record.setId(0);

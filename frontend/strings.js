@@ -49,8 +49,17 @@ function __(k,d) {
         'usergroupitemsgrid.emptyPaging' : 'Ei oikeuksia käyttäjäryhmissä',
         'usergroupitemsgrid.remove' : 'Poista valitut käyttäjäoikeudet',
         'users.addReadPerm' : 'Lisää lukuoikeus valituille käyttäjille valittuihin ryhmiin',
-        'users.addWritePerm' : 'Lisää luku- ja kirjoitusoikeus valituille käyttäjille valittuihin ryhmiin'
-
+        'users.addWritePerm' : 'Lisää luku- ja kirjoitusoikeus valituille käyttäjille valittuihin ryhmiin',
+        'receiptsgrid.title' : 'Tositteet',
+        'receiptsgrid.name' : 'Selite',
+        'receiptsgrid.emptyPaging' : 'Ei tositteita',
+        'receiptsgrid.remove' : 'Poista valitut tositteet',
+        'receiptsgrid.fileName' : 'Tiedosto',
+        'amount' : 'Summa',
+        'insertionTime' : 'Lisätty',
+        'upload.title' : 'Tiedostojen lataus',
+        'upload.button' : 'Lataa tiedostoja...',
+        'upload.uploading' : 'Ladataan...'
     };
     console.log(k);
     var parts = k.split('.');

@@ -77,7 +77,8 @@ getReceiptsR  = lift $ runDB $ do
     let defaultLimit = (maybe Nothing PP.fromPathPiece defaultLimitParam) :: Maybe Int64
     (filterParam_query) <- lookupGetParam "query"
     (filterParam_hideDeleted :: Maybe Text) <- lookupGetParam "hideDeleted"
-    let baseQuery limitOffsetOrder = from $ \(r ) -> do
+    let baseQuery limitOffsetOrder = from $ \(r `InnerJoin` f) -> do
+        on ((f ^. FileId) ==. (r ^. ReceiptFileId))
         let rId' = r ^. ReceiptId
         where_ (hasReadPerm (val authId) (r ^. ReceiptId))
 
@@ -107,6 +108,10 @@ getReceiptsR  = lift $ runDB $ do
                                 "ASC"  -> orderBy [ asc (r  ^.  ReceiptInsertedByUserId) ] 
                                 "DESC" -> orderBy [ desc (r  ^.  ReceiptInsertedByUserId) ] 
                                 _      -> return ()
+                            "fileName" -> case (sortJsonMsg_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (f  ^.  FileName) ] 
+                                "DESC" -> orderBy [ desc (f  ^.  FileName) ] 
+                                _      -> return ()
                 
                             _ -> return ()
                         ) xs
@@ -124,6 +129,21 @@ getReceiptsR  = lift $ runDB $ do
             Just xs -> mapM_ (\fjm -> case filterJsonMsg_field_or_property fjm of
                 "id" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptId) (val v')
+                    _        -> return ()
+                "contentType" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileContentType) ((val v'))
+                    _        -> return ()
+                "size" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileSize) ((val v'))
+                    _        -> return ()
+                "f.name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileName) ((val v'))
+                    _        -> return ()
+                "f.insertionTime" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileInsertionTime) ((val v'))
+                    _        -> return ()
+                "f.insertedByUserId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileInsertedByUserId) (just ((val v')))
                     _        -> return ()
                 "fileId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptFileId) ((val v'))
@@ -154,7 +174,7 @@ getReceiptsR  = lift $ runDB $ do
                  
                 where_ $ (r ^. ReceiptDeletedVersionId) `is` (nothing)
             else return ()
-        return (r ^. ReceiptId, r ^. ReceiptFileId, r ^. ReceiptAmount, r ^. ReceiptName, r ^. ReceiptInsertionTime, r ^. ReceiptInsertedByUserId)
+        return (r ^. ReceiptId, r ^. ReceiptFileId, r ^. ReceiptAmount, r ^. ReceiptName, r ^. ReceiptInsertionTime, r ^. ReceiptInsertedByUserId, f ^. FileName)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -164,13 +184,14 @@ getReceiptsR  = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7)) -> A.object [
                     "id" .= toJSON f1,
                     "fileId" .= toJSON f2,
                     "amount" .= toJSON f3,
                     "name" .= toJSON f4,
                     "insertionTime" .= toJSON f5,
-                    "insertedByUserId" .= toJSON f6                                    
+                    "insertedByUserId" .= toJSON f6,
+                    "fileName" .= toJSON f7                                    
                     ]
                 _ -> A.object []
             ) results)

@@ -10,6 +10,21 @@ $.get("backend.json").done(function(defs) {
             }
         ],
         routes: {
+            receipts: {
+                grids: [
+                    {
+                        widget: 'receiptsgrid',
+                        globalStore:true,
+                        columns: [ 
+                            'name', 'amount', 'fileName', 'insertionTime' 
+                        ],
+                        bottomToolbar: [
+                            { name: 'remove', action:'remove' }
+                        ]
+
+                    }
+                ]
+            },
             users: {
                 grids : [
                     {

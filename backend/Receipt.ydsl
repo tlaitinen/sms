@@ -7,7 +7,8 @@ entity Receipt {
 
 route /receipts {
     get {
-        select r.id, r.* from Receipt as r
+        select r.id, r.*, f.name as fileName from Receipt as r
+            inner join File as f on f.id = r.fileId
             where hasReadPerm $auth.id r.id
             order by r.name asc;
         default-filter-sort;

@@ -8,7 +8,8 @@
 Ext.define('Receipts.view.main.Main', {
     extend: 'Ext.container.Container',
     requires: [
-        'Receipts.view.main.MainController'
+        'Receipts.view.main.MainController',
+        'Receipts.view.main.ReceiptUpload'
     ],
 
     xtype: 'app-main',
@@ -23,9 +24,17 @@ Ext.define('Receipts.view.main.Main', {
         items:[
             {
                 title: __('maintab.receipts'),
+                layout:{
+                    type:'vbox',
+                    align:'stretch'
+                },
                 items: [
-                    {
-                        xtype: 'panel'
+                    { xtype: 'receiptsgrid', flex:3 },
+                    { 
+                        xtype: 'receiptupload', 
+                        flex:1,
+                        title: __('upload.title'),
+                        autoscroll:true
                     }
                 ]
             },

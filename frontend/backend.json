@@ -738,6 +738,11 @@
                             "references": "User",
                             "name": "insertedByUserId",
                             "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "fileName",
+                            "type": "string"
                         }
                     ],
                     "type": "GET",
