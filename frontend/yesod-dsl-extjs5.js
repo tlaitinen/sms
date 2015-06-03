@@ -334,7 +334,8 @@ var yesodDsl = function(defs, __, config) {
                         pageSize: config.defaultPageSize || 100,
                         remoteFilter: true,
                         remoteSort: true,
-                        proxy: proxy
+                        proxy: proxy,
+                        autoSync: true
                     }, function(storeClass) {
                         Ext.data.StoreManager.register(storeClass);
 
@@ -398,6 +399,7 @@ var yesodDsl = function(defs, __, config) {
                                 allowDeselect : true,
                                 title: __(widgetName + '.title'),
                                 requires: ['Ext.toolbar.Paging'],
+                                plugins: gridCfg.plugins || [],
                                 viewConfig: {
                                     listeners: {
                                         render: function(view) {
@@ -428,7 +430,8 @@ var yesodDsl = function(defs, __, config) {
                                                             filterable = undefined,
                                                             renderer = undefined,
                                                             flex = undefined,
-                                                            header = undefined;
+                                                            header = undefined,
+                                                            editor = undefined;
                                                         if (typeof c == 'string') {
                                                             field = c;
                                                             header = c;
@@ -438,14 +441,19 @@ var yesodDsl = function(defs, __, config) {
                                                             renderer = c.renderer;
                                                             flex = c.flex;
                                                             header = c.header || field;
+                                                            editor = c.editor;
                                                         }
-                                                        return {
+                                                        var r = {
                                                             "header" : __(widgetName + "." + header, header),
                                                             "dataIndex" : field,
                                                             "flex" : flex || 1,
                                                             "filterable" : filterable || true,
                                                             "renderer" : renderer
                                                         };
+                                                        if (editor != undefined)
+                                                            r.editor = editor;
+                                                                
+                                                        return r;
                                                     });
                                     var displayMsg = __(widgetName + '.paging','x');
                                     if (displayMsg === 'x')

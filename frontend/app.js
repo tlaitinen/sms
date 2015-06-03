@@ -15,8 +15,10 @@ $.get("backend.json").done(function(defs) {
                     {
                         widget: 'receiptsgrid',
                         globalStore:true,
+                        plugins: 'cellediting',
                         columns: [ 
-                            'name', 'amount', 'fileName', 'insertionTime' 
+                            { field:'name', editor: { allowBlank:false} }, 
+                            { field:'amount', editor: {} }, 'fileName', 'insertionTime' 
                         ],
                         bottomToolbar: [
                             { name: 'remove', action:'remove' }
