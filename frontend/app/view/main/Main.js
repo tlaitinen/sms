@@ -37,6 +37,7 @@ Ext.define('Receipts.view.main.Main', {
                 items: [
                     {
                         xtype: 'panel',
+                        name: 'users',
                         layout: {
                             type: 'vbox',
                             align:'stretch'

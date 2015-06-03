@@ -1,0 +1,82 @@
+import "File.ydsl";
+entity Receipt {
+    instance of Named, Restricted, Versioned, Deletable, HasInsertInfo;
+    fileId FileId;
+    amount Double;
+}
+
+route /receipts {
+    get {
+        select r.id, r.* from Receipt as r
+            where hasReadPerm $auth.id r.id
+            order by r.name asc;
+        default-filter-sort;
+        if param "query" = $$ then
+            where r.name ilike "%" || $$ || "%";
+        if param "hideDeleted" = _ then
+            where r.deletedVersionId is Nothing;
+    }
+    post {
+        rId <- insert Receipt from {
+            name             = $request.name,
+            fileId           = $request.fileId,
+            amount           = $request.amount,
+            insertionTime    = now(),
+            deletedVersionId = Nothing,
+            activeId         = Nothing,
+            activeStartTime  = now(),
+            activeEndTime    = Nothing
+        };
+        insert UserGroupContent from {
+            userGroupId = $auth.defaultUserGroupId,
+            receiptContentId = rId                        
+        };
+        return {
+            'id' = rId
+        };
+    }
+}
+route /receipts/#ReceiptId {
+    get {
+
+        select r.id,
+               r.* 
+               from Receipt as r where r.id = $1
+               and hasReadPerm $auth.id r.id;
+    }
+    delete {
+        require Receipt as r where r.id = $1
+            and hasWritePerm $auth.id r.id;
+        versionId <- insert Version from {
+            time = now(),
+            userId = $auth.id     
+        };
+        update Receipt identified by $1 with {
+            deletedVersionId = versionId,
+            activeEndTime = now()
+        };
+    }
+    put {
+        require Receipt as r where r.id = $1
+            and hasWritePerm $auth.id r.id;
+        versionId <- insert Version from {
+            time = now(),
+            userId = $auth.id
+        };
+        u <- get Receipt identified by $1;
+        insert Receipt from u {
+            activeId = $1,
+            activeEndTime = now(),
+            deletedVersionId = versionId
+        };
+        
+        update Receipt identified by $1 with {
+            name                  = $request.name,
+            amount                = $request.amount,
+            fileId                = $request.fileId
+        };
+    }
+    
+}
+
+
