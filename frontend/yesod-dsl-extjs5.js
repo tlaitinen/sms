@@ -316,9 +316,12 @@ var yesodDsl = function(defs, __, config) {
                 Ext.define(modelName, {
                     extend: 'Ext.data.Model',
                     fields: _.map(h.outputs, function (o) {
+                        var t = o.references ? "auto" : o.type;
+                        if (t == "utctime")
+                            t = "date";
                         return {
                             "name" : o.name,
-                            "type" : o.references ? "auto" : o.type
+                            "type" : t
                         };
                     }),
                     proxy: proxy
