@@ -77,7 +77,8 @@ getReceiptsR  = lift $ runDB $ do
     let defaultLimit = (maybe Nothing PP.fromPathPiece defaultLimitParam) :: Maybe Int64
     (filterParam_query) <- lookupGetParam "query"
     (filterParam_hideDeleted :: Maybe Text) <- lookupGetParam "hideDeleted"
-    let baseQuery limitOffsetOrder = from $ \(r `InnerJoin` f) -> do
+    let baseQuery limitOffsetOrder = from $ \(r `InnerJoin` f`LeftOuterJoin` pf) -> do
+        on ((pf ?. FilePreviewOfFileId) ==. (just (just (f ^. FileId))))
         on ((f ^. FileId) ==. (r ^. ReceiptFileId))
         let rId' = r ^. ReceiptId
         where_ (hasReadPerm (val authId) (r ^. ReceiptId))
@@ -108,10 +109,6 @@ getReceiptsR  = lift $ runDB $ do
                                 "ASC"  -> orderBy [ asc (r  ^.  ReceiptInsertedByUserId) ] 
                                 "DESC" -> orderBy [ desc (r  ^.  ReceiptInsertedByUserId) ] 
                                 _      -> return ()
-                            "fileName" -> case (sortJsonMsg_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (f  ^.  FileName) ] 
-                                "DESC" -> orderBy [ desc (f  ^.  FileName) ] 
-                                _      -> return ()
                 
                             _ -> return ()
                         ) xs
@@ -130,13 +127,13 @@ getReceiptsR  = lift $ runDB $ do
                 "id" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptId) (val v')
                     _        -> return ()
-                "contentType" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                "f.contentType" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileContentType) ((val v'))
                     _        -> return ()
-                "size" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                "f.size" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileSize) ((val v'))
                     _        -> return ()
-                "previewOfFileId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                "f.previewOfFileId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FilePreviewOfFileId) (just ((val v')))
                     _        -> return ()
                 "f.name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
@@ -147,6 +144,24 @@ getReceiptsR  = lift $ runDB $ do
                     _        -> return ()
                 "f.insertedByUserId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileInsertedByUserId) (just ((val v')))
+                    _        -> return ()
+                "pf.contentType" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pf  ?.  FileContentType) (just ((val v')))
+                    _        -> return ()
+                "pf.size" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pf  ?.  FileSize) (just ((val v')))
+                    _        -> return ()
+                "pf.previewOfFileId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pf  ?.  FilePreviewOfFileId) (just (just ((val v'))))
+                    _        -> return ()
+                "pf.name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pf  ?.  FileName) (just ((val v')))
+                    _        -> return ()
+                "pf.insertionTime" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pf  ?.  FileInsertionTime) (just ((val v')))
+                    _        -> return ()
+                "pf.insertedByUserId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pf  ?.  FileInsertedByUserId) (just (just ((val v'))))
                     _        -> return ()
                 "fileId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptFileId) ((val v'))
@@ -177,7 +192,7 @@ getReceiptsR  = lift $ runDB $ do
                  
                 where_ $ (r ^. ReceiptDeletedVersionId) `is` (nothing)
             else return ()
-        return (r ^. ReceiptId, r ^. ReceiptFileId, r ^. ReceiptAmount, r ^. ReceiptName, r ^. ReceiptInsertionTime, r ^. ReceiptInsertedByUserId, f ^. FileName)
+        return (r ^. ReceiptId, r ^. ReceiptFileId, r ^. ReceiptAmount, r ^. ReceiptName, r ^. ReceiptInsertionTime, r ^. ReceiptInsertedByUserId, pf ?. FileId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -195,7 +210,7 @@ getReceiptsR  = lift $ runDB $ do
                     "name" .= toJSON f4,
                     "insertionTime" .= toJSON f5,
                     "insertedByUserId" .= toJSON f6,
-                    "fileName" .= toJSON f7                                    
+                    "previewFileId" .= toJSON f7                                    
                     ]
                 _ -> A.object []
             ) results)
