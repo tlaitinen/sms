@@ -57,6 +57,7 @@ Ext.define('Receipts.view.main.MainController', {
                                 { 
                                     xtype:'panel',
                                     html: '<img src="backend/file/' + record.get('previewFileId') + '"/>',
+                                    autoScroll:true,
                                     listeners: {
                                        'render': function(panel) {
                                            panel.body.on('click', function() {
