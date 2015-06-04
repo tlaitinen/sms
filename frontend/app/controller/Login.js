@@ -16,6 +16,14 @@ Ext.define('Receipts.controller.Login', {
                         } catch (e) {
                             console.log("Warning: invalid user config: " + e);
                         }
+                        Ext.create('Ext.container.Viewport', {
+                            layout: 'fit',
+                            items: [
+                                {
+                                    xtype: 'app-main',
+                                }
+                            ]
+                        });
                         Receipts.GlobalState.fireEvent('login');
                     }
                 } catch (e) {

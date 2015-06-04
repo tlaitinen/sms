@@ -21,7 +21,6 @@ Ext.define('Receipts.view.main.ReceiptUpload', {
                         xs = part.split(",");
                     if (xs.length == 2) {
                         try {
-                            console.log(part.replace(",","."));
                             var amount = parseFloat(part.replace(",", "."));
                             if (amount) {
                                 r.amount = amount;
@@ -34,13 +33,13 @@ Ext.define('Receipts.view.main.ReceiptUpload', {
                 }
                 if (indexPart != undefined) {
                     parts.splice(indexPart, 1);
-                    r.name = parts.join(" ").replace(/\.[^/.]+$/, "");
+                    r.name = parts.join(" ");
                 }
             });
             if (!r.name) {
                 r.name = name;
             }
-            console.log(r);
+            r.name  = r.name.replace(/\.[^/.]+$/, "");
             return r;
         }
 

@@ -1,5 +1,11 @@
 // requires underscore.js
 var yesodDsl = function(defs, __, config) {
+    var preloadStores = [],
+        cb = {
+        onLogin : function() {
+            preloadStores.forEach(function (s) { s.load(); } );
+        }
+    };
     console.log(config.name);
     var formItemXtypes = {
         integer: 'numberfield',
@@ -413,7 +419,6 @@ var yesodDsl = function(defs, __, config) {
                                         celldblclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts) {
                                             if (gridCfg.form) {
 
-                                            console.log("fuu");
                                                 openFormWindow(gridCfg.form, 
                                                                gridCfg.formWidth || config.formWidth || 610,
                                                                gridCfg.formHeight || config.formHeight || 630,

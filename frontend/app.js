@@ -11,11 +11,12 @@ $.get("backend.json").done(function(defs) {
         ],
         routes: {
             receipts: {
+
+                autoSync:true,
                 grids: [
                     {
                         widget: 'receiptsgrid',
                         globalStore:true,
-                        autoSync:true,
                         plugins: 'cellediting',
                         columns: [ 
                             { field:'name', editor: { allowBlank:false} }, 
@@ -144,14 +145,15 @@ $.get("backend.json").done(function(defs) {
             }
         }
     };
-    yesodDsl(defs, __, config);
+    var ydsl = yesodDsl(defs, __, config);
 
     Ext.application({
         name: 'Receipts',
 
         extend: 'Receipts.Application',
         
-        autoCreateViewport: 'Receipts.view.main.Main'
+
+        ydsl: ydsl
         
         //-------------------------------------------------------------------------
         // Most customizations should be made to Receipts.Application. If you need to
