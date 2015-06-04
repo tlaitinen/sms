@@ -62,6 +62,9 @@ postUploadFilesR = do
                     {
                         filePreviewOfFileId = Just fileId'
                     }
+                insert $ (newUserGroupContent $ userDefaultUserGroupId user) {
+                                userGroupContentFileContentId = Just $ previewFileId
+                            }
                 let previewName = joinPath [ appUploadDir settings, show (fromSqlKey previewFileId) ]
                 (success, output) <- liftIO $ convert "jpeg" name previewName
     
