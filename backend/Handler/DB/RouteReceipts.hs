@@ -136,6 +136,9 @@ getReceiptsR  = lift $ runDB $ do
                 "size" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileSize) ((val v'))
                     _        -> return ()
+                "previewOfFileId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FilePreviewOfFileId) (just ((val v')))
+                    _        -> return ()
                 "f.name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileName) ((val v'))
                     _        -> return ()
@@ -182,6 +185,7 @@ getReceiptsR  = lift $ runDB $ do
         return $ (countRows' :: SqlExpr (Database.Esqueleto.Value Int))
     results <- select $ baseQuery True
     return $ A.object [
+        "success" .= ("true" :: Text),
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
                 ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7)) -> A.object [

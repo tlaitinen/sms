@@ -18,6 +18,7 @@ function __(k,d) {
         'password' : 'Salasana',
         'login.login' : 'Kirjaudu sisään',
         'receipts' : 'Tositteet',
+        'instructions' : 'Ohje',
         'users' : 'Käyttäjät',
         'usersgrid.title' : 'Käyttäjät',
         'usersgrid.emptyPaging' : 'Ei käyttäjiä',

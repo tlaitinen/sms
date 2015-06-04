@@ -28,6 +28,11 @@
                             "type": "integer"
                         },
                         {
+                            "references": "File",
+                            "name": "previewOfFileId",
+                            "type": "integer"
+                        },
+                        {
                             "references": null,
                             "name": "name",
                             "type": "string"
@@ -35,7 +40,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "utctime"
+                            "type": "date"
                         },
                         {
                             "references": "User",
@@ -80,6 +85,11 @@
                             "type": "integer"
                         },
                         {
+                            "references": "File",
+                            "name": "previewOfFileId",
+                            "type": "integer"
+                        },
+                        {
                             "references": null,
                             "name": "name",
                             "type": "string"
@@ -87,7 +97,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "utctime"
+                            "type": "date"
                         },
                         {
                             "references": "User",
@@ -118,7 +128,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "utctime"
+                            "type": "date"
                         }
                     ],
                     "outputs": [],
@@ -145,7 +155,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "utctime"
+                            "type": "date"
                         }
                     ],
                     "outputs": [],
@@ -684,7 +694,7 @@
                         {
                             "references": null,
                             "name": "time",
-                            "type": "utctime"
+                            "type": "date"
                         },
                         {
                             "references": "User",
@@ -732,7 +742,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "utctime"
+                            "type": "date"
                         },
                         {
                             "references": "User",
@@ -816,7 +826,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "utctime"
+                            "type": "date"
                         },
                         {
                             "references": "User",
@@ -847,7 +857,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "utctime"
+                            "type": "date"
                         }
                     ],
                     "outputs": [],
@@ -874,7 +884,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "utctime"
+                            "type": "date"
                         }
                     ],
                     "outputs": [],
@@ -903,6 +913,13 @@
                     "optional": false
                 },
                 {
+                    "references": "File",
+                    "default": null,
+                    "name": "previewOfFileId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
                     "references": null,
                     "default": null,
                     "name": "name",
@@ -913,7 +930,7 @@
                     "references": null,
                     "default": null,
                     "name": "insertionTime",
-                    "type": "utctime",
+                    "type": "date",
                     "optional": false
                 },
                 {
@@ -1092,7 +1109,7 @@
                     "references": null,
                     "default": null,
                     "name": "time",
-                    "type": "utctime",
+                    "type": "date",
                     "optional": false
                 },
                 {
@@ -1132,7 +1149,7 @@
                     "references": null,
                     "default": null,
                     "name": "insertionTime",
-                    "type": "utctime",
+                    "type": "date",
                     "optional": false
                 },
                 {
@@ -1175,7 +1192,7 @@
                     "references": null,
                     "default": null,
                     "name": "insertionTime",
-                    "type": "utctime",
+                    "type": "date",
                     "optional": false
                 },
                 {

@@ -97,6 +97,10 @@ getFilesR  = lift $ runDB $ do
                                 "ASC"  -> orderBy [ asc (f  ^.  FileSize) ] 
                                 "DESC" -> orderBy [ desc (f  ^.  FileSize) ] 
                                 _      -> return ()
+                            "previewOfFileId" -> case (sortJsonMsg_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (f  ^.  FilePreviewOfFileId) ] 
+                                "DESC" -> orderBy [ desc (f  ^.  FilePreviewOfFileId) ] 
+                                _      -> return ()
                             "name" -> case (sortJsonMsg_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (f  ^.  FileName) ] 
                                 "DESC" -> orderBy [ desc (f  ^.  FileName) ] 
@@ -133,6 +137,9 @@ getFilesR  = lift $ runDB $ do
                 "size" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileSize) ((val v'))
                     _        -> return ()
+                "previewOfFileId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FilePreviewOfFileId) (just ((val v')))
+                    _        -> return ()
                 "name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileName) ((val v'))
                     _        -> return ()
@@ -166,7 +173,7 @@ getFilesR  = lift $ runDB $ do
                  
                 where_ $ (f ^. FileDeletedVersionId) `is` (nothing)
             else return ()
-        return (f ^. FileId, f ^. FileContentType, f ^. FileSize, f ^. FileName, f ^. FileInsertionTime, f ^. FileInsertedByUserId)
+        return (f ^. FileId, f ^. FileContentType, f ^. FileSize, f ^. FilePreviewOfFileId, f ^. FileName, f ^. FileInsertionTime, f ^. FileInsertedByUserId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -174,15 +181,17 @@ getFilesR  = lift $ runDB $ do
         return $ (countRows' :: SqlExpr (Database.Esqueleto.Value Int))
     results <- select $ baseQuery True
     return $ A.object [
+        "success" .= ("true" :: Text),
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7)) -> A.object [
                     "id" .= toJSON f1,
                     "contentType" .= toJSON f2,
                     "size" .= toJSON f3,
-                    "name" .= toJSON f4,
-                    "insertionTime" .= toJSON f5,
-                    "insertedByUserId" .= toJSON f6                                    
+                    "previewOfFileId" .= toJSON f4,
+                    "name" .= toJSON f5,
+                    "insertionTime" .= toJSON f6,
+                    "insertedByUserId" .= toJSON f7                                    
                     ]
                 _ -> A.object []
             ) results)

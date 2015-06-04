@@ -4,6 +4,7 @@ entity File {
     instance of Named, Versioned, Restricted, Deletable, HasInsertInfo;
     contentType Text;
     size    Int32;
+    previewOfFileId Maybe FileId;
 }
 
 route /files {

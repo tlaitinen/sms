@@ -19,8 +19,9 @@ $.get("backend.json").done(function(defs) {
                         globalStore:true,
                         plugins: 'cellediting',
                         columns: [ 
-                            { field:'name', editor: { allowBlank:false} }, 
-                            { field:'amount', editor: {} }, 'fileName', 'insertionTime' 
+                            { field:'name', editor: { allowBlank:false}, flex:5 }, 
+                            { field:'amount', editor: {}, flex:1 },
+                            { field:'previewFileId', flex:1 } 
                         ],
                         bottomToolbar: [
                             { name: 'remove', action:'remove' }

@@ -106,8 +106,8 @@ defaultFilterOp "le" = (<=.)
 defaultFilterOp "ge" = (>=.)
 defaultFilterOp _ = (==.)
 
-is = unsafeSqlBinOp " IS "
 ilike = unsafeSqlBinOp " ILIKE "
+is = unsafeSqlBinOp " IS "
 
 extractSubField :: UnsafeSqlFunctionArgument a => TLB.Builder -> a -> SqlExpr (Database.Esqueleto.Value Double)
 extractSubField = unsafeSqlExtractSubField
@@ -131,6 +131,7 @@ share [mkPersist sqlOnlySettings, mkMigrate "migrateDB" ] [persistLowerCase|
 File json
     contentType Text  
     size Int32  
+    previewOfFileId FileId Maybe   default=NULL
     name Text  
     activeId FileId Maybe   default=NULL
     activeStartTime UTCTime Maybe  
@@ -195,6 +196,7 @@ newFile :: Text -> Int32 -> Text -> UTCTime -> File
 newFile contentType_ size_ name_ insertionTime_ = File {
     fileContentType = contentType_,
     fileSize = size_,
+    filePreviewOfFileId = Nothing,
     fileName = name_,
     fileActiveId = Nothing,
     fileActiveStartTime = Nothing,

@@ -9,7 +9,6 @@ Ext.define('Receipts.view.main.MainController', {
 
     onLogin: function() {
 
-        this.lookupReference('receiptsTab').tab.show();
         if (Receipts.GlobalState.user.config.usersTab == true) {
             this.lookupReference('usersTab').tab.show();
         }
