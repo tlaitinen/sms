@@ -41,6 +41,37 @@ Ext.define('Receipts.view.main.MainController', {
         });
 
         this.control({
+            'receiptsgrid' : {
+                cellclick: function( grid, td, cellIndex, record, tr, rowIndex, e, eOpts ) {
+                    if (cellIndex == 2) {
+                        var win = new Ext.Window({
+                            id:'preview',
+                            layout:'fit',
+                            width:'100%',
+                            height:'100%',
+                            closable:false,
+                            resizable:false,
+                            plain:true,
+                            title: __('preview'),
+                            items: [
+                                { 
+                                    xtype:'panel',
+                                    html: '<img src="backend/file/' + record.get('previewFileId') + '"/>',
+                                    listeners: {
+                                       'render': function(panel) {
+                                           panel.body.on('click', function() {
+                                                win.close();
+                                           });
+                                        }
+                                    }
+                                }
+                            ]
+                        });
+                        win.show();
+                    }
+                }
+
+            },
             'panel[name=users] button[name=addReadPerm]': {
                 click: function(button) {
                     var panel = button.up('panel[name=users]');

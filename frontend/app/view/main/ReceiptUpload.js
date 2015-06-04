@@ -106,6 +106,7 @@ Ext.define('Receipts.view.main.ReceiptUpload', {
                                 name: info.name,
                                 amount: info.amount,
                                 fileId: r.fileId,
+                                previewFileId: r.previewFileId,
                                 fileName: file.name,
                                 insertionTime: (new Date()).toJSON()
                             });

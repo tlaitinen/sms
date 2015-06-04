@@ -21,7 +21,13 @@ $.get("backend.json").done(function(defs) {
                         columns: [ 
                             { field:'name', editor: { allowBlank:false}, flex:5 }, 
                             { field:'amount', editor: {}, flex:1 },
-                            { field:'previewFileId', flex:1 } 
+                            { 
+                                field:'previewFileId', 
+                                flex:1,
+                                renderer: function (record) {
+                                    return '<span class="glyphicon glyphicon-picture"></span>';
+                                }
+                            } 
                         ],
                         bottomToolbar: [
                             { name: 'remove', action:'remove' }

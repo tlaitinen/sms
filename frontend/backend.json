@@ -750,9 +750,9 @@
                             "type": "integer"
                         },
                         {
-                            "references": null,
-                            "name": "fileName",
-                            "type": "string"
+                            "references": "File",
+                            "name": "previewFileId",
+                            "type": "integer"
                         }
                     ],
                     "type": "GET",

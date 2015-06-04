@@ -409,8 +409,9 @@ var yesodDsl = function(defs, __, config) {
                                 viewConfig: {
                                     listeners: {
                                         render: function(view) {
-                                            var tooltip = gridCfg.tooltip || idTooltip;
-                                            createToolTip(view, tooltip);
+
+                                            if (gridCfg.tooltip)
+                                                createToolTip(view, gridCfg.tooltip);
 
                                             if (gridCfg.preload != false) {
                                                 store.load();
@@ -431,35 +432,29 @@ var yesodDsl = function(defs, __, config) {
                                 initComponent: function() {
                                     var grid = this;
                                     this.columns = _.map(gridCfg.columns, function(c) {
-                                                        var field = undefined,
-                                                            filterable = undefined,
-                                                            renderer = undefined,
-                                                            flex = undefined,
-                                                            header = undefined,
-                                                            editor = undefined;
-                                                        if (typeof c == 'string') {
-                                                            field = c;
-                                                            header = c;
-                                                        } else {
-                                                            field = c.field;
-                                                            filterable = c.filterable;
-                                                            renderer = c.renderer;
-                                                            flex = c.flex;
-                                                            header = c.header || field;
-                                                            editor = c.editor;
-                                                        }
-                                                        var r = {
-                                                            "header" : __(widgetName + "." + header, header),
-                                                            "dataIndex" : field,
-                                                            "flex" : flex || 1,
-                                                            "filterable" : filterable || true,
-                                                            "renderer" : renderer
-                                                        };
-                                                        if (editor != undefined)
-                                                            r.editor = editor;
-                                                                
-                                                        return r;
-                                                    });
+                                                if (typeof c == 'string') {
+                                                    c = {
+                                                        field:c,
+                                                        header: c
+                                                    };
+                                                } 
+                                                var header = c.header || c.field;
+                                                var r = {
+                                                    header : __(widgetName + "." + header, header),
+                                                    dataIndex : c.field,
+                                                    flex : c.flex || 1
+                                                };
+                                                if (c.header == "")
+                                                    r.header = "";
+
+
+                                                if ("renderer" in c)
+                                                    r.renderer = c.renderer;
+                                                if ("editor" in c)
+                                                    r.editor = c.editor;
+                                                
+                                                return r;
+                                            });
                                     var displayMsg = __(widgetName + '.paging','x');
                                     if (displayMsg === 'x')
                                         displayMsg = __(widgetName + '.title') + " {0} - {1} / {2}";
