@@ -15,6 +15,7 @@ $.get("backend.json").done(function(defs) {
                     {
                         widget: 'receiptsgrid',
                         globalStore:true,
+                        autoSync:true,
                         plugins: 'cellediting',
                         columns: [ 
                             { field:'name', editor: { allowBlank:false} }, 

@@ -112,7 +112,7 @@ var yesodDsl = function(defs, __, config) {
                 minLength: itemCfg.minLength,
                 minLengthText: itemCfg.minLengthText ? __(itemCfg.minLengthText) : undefined,
                 height: itemCfg.height,
-                autoscroll: itemCfg.height ? true : false,
+                autoScroll: itemCfg.height ? true : false,
             };
             if (itemCfg.items) {
                 res.items = _.map(itemCfg.items, function(i) { return initFormItem(h, formCfg, widgetName)(i); });
@@ -335,7 +335,7 @@ var yesodDsl = function(defs, __, config) {
                         remoteFilter: true,
                         remoteSort: true,
                         proxy: proxy,
-                        autoSync: true
+                        autoSync : routeCfg.autoSync || false
                     }, function(storeClass) {
                         Ext.data.StoreManager.register(storeClass);
 
