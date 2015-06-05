@@ -3,10 +3,10 @@ Ext.define('Receipts.view.main.ReceiptUpload', {
     alias: 'widget.receiptupload',
     extend: 'Ext.Panel',
 
-     html: '<input id="receiptupload" type="file" name="files" multiple value="' + __('upload.button') + '"/><div id="progress"></div>',
+     html: '<div id="receiptuploadDiv" class="fileUpload"><input id="receiptupload" type="file" name="files" multiple value="' + __('upload.button') + '"/>' + __('upload.button') + '</div><div id="progress"></div>',
 
     uploadHandler: function(e) {
-
+        e.preventDefault();
         var ppCombo = ppCombo = Ext.ComponentQuery.query('panel[name=receipts] receiptsgrid processperiodscombo')[0];
         if (!(ppCombo.getValue() > 0)) {
             Ext.MessageBox.alert(__('noprocessperiod.title'), __('noprocessperiod.message'));
@@ -145,6 +145,10 @@ Ext.define('Receipts.view.main.ReceiptUpload', {
         this.callParent(arguments);
         document.getElementById('receiptupload')
             .addEventListener("change", this.uploadHandler, false);
+        var div = document.getElementById('receiptuploadDiv');
+        div.addEventListener('drop', this.uploadHandler, false);
+        div.addEventListener('dragover', function (e) { e.preventDefault(); $(div).addClass('hover'); return false; }, false);
+        div.addEventListener('dragleave', function (e) { e.preventDefault();  $(div).removeClass('hover'); return false; }, false);
     }
 
 });

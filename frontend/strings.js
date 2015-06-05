@@ -67,7 +67,7 @@ function __(k,d) {
         'amount' : 'Summa',
         'insertionTime' : 'Lisätty',
         'upload.title' : 'Tiedostojen lataus',
-        'upload.button' : 'Lataa tiedostoja...',
+        'upload.button' : 'Lisää tositteita tiputtamalla tiedostoja tähän.',
         'upload.uploading' : 'Ladataan...',
         'usergroupform.title' : 'Käyttäjäryhmän tietojen muokkaaminen',
         'usergroupform.createPeriods' : 'Luo kirjanpitokuukaudet'

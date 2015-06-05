@@ -1,0 +1,18 @@
+div.fileUpload {
+    width:100%;
+    height:5em;
+    border: 1px dashed #000;
+    text-align:center;
+    color: #aaa;
+}
+div.fileUpload.hover {
+    color: #f00;
+    border-color: #f00;
+    border-style: solid;
+    box-shadow: inset 0 3px 4px #888;
+}
+div.fileUpload input {
+    position: relative;
+    text-align: right;
+    z-index: 2;
+}
