@@ -9,7 +9,7 @@ import qualified Data.Text as T
 import Database.Persist.Sql
 import qualified Settings
 import System.FilePath
-import System.Directory (renameFile, removeFile)
+import System.Directory (renameFile, removeFile, doesFileExist)
 import Data.Text
 import System.IO
 import Handler.DB
@@ -21,8 +21,11 @@ import Network.HTTP.Types (status500)
 convert :: String -> FilePath -> FilePath -> IO (Bool, String)
 convert ext src dst = do
     let tmpDst = dst ++ "." ++ ext
-    (code, stdout, stderr) <- readProcessWithExitCode "convert" [src, tmpDst] ""
-    renameFile tmpDst dst
+    (code, stdout, stderr) <- readProcessWithExitCode "convert" [src, tmpDst]  ""
+    multiplePages <- doesFileExist $ dst++ "-0." ++ ext
+    if multiplePages
+        then renameFile (dst ++ "-0." ++ ext) dst
+        else renameFile tmpDst dst
     return (code == ExitSuccess, stdout ++ stderr)
     
 
@@ -72,6 +75,7 @@ postUploadFilesR = do
                         "result" .= ("failed" :: Text),
                         "error" .= output
                     ]
+                    
                 size <- liftIO $ withFile previewName ReadMode hFileSize
                 update previewFileId [ FileSize =. fromIntegral size ]
     
