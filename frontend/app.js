@@ -42,7 +42,8 @@ $.get("backend.json").done(function(defs) {
                             } 
                         ],
                         bottomToolbar: [
-                            { name: 'remove', action:'remove' }
+                            { name: 'remove', action:'remove' },
+                            { name: 'lock' }
                         ]
 
                     }

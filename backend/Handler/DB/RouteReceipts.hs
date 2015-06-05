@@ -77,11 +77,12 @@ getReceiptsR  = lift $ runDB $ do
     let defaultLimit = (maybe Nothing PP.fromPathPiece defaultLimitParam) :: Maybe Int64
     (filterParam_query) <- lookupGetParam "query"
     (filterParam_hideDeleted :: Maybe Text) <- lookupGetParam "hideDeleted"
+    (filterParam_processPeriodId) <- lookupGetParam "processPeriodId"
     let baseQuery limitOffsetOrder = from $ \(r `InnerJoin` f`LeftOuterJoin` pf) -> do
         on ((pf ?. FilePreviewOfFileId) ==. (just (just (f ^. FileId))))
         on ((f ^. FileId) ==. (r ^. ReceiptFileId))
         let rId' = r ^. ReceiptId
-        where_ (hasReadPerm (val authId) (r ^. ReceiptId))
+        where_ ((hasReadPerm (val authId) (r ^. ReceiptId)) &&. ((r ^. ReceiptDeletedVersionId) `is` (nothing)))
 
         _ <- if limitOffsetOrder
             then do 
@@ -199,6 +200,11 @@ getReceiptsR  = lift $ runDB $ do
                  
                 where_ $ (r ^. ReceiptDeletedVersionId) `is` (nothing)
             else return ()
+        case getDefaultFilter filterParam_processPeriodId defaultFilterJson "processPeriodId" of
+            Just localParam -> do 
+                
+                where_ $ (r ^. ReceiptProcessPeriodId) ==. (val localParam)
+            Nothing -> return ()
         return (r ^. ReceiptId, r ^. ReceiptFileId, r ^. ReceiptProcessPeriodId, r ^. ReceiptAmount, r ^. ReceiptName, r ^. ReceiptInsertionTime, r ^. ReceiptInsertedByUserId, pf ?. FileId)
     count <- select $ do
         baseQuery False

@@ -13,12 +13,15 @@ route /receipts {
             inner join File as f on f.id = r.fileId
             left outer join File as pf on pf.previewOfFileId = f.id
             where hasReadPerm $auth.id r.id
+                and r.deletedVersionId is Nothing
             order by r.name asc;
         default-filter-sort;
         if param "query" = $$ then
             where r.name ilike "%" || $$ || "%";
         if param "hideDeleted" = _ then
             where r.deletedVersionId is Nothing;
+        if param "processPeriodId" = $$ then
+            where r.processPeriodId = $$;    
     }
     post {
         rId <- insert Receipt from {

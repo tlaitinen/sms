@@ -57,6 +57,8 @@ function __(k,d) {
         'receiptsgrid.name' : 'Selite',
         'receiptsgrid.emptyPaging' : 'Ei tositteita',
         'receiptsgrid.remove' : 'Poista valitut tositteet',
+        'receiptsgrid.lock' : 'Lukitse kirjanpitojakso',
+        'processperiodscombo.emptyText' : 'Kirjanpitojakso',
         'receiptsgrid.fileName' : 'Tiedosto',
         'amount' : 'Summa',
         'insertionTime' : 'Lisätty',
