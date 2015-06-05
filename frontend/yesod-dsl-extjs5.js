@@ -168,6 +168,7 @@ var yesodDsl = function(defs, __, config) {
         initComponent: function() {
             this.callParent(arguments);
             this.store = createStore(this.myStore);
+            this.onBindStore(this.store);
         },
         configStore: function(extraFilters) {
             var v = this.getValue()
@@ -380,7 +381,8 @@ var yesodDsl = function(defs, __, config) {
                                 displayTpl: displayTpl,
                                 emptyText: __(name + 'combo.emptyText'),
                                 myStore: storeName,
-                                getFilters: comboCfg.getFilters
+                                getFilters: comboCfg.getFilters,
+                                forceSelection: comboCfg.forceSelection || false
                             });
                         } 
 

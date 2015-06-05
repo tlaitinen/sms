@@ -12,6 +12,16 @@ Ext.define('Receipts.view.main.MainController', {
         if (Receipts.GlobalState.user.config.usersTab == true) {
             this.lookupReference('usersTab').tab.show();
         }
+
+
+        var ppCombo = Ext.ComponentQuery.query('receiptsgrid processperiodscombo')[0],
+            pps = Ext.getStore('processperiods');
+
+        if (pps.getCount() > 0) {
+            ppCombo.setValue(pps.getAt(0).getId());
+            ppCombo.configStore();
+        }
+
     },
 
     addUserGroupItems: function(userGrid, userGroupGrid, userGroupItemsGrid, mode) {

@@ -13,7 +13,8 @@ $.get("backend.json").done(function(defs) {
 
             processperiods: {
                 combo: {
-                    template: 'firstDay:date("F Y")'
+                    template: 'firstDay:date("F Y")',
+                    forceSelection: true
                 }
             },
             receipts: {
@@ -23,6 +24,7 @@ $.get("backend.json").done(function(defs) {
                     {
                         widget: 'receiptsgrid',
                         globalStore:true,
+                        preload:false,
                         plugins: 'cellediting',
                         toolbar: [
                             {
