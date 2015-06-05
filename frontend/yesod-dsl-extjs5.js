@@ -513,10 +513,11 @@ var yesodDsl = function(defs, __, config) {
                                                     listeners: {
                                                         select: function(combo) {
                                                             store.filters.removeAtKey(tb.filterField);
+                                                            var v = combo.getValue();
                                                             store.addFilter(new Ext.util.Filter({
                                                                     id: tb.filterField,
                                                                     property: tb.filterField,
-                                                                    value: ''+combo.getValue()
+                                                                    value: ''+((v != undefined) ? v : 0)
                                                                 }));
                                                         },
                                                         change: function(combo) {

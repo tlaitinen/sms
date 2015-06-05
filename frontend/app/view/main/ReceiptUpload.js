@@ -6,6 +6,12 @@ Ext.define('Receipts.view.main.ReceiptUpload', {
      html: '<input id="receiptupload" type="file" name="files" multiple value="' + __('upload.button') + '"/><div id="progress"></div>',
 
     uploadHandler: function(e) {
+
+        var ppCombo = ppCombo = Ext.ComponentQuery.query('panel[name=receipts] receiptsgrid processperiodscombo')[0];
+        if (!(ppCombo.getValue() > 0)) {
+            Ext.MessageBox.alert(__('noprocessperiod.title'), __('noprocessperiod.message'));
+            return ;
+        }
         function parseInfo(name) {
             var delims = [' ', '_', '-'];
             var r = {
@@ -107,6 +113,7 @@ Ext.define('Receipts.view.main.ReceiptUpload', {
                                 amount: info.amount,
                                 fileId: r.fileId,
                                 previewFileId: r.previewFileId,
+                                processPeriodId: ppCombo.getValue(),
                                 fileName: file.name,
                                 insertionTime: (new Date()).toJSON()
                             });

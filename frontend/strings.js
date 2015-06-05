@@ -1,5 +1,9 @@
 function __(k,d) {
     var strings = {
+        'noprocessperiod.title' : 'Kirjanpitojakso puuttuu',
+        'noprocessperiod.message' : 'Kirjanpitojakso puuttuu. Uusi kirjanpitojakso avataan seuraavan kuun alussa.',
+        'confirmlock.title' : 'Kirjanpitojakson lukitseminen',
+        'confirmlock.message' : 'Lukitaanko valittu kirjanpitojakso? Lukittuun kirjanpitojaksoon ei voi enää lisätä tositteita.',
         'preview' : 'Esikatselu',
         'previewFileId' : 'preview',
         'saveError.title': 'Tietojen tallentaminen epäonnistui',

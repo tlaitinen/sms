@@ -23,6 +23,7 @@ Ext.define('Receipts.view.main.Main', {
         xtype: 'tabpanel',
         items:[
             {
+                name:'receipts',
                 reference: 'receiptsTab',
                 title: __('maintab.receipts'),
                 layout:{

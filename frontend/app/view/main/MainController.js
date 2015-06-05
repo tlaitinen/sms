@@ -7,21 +7,29 @@ Ext.define('Receipts.view.main.MainController', {
 
     alias: 'controller.main',
 
+    getProcessPeriodCombo: function() {
+        return Ext.ComponentQuery.query('panel[name=receipts] receiptsgrid processperiodscombo')[0];
+    },
+    resetProcessPeriodCombo: function() {
+        var ppCombo = this.getProcessPeriodCombo(),
+            pps = Ext.getStore('processperiods');
+        pps.load(function() {
+
+            ppCombo.clearValue();
+            if (pps.getCount() > 0) {
+                ppCombo.setValue(pps.getAt(0).getId());
+            }
+            ppCombo.fireEvent('select', ppCombo);
+            ppCombo.configStore();
+        });
+    },
     onLogin: function() {
 
         if (Receipts.GlobalState.user.config.usersTab == true) {
             this.lookupReference('usersTab').tab.show();
         }
 
-
-        var ppCombo = Ext.ComponentQuery.query('receiptsgrid processperiodscombo')[0],
-            pps = Ext.getStore('processperiods');
-
-        if (pps.getCount() > 0) {
-            ppCombo.setValue(pps.getAt(0).getId());
-            ppCombo.configStore();
-        }
-
+        this.resetProcessPeriodCombo();
     },
 
     addUserGroupItems: function(userGrid, userGroupGrid, userGroupItemsGrid, mode) {
@@ -82,6 +90,24 @@ Ext.define('Receipts.view.main.MainController', {
                     }
                 }
 
+            },
+            'receiptsgrid button[name=lock]': {
+                click: function(button) {
+                    Ext.MessageBox.confirm(__('confirmlock.title'), __('confirmlock.message'),
+                        function (button) {
+                        if (button == "yes") {
+                            var ppCombo = controller.getProcessPeriodCombo();
+                            Ext.Ajax.request({
+                                url: 'backend/db/processperiods/' + ppCombo.getValue(),
+                                method: 'POST',
+                                params: {},
+                                success: function () {
+                                    controller.resetProcessPeriodCombo();
+                                }
+                            });
+                        }
+                    });
+                }
             },
             'panel[name=users] button[name=addReadPerm]': {
                 click: function(button) {
