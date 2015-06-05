@@ -16,6 +16,9 @@ entity UserGroupContent {
 
 entity UserGroup {
     instance of Named, Versioned, Deletable, Restricted;
+    createPeriods Bool default True;
+    email Text default "";
+
     current Checkmark default CheckmarkActive;
     unique UserGroup current, name;
 }
@@ -38,6 +41,8 @@ entity User {
     salt Text default "" internal;
 
     defaultUserGroupId UserGroupId;
+
+
 
     timeZone Text default "Europe/Helsinki";
 
@@ -79,6 +84,8 @@ route /usergroups {
     post {
         ugId <- insert UserGroup from {
             name             = $request.name,
+            createPeriods    = $request.createPeriods,
+            email            = $request.email,
             deletedVersionId = Nothing,
             activeId         = Nothing,
             activeStartTime  = now(),
@@ -111,6 +118,8 @@ route /usergroups/#UserGroupId {
         };
         update UserGroup identified by $1 with {
             name = $request.name,
+            email = $request.email,
+            createPeriods = $request.createPeriods,
             activeStartTime = now()
         };
     }
@@ -208,6 +217,8 @@ route /users {
             where u.deletedVersionId is Nothing;
     }
     post {
+        require User as u where u.admin = True and u.id = $auth.id;
+
         userId <- insert User from {
             name               = $request.name,
             firstName          = $request.firstName,
@@ -217,7 +228,6 @@ route /users {
             defaultUserGroupId = $request.defaultUserGroupId,
             timeZone           = $request.timeZone,
             activeStartTime    = now()
-
         };
         insert UserGroupContent from {
             userGroupId = $auth.defaultUserGroupId,
@@ -240,6 +250,7 @@ route /users/#UserId {
     }
     delete {
         require User as u where u.id = $1
+            and u.id != $auth.id
             and hasWritePerm $auth.id u.id;
         versionId <- insert Version from {
             time = now(),

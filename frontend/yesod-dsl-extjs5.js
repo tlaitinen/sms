@@ -6,7 +6,6 @@ var yesodDsl = function(defs, __, config) {
             preloadStores.forEach(function (s) { s.load(); } );
         }
     };
-    console.log(config.name);
     var formItemXtypes = {
         integer: 'numberfield',
         number: 'numberfield',
@@ -107,6 +106,7 @@ var yesodDsl = function(defs, __, config) {
                     }
                 } else {
                     itemCfg.xtype = formItemXtypes[field.type];
+                    console.log(itemCfg.xtype);
                 }
             }
             var res = {
@@ -114,12 +114,22 @@ var yesodDsl = function(defs, __, config) {
                 name: itemCfg.name,
                 allowBlank: itemCfg.allowBlank || true,
                 labelWidth: itemCfg.labelWidth || formCfg.labelWidth || config.formLabelWidth || 120,
-                inputType: itemCfg.inputType,
-                minLength: itemCfg.minLength,
-                minLengthText: itemCfg.minLengthText ? __(itemCfg.minLengthText) : undefined,
-                height: itemCfg.height,
                 autoScroll: itemCfg.height ? true : false,
             };
+            if ('inputType' in itemCfg) {
+                res.inputType = itemCfg.inputType;
+            }
+            if ('minLength' in itemCfg) {
+                res.minLength = itemCfg.minLength;
+                if (itemCfg.minLengthText)
+                    res.minLengthText = __(itemCfg.minLengthText);
+            }
+
+            if ('height' in itemCfg)
+                res.height = itemCfg.height;
+
+            if (field.type == "boolean")
+                res.inputValue = true;
             if (itemCfg.items) {
                 res.items = _.map(itemCfg.items, function(i) { return initFormItem(h, formCfg, widgetName)(i); });
             }
@@ -313,7 +323,6 @@ var yesodDsl = function(defs, __, config) {
                         },
                         listeners: {
                             exception: function (proxy, response, operation) {
-                                console.log(response);
                                 if (response.request.options.method != 'GET')
                                     saveError(response.responseText);
                             }
@@ -396,7 +405,6 @@ var yesodDsl = function(defs, __, config) {
                             });
                             var widgetName = gridWidgetName(name, gridCfg);
                             var listName  = config.name + '.view.' + name + '.' + widgetName;
-                            console.log(listName + " : " + widgetName);
                             Ext.define(listName, {
                                 extend: 'Ext.grid.Panel',
                                 alias: 'widget.' + widgetName,

@@ -3,8 +3,8 @@ entity ProcessPeriod {
 
     firstDay    Day;
     lastDay     Day;
-    locked      Bool;
-    processed   Bool;
+    locked      Bool default False;
+    processed   Bool default False;
 }
 
 route /processperiods {

@@ -109,6 +109,12 @@ getUsergroupcontentsR  = lift $ runDB $ do
                 "id" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ugc  ^.  UserGroupContentId) (val v')
                     _        -> return ()
+                "createPeriods" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupCreatePeriods) ((val v'))
+                    _        -> return ()
+                "email" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupEmail) ((val v'))
+                    _        -> return ()
                 "current" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupCurrent) ((val v'))
                     _        -> return ()

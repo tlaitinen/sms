@@ -88,6 +88,14 @@ getUsergroupsR  = lift $ runDB $ do
                 limit 10000
                 case defaultSortJson of 
                     Just xs -> mapM_ (\sjm -> case sortJsonMsg_property sjm of
+                            "createPeriods" -> case (sortJsonMsg_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupCreatePeriods) ] 
+                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupCreatePeriods) ] 
+                                _      -> return ()
+                            "email" -> case (sortJsonMsg_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupEmail) ] 
+                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupEmail) ] 
+                                _      -> return ()
                             "current" -> case (sortJsonMsg_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (ug  ^.  UserGroupCurrent) ] 
                                 "DESC" -> orderBy [ desc (ug  ^.  UserGroupCurrent) ] 
@@ -114,6 +122,12 @@ getUsergroupsR  = lift $ runDB $ do
                 "id" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupId) (val v')
                     _        -> return ()
+                "createPeriods" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupCreatePeriods) ((val v'))
+                    _        -> return ()
+                "email" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupEmail) ((val v'))
+                    _        -> return ()
                 "current" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupCurrent) ((val v'))
                     _        -> return ()
@@ -139,7 +153,7 @@ getUsergroupsR  = lift $ runDB $ do
                  
                 where_ $ (ug ^. UserGroupDeletedVersionId) `is` (nothing)
             else return ()
-        return (ug ^. UserGroupId, ug ^. UserGroupCurrent, ug ^. UserGroupName)
+        return (ug ^. UserGroupId, ug ^. UserGroupCreatePeriods, ug ^. UserGroupEmail, ug ^. UserGroupCurrent, ug ^. UserGroupName)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -150,10 +164,12 @@ getUsergroupsR  = lift $ runDB $ do
         "success" .= ("true" :: Text),
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5)) -> A.object [
                     "id" .= toJSON f1,
-                    "current" .= toJSON f2,
-                    "name" .= toJSON f3                                    
+                    "createPeriods" .= toJSON f2,
+                    "email" .= toJSON f3,
+                    "current" .= toJSON f4,
+                    "name" .= toJSON f5                                    
                     ]
                 _ -> A.object []
             ) results)
@@ -173,6 +189,26 @@ postUsergroupsR  = lift $ runDB $ do
     jsonBodyObj <- case jsonBody of
         A.Object o -> return o
         v -> sendResponseStatus status400 $ A.object [ "message" .= ("Expected JSON object in the request body, got: " ++ show v) ]
+    attr_email <- case HML.lookup "email" jsonBodyObj of 
+        Just v -> case A.fromJSON v of
+            A.Success v' -> return v'
+            A.Error err -> sendResponseStatus status400 $ A.object [
+                    "message" .= ("Could not parse value from attribute email in the JSON object in request body" :: Text),
+                    "error" .= err
+                ]
+        Nothing -> sendResponseStatus status400 $ A.object [
+                "message" .= ("Expected attribute email in the JSON object in request body" :: Text)
+            ]
+    attr_createPeriods <- case HML.lookup "createPeriods" jsonBodyObj of 
+        Just v -> case A.fromJSON v of
+            A.Success v' -> return v'
+            A.Error err -> sendResponseStatus status400 $ A.object [
+                    "message" .= ("Could not parse value from attribute createPeriods in the JSON object in request body" :: Text),
+                    "error" .= err
+                ]
+        Nothing -> sendResponseStatus status400 $ A.object [
+                "message" .= ("Expected attribute createPeriods in the JSON object in request body" :: Text)
+            ]
     attr_name <- case HML.lookup "name" jsonBodyObj of 
         Just v -> case A.fromJSON v of
             A.Success v' -> return v'
@@ -189,6 +225,10 @@ postUsergroupsR  = lift $ runDB $ do
         e1 <- do
     
             return $ UserGroup {
+                            userGroupCreatePeriods = attr_createPeriods
+                    ,
+                            userGroupEmail = attr_email
+                    ,
                             userGroupCurrent = Active
                     ,
                             userGroupName = attr_name

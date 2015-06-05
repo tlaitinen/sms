@@ -148,6 +148,8 @@ UserGroupContent json
     processPeriodContentId ProcessPeriodId Maybe   default=NULL
     deletedVersionId VersionId Maybe   default=NULL
 UserGroup json
+    createPeriods Bool  "default=True"
+    email Text  "default=''"
     current Checkmark  "default=True" nullable
     name Text  
     activeId UserGroupId Maybe   default=NULL
@@ -196,8 +198,8 @@ Receipt json
 ProcessPeriod json
     firstDay Day  
     lastDay Day  
-    locked Bool  
-    processed Bool  
+    locked Bool  "default=False"
+    processed Bool  "default=False"
 |]
 newFile :: Text -> Int32 -> Text -> UTCTime -> File
 newFile contentType_ size_ name_ insertionTime_ = File {
@@ -224,6 +226,8 @@ newUserGroupContent userGroupId_ = UserGroupContent {
 }    
 newUserGroup :: Text -> UserGroup
 newUserGroup name_ = UserGroup {
+    userGroupCreatePeriods = True,
+    userGroupEmail = "",
     userGroupCurrent = Active,
     userGroupName = name_,
     userGroupActiveId = Nothing,
@@ -275,12 +279,12 @@ newReceipt fileId_ processPeriodId_ amount_ name_ insertionTime_ = Receipt {
     receiptInsertionTime = insertionTime_,
     receiptInsertedByUserId = Nothing
 }    
-newProcessPeriod :: Day -> Day -> Bool -> Bool -> ProcessPeriod
-newProcessPeriod firstDay_ lastDay_ locked_ processed_ = ProcessPeriod {
+newProcessPeriod :: Day -> Day -> ProcessPeriod
+newProcessPeriod firstDay_ lastDay_ = ProcessPeriod {
     processPeriodFirstDay = firstDay_,
     processPeriodLastDay = lastDay_,
-    processPeriodLocked = locked_,
-    processPeriodProcessed = processed_
+    processPeriodLocked = False,
+    processPeriodProcessed = False
 }    
 class Named a where
     namedName :: a -> Text

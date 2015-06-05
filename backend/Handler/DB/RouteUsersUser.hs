@@ -117,7 +117,7 @@ deleteUsersUserIdR p1 = lift $ runDB $ do
     _ <- do
         result <- select $ from $ \(u ) -> do
             let uId' = u ^. UserId
-            where_ (((u ^. UserId) ==. (val p1)) &&. (hasWritePerm (val authId) (u ^. UserId)))
+            where_ (((u ^. UserId) ==. (val p1)) &&. (((u ^. UserId) !=. (val authId)) &&. (hasWritePerm (val authId) (u ^. UserId))))
 
             limit 1
             return u

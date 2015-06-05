@@ -62,9 +62,11 @@ function __(k,d) {
         'insertionTime' : 'Lisätty',
         'upload.title' : 'Tiedostojen lataus',
         'upload.button' : 'Lataa tiedostoja...',
-        'upload.uploading' : 'Ladataan...'
+        'upload.uploading' : 'Ladataan...',
+        'usergroupform.title' : 'Käyttäjäryhmän tietojen muokkaaminen',
+        'usergroupform.createPeriods' : 'Luo kirjanpitokuukaudet'
+
     };
-    console.log(k);
     var parts = k.split('.');
     if (k in strings) {
         while (k in strings) {

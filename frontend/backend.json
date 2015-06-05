@@ -256,6 +256,16 @@
                         },
                         {
                             "references": null,
+                            "name": "createPeriods",
+                            "type": "boolean"
+                        },
+                        {
+                            "references": null,
+                            "name": "email",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
                             "name": "current",
                             "type": "boolean"
                         },
@@ -270,6 +280,16 @@
                 },
                 {
                     "inputs": [
+                        {
+                            "references": null,
+                            "name": "createPeriods",
+                            "type": "boolean"
+                        },
+                        {
+                            "references": null,
+                            "name": "email",
+                            "type": "string"
+                        },
                         {
                             "references": null,
                             "name": "name",
@@ -305,6 +325,16 @@
                         {
                             "references": null,
                             "name": "name",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "createPeriods",
+                            "type": "boolean"
+                        },
+                        {
+                            "references": null,
+                            "name": "email",
                             "type": "string"
                         }
                     ],
@@ -985,11 +1015,6 @@
                             "references": null,
                             "name": "lastDay",
                             "type": "date"
-                        },
-                        {
-                            "references": null,
-                            "name": "processed",
-                            "type": "boolean"
                         }
                     ],
                     "outputs": [],
@@ -1097,6 +1122,20 @@
         {
             "name": "UserGroup",
             "fields": [
+                {
+                    "references": null,
+                    "default": true,
+                    "name": "createPeriods",
+                    "type": "boolean",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": "",
+                    "name": "email",
+                    "type": "string",
+                    "optional": false
+                },
                 {
                     "references": null,
                     "default": "Active",
@@ -1299,14 +1338,14 @@
                 },
                 {
                     "references": null,
-                    "default": null,
+                    "default": false,
                     "name": "locked",
                     "type": "boolean",
                     "optional": false
                 },
                 {
                     "references": null,
-                    "default": null,
+                    "default": false,
                     "name": "processed",
                     "type": "boolean",
                     "optional": false

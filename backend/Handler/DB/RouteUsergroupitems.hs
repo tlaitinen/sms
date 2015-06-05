@@ -132,7 +132,7 @@ getUsergroupitemsR  = lift $ runDB $ do
                 "admin" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserAdmin) ((val v'))
                     _        -> return ()
-                "email" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                "u.email" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserEmail) ((val v'))
                     _        -> return ()
                 "defaultUserGroupId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
@@ -149,6 +149,12 @@ getUsergroupitemsR  = lift $ runDB $ do
                     _        -> return ()
                 "u.name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserName) ((val v'))
+                    _        -> return ()
+                "createPeriods" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupCreatePeriods) ((val v'))
+                    _        -> return ()
+                "ug.email" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupEmail) ((val v'))
                     _        -> return ()
                 "ug.current" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupCurrent) ((val v'))

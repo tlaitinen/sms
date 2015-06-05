@@ -25,7 +25,6 @@ Ext.define('Receipts.view.main.Main', {
             {
                 reference: 'receiptsTab',
                 title: __('maintab.receipts'),
-                hidden:true,
                 layout:{
                     type:'vbox',
                     align:'stretch'

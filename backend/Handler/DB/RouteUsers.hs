@@ -296,8 +296,20 @@ postUsersR  = lift $ runDB $ do
             ]
     __currentTime <- liftIO $ getCurrentTime
     (Entity _ __auth) <- lift $ requireAuth
+    _ <- do
+        result <- select $ from $ \(u ) -> do
+            let uId' = u ^. UserId
+            where_ (((u ^. UserAdmin) ==. ((val True))) &&. ((u ^. UserId) ==. (val authId)))
+
+            limit 1
+            return u
+        case result of
+            ((Entity _ _):_) -> return ()
+            _ -> sendResponseStatus status403 (A.object [
+                    "message" .= ("require condition #1 failed" :: Text)
+                    ])
     runDB_result <- do
-        e1 <- do
+        e2 <- do
     
             return $ User {
                             userFirstName = attr_firstName
@@ -333,15 +345,15 @@ postUsersR  = lift $ runDB $ do
                             userDeletedVersionId = Nothing
     
                 }
-        vErrors <- lift $ validate e1
+        vErrors <- lift $ validate e2
         case vErrors of
             xs@(_:_) -> sendResponseStatus status400 (A.object [ 
                         "message" .= ("Entity validation failed" :: Text),
                         "errors" .= toJSON xs 
                     ])
             _ -> return ()
-        result_userId <- P.insert (e1 :: User)
-        e2 <- do
+        result_userId <- P.insert (e2 :: User)
+        e3 <- do
     
             return $ UserGroupContent {
                             userGroupContentUserGroupId = userDefaultUserGroupId __auth
@@ -359,13 +371,13 @@ postUsersR  = lift $ runDB $ do
                             userGroupContentDeletedVersionId = Nothing
     
                 }
-        vErrors <- lift $ validate e2
+        vErrors <- lift $ validate e3
         case vErrors of
             xs@(_:_) -> sendResponseStatus status400 (A.object [ 
                         "message" .= ("Entity validation failed" :: Text),
                         "errors" .= toJSON xs 
                     ])
             _ -> return ()
-        P.insert (e2 :: UserGroupContent)
+        P.insert (e3 :: UserGroupContent)
         return $ A.object [ "id" .= (toJSON result_userId) ]
     return $ runDB_result

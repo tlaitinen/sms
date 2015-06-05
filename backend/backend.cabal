@@ -136,6 +136,26 @@ library
                 TupleSections RecordWildCards
     hs-source-dirs: . app
 
+executable minuterun
+    
+    if flag(library-only)
+        buildable: False
+    main-is: main.hs
+    build-depends:
+        persistent-postgresql -any,
+        base -any,
+        backend -any,
+        resourcet -any,
+        esqueleto -any,
+        yesod -any,
+        containers -any,
+        monad-logger -any,
+        monad-control -any,
+        time -any,
+        persistent -any,
+        fast-logger -any
+    hs-source-dirs: minuterun
+
 executable backend
     
     if flag(library-only)

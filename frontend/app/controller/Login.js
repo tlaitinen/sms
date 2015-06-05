@@ -12,7 +12,7 @@ Ext.define('Receipts.controller.Login', {
                         win.close();
                         Receipts.GlobalState.user = obj.user;
                         try {
-                            Receipts.GlobalState.user.config = JSON.parse(Receipts.GlobalState.user.config);
+                            Receipts.GlobalState.user.config = JSON.parse(obj.user.config);
                         } catch (e) {
                             console.log("Warning: invalid user config: " + e);
                         }

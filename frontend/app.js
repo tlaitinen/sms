@@ -116,7 +116,7 @@ $.get("backend.json").done(function(defs) {
                 forms: [
                     {
                         widget: 'usergroupform',
-                        items: [ 'name' ]
+                        items: [ 'name', 'email', 'createPeriods' ]
                     }
                 ]
             },
