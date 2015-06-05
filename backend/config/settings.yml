@@ -27,6 +27,10 @@ database:
 
 copyright: Copyright (C) 2015 Feriko Oy
 upload-dir: "_env:UPLOADDIR:upload"
-adminUser: "_env:ADMINUSER:Receipts"
-adminPassword: "_env:ADMINPASSWORD:Receipts"
+admin-user: "_env:ADMINUSER:Receipts"
+admin-password: "_env:ADMINPASSWORD:Receipts"
+max-email-size: "_env:MAXEMAILSIZE:10000000"
+smtp-address: "_env:SMTPADDRESS:127.0.0.1"
+sender-email: "_env:SENDEREMAIL:receipts@example.com"
+
 #analytics: UA-YOURCODE

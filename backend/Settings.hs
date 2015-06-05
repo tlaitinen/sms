@@ -55,6 +55,9 @@ data AppSettings = AppSettings
     , appUploadDir              :: FP.FilePath
     , appAdminUser              :: Text
     , appAdminPassword          :: Text
+    , appMaxEmailSize           :: Int
+    , appSmtpAddress            :: String
+    , appSenderEmail            :: Text
     }
 
 instance FromJSON AppSettings where
@@ -81,8 +84,11 @@ instance FromJSON AppSettings where
         appCopyright              <- o .: "copyright"
         appAnalytics              <- o .:? "analytics"
         appUploadDir              <- fromString <$> o .: "upload-dir"
-        appAdminUser              <- o .: "adminUser"
-        appAdminPassword          <- o .: "adminPassword"
+        appAdminUser              <- o .: "admin-user"
+        appAdminPassword          <- o .: "admin-password"
+        appMaxEmailSize           <- o .: "max-email-size" 
+        appSmtpAddress            <- o .: "smtp-address"
+        appSenderEmail            <- o .: "sender-email"
 
         return AppSettings {..}
 

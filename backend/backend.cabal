@@ -142,11 +142,18 @@ executable minuterun
         buildable: False
     main-is: main.hs
     build-depends:
+        text,
+        bytestring,
+        temporary,
         persistent-postgresql -any,
         base -any,
+        smtp-mail,
+        mime-mail,
+        zip-archive,
         backend -any,
         resourcet -any,
         esqueleto -any,
+        filepath,
         yesod -any,
         containers -any,
         monad-logger -any,
