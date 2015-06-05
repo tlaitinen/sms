@@ -78,7 +78,7 @@ getReceiptsReceiptIdR p1 = lift $ runDB $ do
 
                  
             else return ()
-        return (r ^. ReceiptId, r ^. ReceiptFileId, r ^. ReceiptAmount, r ^. ReceiptName, r ^. ReceiptInsertionTime, r ^. ReceiptInsertedByUserId)
+        return (r ^. ReceiptId, r ^. ReceiptFileId, r ^. ReceiptProcessPeriodId, r ^. ReceiptAmount, r ^. ReceiptName, r ^. ReceiptInsertionTime, r ^. ReceiptInsertedByUserId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -89,13 +89,14 @@ getReceiptsReceiptIdR p1 = lift $ runDB $ do
         "success" .= ("true" :: Text),
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7)) -> A.object [
                     "id" .= toJSON f1,
                     "fileId" .= toJSON f2,
-                    "amount" .= toJSON f3,
-                    "name" .= toJSON f4,
-                    "insertionTime" .= toJSON f5,
-                    "insertedByUserId" .= toJSON f6                                    
+                    "processPeriodId" .= toJSON f3,
+                    "amount" .= toJSON f4,
+                    "name" .= toJSON f5,
+                    "insertionTime" .= toJSON f6,
+                    "insertedByUserId" .= toJSON f7                                    
                     ]
                 _ -> A.object []
             ) results)

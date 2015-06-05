@@ -106,3 +106,8 @@ instance Validatable Receipt where
         results <- sequence [
                 checkResult "Receipt.name nonEmpty" (nonEmpty $ receiptName v)            ]
         return $ catMaybes results
+instance Validatable ProcessPeriod where
+    validate v = do
+        results <- sequence [
+            ]
+        return $ catMaybes results

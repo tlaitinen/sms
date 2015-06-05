@@ -730,6 +730,11 @@
                             "type": "integer"
                         },
                         {
+                            "references": "ProcessPeriod",
+                            "name": "processPeriodId",
+                            "type": "integer"
+                        },
+                        {
                             "references": null,
                             "name": "amount",
                             "type": "number"
@@ -763,6 +768,11 @@
                         {
                             "references": "File",
                             "name": "fileId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "ProcessPeriod",
+                            "name": "processPeriodId",
                             "type": "integer"
                         },
                         {
@@ -814,6 +824,11 @@
                             "type": "integer"
                         },
                         {
+                            "references": "ProcessPeriod",
+                            "name": "processPeriodId",
+                            "type": "integer"
+                        },
+                        {
                             "references": null,
                             "name": "amount",
                             "type": "number"
@@ -845,6 +860,11 @@
                             "type": "integer"
                         },
                         {
+                            "references": "ProcessPeriod",
+                            "name": "processPeriodId",
+                            "type": "integer"
+                        },
+                        {
                             "references": null,
                             "name": "amount",
                             "type": "number"
@@ -872,6 +892,11 @@
                             "type": "integer"
                         },
                         {
+                            "references": "ProcessPeriod",
+                            "name": "processPeriodId",
+                            "type": "integer"
+                        },
+                        {
                             "references": null,
                             "name": "amount",
                             "type": "number"
@@ -889,6 +914,86 @@
                     ],
                     "outputs": [],
                     "type": "PUT",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "processperiods",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "ProcessPeriod",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "firstDay",
+                            "type": "date"
+                        },
+                        {
+                            "references": null,
+                            "name": "lastDay",
+                            "type": "date"
+                        },
+                        {
+                            "references": null,
+                            "name": "locked",
+                            "type": "boolean"
+                        },
+                        {
+                            "references": null,
+                            "name": "processed",
+                            "type": "boolean"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "processperiods",
+                    "type": "string"
+                },
+                {
+                    "references": "ProcessPeriod",
+                    "type": "integer"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [
+                        {
+                            "references": null,
+                            "name": "firstDay",
+                            "type": "date"
+                        },
+                        {
+                            "references": null,
+                            "name": "lastDay",
+                            "type": "date"
+                        },
+                        {
+                            "references": null,
+                            "name": "processed",
+                            "type": "boolean"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "POST",
                     "public": false
                 }
             ]
@@ -977,6 +1082,13 @@
                     "references": "Receipt",
                     "default": null,
                     "name": "receiptContentId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": "ProcessPeriod",
+                    "default": null,
+                    "name": "processPeriodContentId",
                     "type": "integer",
                     "optional": true
                 }
@@ -1132,6 +1244,13 @@
                     "optional": false
                 },
                 {
+                    "references": "ProcessPeriod",
+                    "default": null,
+                    "name": "processPeriodId",
+                    "type": "integer",
+                    "optional": false
+                },
+                {
                     "references": null,
                     "default": null,
                     "name": "amount",
@@ -1158,6 +1277,39 @@
                     "name": "insertedByUserId",
                     "type": "integer",
                     "optional": true
+                }
+            ]
+        },
+        {
+            "name": "ProcessPeriod",
+            "fields": [
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "firstDay",
+                    "type": "date",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "lastDay",
+                    "type": "date",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "locked",
+                    "type": "boolean",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "processed",
+                    "type": "boolean",
+                    "optional": false
                 }
             ]
         }

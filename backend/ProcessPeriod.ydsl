@@ -1,0 +1,25 @@
+entity ProcessPeriod {
+    instance of Restricted;
+
+    firstDay    Day;
+    lastDay     Day;
+    locked      Bool;
+    processed   Bool;
+}
+
+route /processperiods {
+    get {
+        select pp.id, pp.* from ProcessPeriod as pp
+            where hasReadPerm $auth.id pp.id
+              and pp.locked = False
+            order by pp.firstDay asc;
+    }
+}
+route /processperiods/#ProcessPeriodId {
+    post {
+        require ProcessPeriod as pp where pp.id = $1 and hasWritePerm $auth.id pp.id and pp.locked = False;
+        update ProcessPeriod identified by $1 with {
+            locked = True
+        };
+    }
+}

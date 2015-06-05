@@ -130,6 +130,9 @@ getUsergroupcontentsR  = lift $ runDB $ do
                 "receiptContentId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ugc  ^.  UserGroupContentReceiptContentId) (just ((val v')))
                     _        -> return ()
+                "processPeriodContentId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ugc  ^.  UserGroupContentProcessPeriodContentId) (just ((val v')))
+                    _        -> return ()
 
                 _ -> return ()
                 ) xs

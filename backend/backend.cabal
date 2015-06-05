@@ -55,6 +55,8 @@ library
         Handler.DB.RouteReceipts
         Handler.DB.RouteReceiptsReceipt
         Handler.UploadFiles
+        Handler.DB.RouteProcessperiods
+        Handler.DB.RouteProcessperiodsProcessPeriod
     build-depends:
         unordered-containers -any,
         transformers -any,

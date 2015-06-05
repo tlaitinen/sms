@@ -1,7 +1,9 @@
 import "File.ydsl";
+import "ProcessPeriod.ydsl";
 entity Receipt {
     instance of Named, Restricted, Versioned, Deletable, HasInsertInfo;
     fileId FileId;
+    processPeriodId ProcessPeriodId;
     amount Double;
 }
 
@@ -23,6 +25,7 @@ route /receipts {
             name             = $request.name,
             fileId           = $request.fileId,
             amount           = $request.amount,
+            processPeriodId  = $request.processPeriodId,
             insertionTime    = now(),
             deletedVersionId = Nothing,
             activeId         = Nothing,

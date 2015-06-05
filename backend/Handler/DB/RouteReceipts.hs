@@ -93,6 +93,10 @@ getReceiptsR  = lift $ runDB $ do
                                 "ASC"  -> orderBy [ asc (r  ^.  ReceiptFileId) ] 
                                 "DESC" -> orderBy [ desc (r  ^.  ReceiptFileId) ] 
                                 _      -> return ()
+                            "processPeriodId" -> case (sortJsonMsg_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (r  ^.  ReceiptProcessPeriodId) ] 
+                                "DESC" -> orderBy [ desc (r  ^.  ReceiptProcessPeriodId) ] 
+                                _      -> return ()
                             "amount" -> case (sortJsonMsg_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (r  ^.  ReceiptAmount) ] 
                                 "DESC" -> orderBy [ desc (r  ^.  ReceiptAmount) ] 
@@ -166,6 +170,9 @@ getReceiptsR  = lift $ runDB $ do
                 "fileId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptFileId) ((val v'))
                     _        -> return ()
+                "processPeriodId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
+                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptProcessPeriodId) ((val v'))
+                    _        -> return ()
                 "amount" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
                     (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptAmount) ((val v'))
                     _        -> return ()
@@ -192,7 +199,7 @@ getReceiptsR  = lift $ runDB $ do
                  
                 where_ $ (r ^. ReceiptDeletedVersionId) `is` (nothing)
             else return ()
-        return (r ^. ReceiptId, r ^. ReceiptFileId, r ^. ReceiptAmount, r ^. ReceiptName, r ^. ReceiptInsertionTime, r ^. ReceiptInsertedByUserId, pf ?. FileId)
+        return (r ^. ReceiptId, r ^. ReceiptFileId, r ^. ReceiptProcessPeriodId, r ^. ReceiptAmount, r ^. ReceiptName, r ^. ReceiptInsertionTime, r ^. ReceiptInsertedByUserId, pf ?. FileId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -203,14 +210,15 @@ getReceiptsR  = lift $ runDB $ do
         "success" .= ("true" :: Text),
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8)) -> A.object [
                     "id" .= toJSON f1,
                     "fileId" .= toJSON f2,
-                    "amount" .= toJSON f3,
-                    "name" .= toJSON f4,
-                    "insertionTime" .= toJSON f5,
-                    "insertedByUserId" .= toJSON f6,
-                    "previewFileId" .= toJSON f7                                    
+                    "processPeriodId" .= toJSON f3,
+                    "amount" .= toJSON f4,
+                    "name" .= toJSON f5,
+                    "insertionTime" .= toJSON f6,
+                    "insertedByUserId" .= toJSON f7,
+                    "previewFileId" .= toJSON f8                                    
                     ]
                 _ -> A.object []
             ) results)
@@ -230,6 +238,16 @@ postReceiptsR  = lift $ runDB $ do
     jsonBodyObj <- case jsonBody of
         A.Object o -> return o
         v -> sendResponseStatus status400 $ A.object [ "message" .= ("Expected JSON object in the request body, got: " ++ show v) ]
+    attr_processPeriodId <- case HML.lookup "processPeriodId" jsonBodyObj of 
+        Just v -> case A.fromJSON v of
+            A.Success v' -> return v'
+            A.Error err -> sendResponseStatus status400 $ A.object [
+                    "message" .= ("Could not parse value from attribute processPeriodId in the JSON object in request body" :: Text),
+                    "error" .= err
+                ]
+        Nothing -> sendResponseStatus status400 $ A.object [
+                "message" .= ("Expected attribute processPeriodId in the JSON object in request body" :: Text)
+            ]
     attr_amount <- case HML.lookup "amount" jsonBodyObj of 
         Just v -> case A.fromJSON v of
             A.Success v' -> return v'
@@ -268,6 +286,8 @@ postReceiptsR  = lift $ runDB $ do
             return $ Receipt {
                             receiptFileId = attr_fileId
                     ,
+                            receiptProcessPeriodId = attr_processPeriodId
+                    ,
                             receiptAmount = attr_amount
                     ,
                             receiptName = attr_name
@@ -305,6 +325,8 @@ postReceiptsR  = lift $ runDB $ do
                             userGroupContentUserContentId = Nothing
                     ,
                             userGroupContentReceiptContentId = (Just result_rId)
+                    ,
+                            userGroupContentProcessPeriodContentId = Nothing
                     ,
                             userGroupContentDeletedVersionId = Nothing
     

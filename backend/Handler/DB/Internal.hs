@@ -145,6 +145,7 @@ UserGroupContent json
     userGroupContentId UserGroupId Maybe   default=NULL
     userContentId UserId Maybe   default=NULL
     receiptContentId ReceiptId Maybe   default=NULL
+    processPeriodContentId ProcessPeriodId Maybe   default=NULL
     deletedVersionId VersionId Maybe   default=NULL
 UserGroup json
     current Checkmark  "default=True" nullable
@@ -183,6 +184,7 @@ Version json
     userId UserId  
 Receipt json
     fileId FileId  
+    processPeriodId ProcessPeriodId  
     amount Double  
     name Text  
     activeId ReceiptId Maybe   default=NULL
@@ -191,6 +193,11 @@ Receipt json
     deletedVersionId VersionId Maybe   default=NULL
     insertionTime UTCTime  
     insertedByUserId UserId Maybe   default=NULL
+ProcessPeriod json
+    firstDay Day  
+    lastDay Day  
+    locked Bool  
+    processed Bool  
 |]
 newFile :: Text -> Int32 -> Text -> UTCTime -> File
 newFile contentType_ size_ name_ insertionTime_ = File {
@@ -212,6 +219,7 @@ newUserGroupContent userGroupId_ = UserGroupContent {
     userGroupContentUserGroupContentId = Nothing,
     userGroupContentUserContentId = Nothing,
     userGroupContentReceiptContentId = Nothing,
+    userGroupContentProcessPeriodContentId = Nothing,
     userGroupContentDeletedVersionId = Nothing
 }    
 newUserGroup :: Text -> UserGroup
@@ -254,9 +262,10 @@ newVersion time_ userId_ = Version {
     versionTime = time_,
     versionUserId = userId_
 }    
-newReceipt :: FileId -> Double -> Text -> UTCTime -> Receipt
-newReceipt fileId_ amount_ name_ insertionTime_ = Receipt {
+newReceipt :: FileId -> ProcessPeriodId -> Double -> Text -> UTCTime -> Receipt
+newReceipt fileId_ processPeriodId_ amount_ name_ insertionTime_ = Receipt {
     receiptFileId = fileId_,
+    receiptProcessPeriodId = processPeriodId_,
     receiptAmount = amount_,
     receiptName = name_,
     receiptActiveId = Nothing,
@@ -265,6 +274,13 @@ newReceipt fileId_ amount_ name_ insertionTime_ = Receipt {
     receiptDeletedVersionId = Nothing,
     receiptInsertionTime = insertionTime_,
     receiptInsertedByUserId = Nothing
+}    
+newProcessPeriod :: Day -> Day -> Bool -> Bool -> ProcessPeriod
+newProcessPeriod firstDay_ lastDay_ locked_ processed_ = ProcessPeriod {
+    processPeriodFirstDay = firstDay_,
+    processPeriodLastDay = lastDay_,
+    processPeriodLocked = locked_,
+    processPeriodProcessed = processed_
 }    
 class Named a where
     namedName :: a -> Text
@@ -512,16 +528,19 @@ instance Restricted File where
 instance Restricted UserGroup where
 instance Restricted User where
 instance Restricted Receipt where
+instance Restricted ProcessPeriod where
 data RestrictedInstance = RestrictedInstanceFile (Entity File)
     | RestrictedInstanceUserGroup (Entity UserGroup)
     | RestrictedInstanceUser (Entity User)
     | RestrictedInstanceReceipt (Entity Receipt)
+    | RestrictedInstanceProcessPeriod (Entity ProcessPeriod)
 
 
 data RestrictedInstanceId = RestrictedInstanceFileId FileId
     | RestrictedInstanceUserGroupId UserGroupId
     | RestrictedInstanceUserId UserId
     | RestrictedInstanceReceiptId ReceiptId
+    | RestrictedInstanceProcessPeriodId ProcessPeriodId
 
 
 instance Restricted RestrictedInstance where
@@ -545,12 +564,17 @@ selectRestricted  = do
         let _ = e ^. ReceiptId
     
         return e
+    result_ProcessPeriod <- select $ from $ \e -> do
+        let _ = e ^. ProcessPeriodId
+    
+        return e
 
     return $ concat [
         map RestrictedInstanceFile result_File
         , map RestrictedInstanceUserGroup result_UserGroup
         , map RestrictedInstanceUser result_User
         , map RestrictedInstanceReceipt result_Receipt
+        , map RestrictedInstanceProcessPeriod result_ProcessPeriod
 
         ]
 class Versioned a where
@@ -937,12 +961,15 @@ userGroupContentContentId e = listToMaybe $ catMaybes [
         , userGroupContentUserGroupContentId e >>= (return . RestrictedInstanceUserGroupId)
         , userGroupContentUserContentId e >>= (return . RestrictedInstanceUserId)
         , userGroupContentReceiptContentId e >>= (return . RestrictedInstanceReceiptId)
+        , userGroupContentProcessPeriodContentId e >>= (return . RestrictedInstanceProcessPeriodId)
 
     ]
 
 class UserGroupContentContentIdField e where
     userGroupContentContentIdField :: SqlExpr (Database.Esqueleto.Value (Maybe (Key e))) -> EntityField UserGroupContent (Maybe (Key e)) 
 
+instance UserGroupContentContentIdField ProcessPeriod where
+    userGroupContentContentIdField _ = UserGroupContentProcessPeriodContentId
 instance UserGroupContentContentIdField Receipt where
     userGroupContentContentIdField _ = UserGroupContentReceiptContentId
 instance UserGroupContentContentIdField User where
