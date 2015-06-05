@@ -10,6 +10,12 @@ $.get("backend.json").done(function(defs) {
             }
         ],
         routes: {
+
+            processperiods: {
+                combo: {
+                    template: 'firstDay:date("F Y")'
+                }
+            },
             receipts: {
 
                 autoSync:true,
@@ -18,6 +24,12 @@ $.get("backend.json").done(function(defs) {
                         widget: 'receiptsgrid',
                         globalStore:true,
                         plugins: 'cellediting',
+                        toolbar: [
+                            {
+                                xtype:'processperiodscombo',
+                                filterField:'processPeriodId'
+                            }
+                        ],
                         columns: [ 
                             { field:'name', editor: { allowBlank:false}, flex:5 }, 
                             { field:'amount', editor: {}, flex:1 },

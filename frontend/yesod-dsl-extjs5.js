@@ -106,7 +106,6 @@ var yesodDsl = function(defs, __, config) {
                     }
                 } else {
                     itemCfg.xtype = formItemXtypes[field.type];
-                    console.log(itemCfg.xtype);
                 }
             }
             var res = {
@@ -359,14 +358,18 @@ var yesodDsl = function(defs, __, config) {
                         if (_.find(h.outputs, function (o) { return o.name == 'name'; }) || routeCfg.combo) {
                             var tpl = undefined, displayTpl = undefined, comboCfg = routeCfg.combo || {};
 
+                            var template = comboCfg.template || undefined;
                             if (comboCfg.field) {
+                                template = '{' + comboCfg.field + '}';
+                            }
+                            if (template != undefined) {
                                 tpl = Ext.create('Ext.XTemplate',
                                     '<tpl for=".">',
-                                        '<div class="x-boundlist-item">{' + comboCfg.field + '}</div>',
+                                        '<div class="x-boundlist-item">{' + template + '}</div>',
                                     '</tpl>');
                                 displayTpl = Ext.create('Ext.XTemplate',
                                     '<tpl for=".">',
-                                        '{' + comboCfg.field + '}',
+                                        '{' + template + '}',
                                     '</tpl>');
                             }
 

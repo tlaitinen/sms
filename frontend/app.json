@@ -45,7 +45,9 @@
      *      ]
      */
     "requires": [
+        "ext-locale"
     ],
+    "locale" : "fi",
 
     /**
      * Sass configuration properties.
