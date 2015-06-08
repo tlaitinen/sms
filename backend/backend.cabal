@@ -114,7 +114,6 @@ library
         random -any,
         blaze-html -any,
         containers -any,
-        fuzzy-timings -any,
         safe -any,
         IfElse -any,
         mime-mail -any,
