@@ -9,6 +9,7 @@ Ext.define('Receipts.Application', {
     name: 'Receipts',
     requires: [
         'Ext.data.proxy.Rest', 
+        'Ext.form.field.Checkbox',
         'Ext.grid.Panel',
         'Ext.grid.plugin.CellEditing'
     ],
