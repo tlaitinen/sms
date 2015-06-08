@@ -20,7 +20,7 @@ Ext.define('Receipts.controller.Login', {
                             layout: 'fit',
                             items: [
                                 {
-                                    xtype: 'app-main',
+                                    xtype: 'app-main'
                                 }
                             ]
                         });

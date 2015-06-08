@@ -342,7 +342,7 @@ var yesodDsl = function(defs, __, config) {
                     proxy: proxy
                    
                 }, function (model) {
-                    Ext.define(storeName, {
+                    var storeDef = {
                         extend: 'Ext.data.Store',
                         filters: [],
                         model: modelName,
@@ -351,7 +351,8 @@ var yesodDsl = function(defs, __, config) {
                         remoteSort: true,
                         proxy: proxy,
                         autoSync : routeCfg.autoSync || false
-                    }, function(storeClass) {
+                    };
+                    Ext.define(storeName, storeDef, function(storeClass) {
                         Ext.data.StoreManager.register(storeClass);
 
 
