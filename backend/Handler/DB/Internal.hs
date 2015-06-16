@@ -13,6 +13,7 @@
 {-# OPTIONS_GHC -fno-warn-overlapping-patterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+{-# OPTIONS_GHC -fno-warn-unused-binds #-}
 module Handler.DB.Internal where
 import Handler.DB.Enums
 import Handler.DB.Esqueleto
@@ -371,7 +372,7 @@ updateNamed :: forall (m :: * -> *).
 updateNamed filters updates = do
     update $ \e -> do
         let _ = e ^. FileId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     NamedInstanceUpdateName v -> FileName =. v
     
             ) updates
@@ -385,7 +386,7 @@ updateNamed filters updates = do
                 
     update $ \e -> do
         let _ = e ^. UserGroupId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     NamedInstanceUpdateName v -> UserGroupName =. v
     
             ) updates
@@ -399,7 +400,7 @@ updateNamed filters updates = do
                 
     update $ \e -> do
         let _ = e ^. UserId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     NamedInstanceUpdateName v -> UserName =. v
     
             ) updates
@@ -413,7 +414,7 @@ updateNamed filters updates = do
                 
     update $ \e -> do
         let _ = e ^. ReceiptId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     NamedInstanceUpdateName v -> ReceiptName =. v
     
             ) updates
@@ -493,7 +494,7 @@ updateHasInsertInfo :: forall (m :: * -> *).
 updateHasInsertInfo filters updates = do
     update $ \e -> do
         let _ = e ^. FileId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     HasInsertInfoInstanceUpdateInsertionTime v -> FileInsertionTime =. v
                     HasInsertInfoInstanceUpdateInsertedByUserId v -> FileInsertedByUserId =. v
     
@@ -509,7 +510,7 @@ updateHasInsertInfo filters updates = do
                 
     update $ \e -> do
         let _ = e ^. ReceiptId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     HasInsertInfoInstanceUpdateInsertionTime v -> ReceiptInsertionTime =. v
                     HasInsertInfoInstanceUpdateInsertedByUserId v -> ReceiptInsertedByUserId =. v
     
@@ -692,7 +693,7 @@ updateVersioned :: forall (m :: * -> *).
 updateVersioned filters updates = do
     update $ \e -> do
         let _ = e ^. FileId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     VersionedInstanceUpdateActiveStartTime v -> FileActiveStartTime =. v
                     VersionedInstanceUpdateActiveEndTime v -> FileActiveEndTime =. v
     
@@ -708,7 +709,7 @@ updateVersioned filters updates = do
                 
     update $ \e -> do
         let _ = e ^. UserGroupId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     VersionedInstanceUpdateActiveStartTime v -> UserGroupActiveStartTime =. v
                     VersionedInstanceUpdateActiveEndTime v -> UserGroupActiveEndTime =. v
     
@@ -724,7 +725,7 @@ updateVersioned filters updates = do
                 
     update $ \e -> do
         let _ = e ^. UserId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     VersionedInstanceUpdateActiveStartTime v -> UserActiveStartTime =. v
                     VersionedInstanceUpdateActiveEndTime v -> UserActiveEndTime =. v
     
@@ -740,7 +741,7 @@ updateVersioned filters updates = do
                 
     update $ \e -> do
         let _ = e ^. ReceiptId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     VersionedInstanceUpdateActiveStartTime v -> ReceiptActiveStartTime =. v
                     VersionedInstanceUpdateActiveEndTime v -> ReceiptActiveEndTime =. v
     
@@ -873,7 +874,7 @@ updateDeletable :: forall (m :: * -> *).
 updateDeletable filters updates = do
     update $ \e -> do
         let _ = e ^. FileId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     DeletableInstanceUpdateDeletedVersionId v -> FileDeletedVersionId =. v
     
             ) updates
@@ -887,7 +888,7 @@ updateDeletable filters updates = do
                 
     update $ \e -> do
         let _ = e ^. UserGroupContentId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     DeletableInstanceUpdateDeletedVersionId v -> UserGroupContentDeletedVersionId =. v
     
             ) updates
@@ -901,7 +902,7 @@ updateDeletable filters updates = do
                 
     update $ \e -> do
         let _ = e ^. UserGroupId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     DeletableInstanceUpdateDeletedVersionId v -> UserGroupDeletedVersionId =. v
     
             ) updates
@@ -915,7 +916,7 @@ updateDeletable filters updates = do
                 
     update $ \e -> do
         let _ = e ^. UserGroupItemId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     DeletableInstanceUpdateDeletedVersionId v -> UserGroupItemDeletedVersionId =. v
     
             ) updates
@@ -929,7 +930,7 @@ updateDeletable filters updates = do
                 
     update $ \e -> do
         let _ = e ^. UserId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     DeletableInstanceUpdateDeletedVersionId v -> UserDeletedVersionId =. v
     
             ) updates
@@ -943,7 +944,7 @@ updateDeletable filters updates = do
                 
     update $ \e -> do
         let _ = e ^. ReceiptId
-        set e $ map (\update -> case update of
+        set e $ map (\u -> case u of
                     DeletableInstanceUpdateDeletedVersionId v -> ReceiptDeletedVersionId =. v
     
             ) updates

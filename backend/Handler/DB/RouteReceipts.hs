@@ -13,6 +13,8 @@
 {-# OPTIONS_GHC -fno-warn-overlapping-patterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+{-# OPTIONS_GHC -fno-warn-unused-binds #-}
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 module Handler.DB.RouteReceipts where
 import Handler.DB.Enums
 import Handler.DB.Esqueleto
@@ -213,7 +215,6 @@ getReceiptsR  = lift $ runDB $ do
         return $ (countRows' :: SqlExpr (Database.Esqueleto.Value Int))
     results <- select $ baseQuery True
     return $ A.object [
-        "success" .= ("true" :: Text),
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
                 ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8)) -> A.object [

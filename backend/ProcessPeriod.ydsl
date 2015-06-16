@@ -13,7 +13,6 @@ route /processperiods {
             where hasReadPerm $auth.id pp.id
               and pp.locked = False
             order by pp.firstDay asc;
-        default-filter-sort;    
     }
 }
 route /processperiods/#ProcessPeriodId {

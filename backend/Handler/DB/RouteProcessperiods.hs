@@ -13,6 +13,8 @@
 {-# OPTIONS_GHC -fno-warn-overlapping-patterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+{-# OPTIONS_GHC -fno-warn-unused-binds #-}
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 module Handler.DB.RouteProcessperiods where
 import Handler.DB.Enums
 import Handler.DB.Esqueleto
@@ -67,14 +69,6 @@ getProcessperiodsR :: forall master. (
     => HandlerT DB (HandlerT master IO) A.Value
 getProcessperiodsR  = lift $ runDB $ do
     authId <- lift $ requireAuthId
-    defaultFilterParam <- lookupGetParam "filter"
-    let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FilterJsonMsg]
-    defaultSortParam <- lookupGetParam "sort"
-    let defaultSortJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultSortParam) :: Maybe [SortJsonMsg]
-    defaultOffsetParam <- lookupGetParam "start"
-    defaultLimitParam <- lookupGetParam "limit"
-    let defaultOffset = (maybe Nothing PP.fromPathPiece defaultOffsetParam) :: Maybe Int64
-    let defaultLimit = (maybe Nothing PP.fromPathPiece defaultLimitParam) :: Maybe Int64
     let baseQuery limitOffsetOrder = from $ \(pp ) -> do
         let ppId' = pp ^. ProcessPeriodId
         where_ ((hasReadPerm (val authId) (pp ^. ProcessPeriodId)) &&. ((pp ^. ProcessPeriodLocked) ==. ((val False))))
@@ -83,58 +77,10 @@ getProcessperiodsR  = lift $ runDB $ do
             then do 
                 offset 0
                 limit 10000
-                case defaultSortJson of 
-                    Just xs -> mapM_ (\sjm -> case sortJsonMsg_property sjm of
-                            "firstDay" -> case (sortJsonMsg_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (pp  ^.  ProcessPeriodFirstDay) ] 
-                                "DESC" -> orderBy [ desc (pp  ^.  ProcessPeriodFirstDay) ] 
-                                _      -> return ()
-                            "lastDay" -> case (sortJsonMsg_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (pp  ^.  ProcessPeriodLastDay) ] 
-                                "DESC" -> orderBy [ desc (pp  ^.  ProcessPeriodLastDay) ] 
-                                _      -> return ()
-                            "locked" -> case (sortJsonMsg_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (pp  ^.  ProcessPeriodLocked) ] 
-                                "DESC" -> orderBy [ desc (pp  ^.  ProcessPeriodLocked) ] 
-                                _      -> return ()
-                            "processed" -> case (sortJsonMsg_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (pp  ^.  ProcessPeriodProcessed) ] 
-                                "DESC" -> orderBy [ desc (pp  ^.  ProcessPeriodProcessed) ] 
-                                _      -> return ()
-                
-                            _ -> return ()
-                        ) xs
-                    Nothing -> orderBy [ asc (pp ^. ProcessPeriodFirstDay) ]
+                orderBy [ asc (pp ^. ProcessPeriodFirstDay) ]
 
-                case defaultOffset of
-                    Just o -> offset o
-                    Nothing -> return ()
-                case defaultLimit of
-                    Just l -> limit (min 10000 l)
-                    Nothing -> return ()
                  
             else return ()
-        case defaultFilterJson of 
-            Just xs -> mapM_ (\fjm -> case filterJsonMsg_field_or_property fjm of
-                "id" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pp  ^.  ProcessPeriodId) (val v')
-                    _        -> return ()
-                "firstDay" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pp  ^.  ProcessPeriodFirstDay) ((val v'))
-                    _        -> return ()
-                "lastDay" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pp  ^.  ProcessPeriodLastDay) ((val v'))
-                    _        -> return ()
-                "locked" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pp  ^.  ProcessPeriodLocked) ((val v'))
-                    _        -> return ()
-                "processed" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pp  ^.  ProcessPeriodProcessed) ((val v'))
-                    _        -> return ()
-
-                _ -> return ()
-                ) xs
-            Nothing -> return ()  
         return (pp ^. ProcessPeriodId, pp ^. ProcessPeriodFirstDay, pp ^. ProcessPeriodLastDay, pp ^. ProcessPeriodLocked, pp ^. ProcessPeriodProcessed)
     count <- select $ do
         baseQuery False
@@ -143,7 +89,6 @@ getProcessperiodsR  = lift $ runDB $ do
         return $ (countRows' :: SqlExpr (Database.Esqueleto.Value Int))
     results <- select $ baseQuery True
     return $ A.object [
-        "success" .= ("true" :: Text),
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
                 ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5)) -> A.object [
