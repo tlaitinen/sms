@@ -32,6 +32,26 @@ Ext.define('Receipts.controller.Login', {
             }
         });
     },
+    doLogin: function(e) {
+        var win = e.up('window'),
+            form = win.down('form'),
+            c = this;
+        form.submit({
+            method:'POST',
+            waitTitle:__('login.waittitle'),
+            waitMsg:__('login.waitmessage'),
+            headers: {
+                'Accept': 'application/json'
+            },
+            success:function(form, action) {
+                c.loadUser();
+            },
+            failure:function(form, action) {
+                Ext.Msg.alert(__('login.failedtitle'), __('login.failedmessage'));
+            }
+        });
+    },
+
     init: function() {
         var win = new Ext.Window({
             id:'login',
@@ -49,25 +69,21 @@ Ext.define('Receipts.controller.Login', {
         var c = this;
         
         this.control({
-            
+           'login textfield[name=username]' : {
+               keypress: function (tf, e, eOpts) {
+                   if (e.keyCode == 13)
+                       c.doLogin(tf);
+               }
+           },
+           'login textfield[name=password]' : {
+               keypress: function (tf, e, eOpts) {
+                    if (e.keyCode == 13)
+                       c.doLogin(tf);
+               }
+           },
             'login button[name=login]' : {
                 click: function(button) {
-                    var win = button.up('window'),
-                        form = win.down('form');
-                    form.submit({
-                        method:'POST',
-                        waitTitle:__('login.waittitle'),
-                        waitMsg:__('login.waitmessage'),
-                        headers: {
-                            'Accept': 'application/json'
-                        },
-                        success:function(form, action) {
-                            c.loadUser();
-                        },
-                        failure:function(form, action) {
-                            Ext.Msg.alert(__('login.failedtitle'), __('login.failedmessage'));
-                        }
-                    });
+                    c.doLogin(button);
                 }
             }
         });
