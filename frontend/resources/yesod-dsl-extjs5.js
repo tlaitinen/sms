@@ -53,7 +53,34 @@ var yesodDsl = function(defs, __, config) {
         });
         return store;
     }
+    function defineModel(modelName, fields, proxy, cb) {
+        Ext.define(modelName, {
+            extend: 'Ext.data.Model',
+            fields: _.map(fields, function (f) {
+                var name = f.name,
+                    mapping = undefined;
 
+                if (name == 'length') {
+                    mapping = name;
+                    name += '_';
+                }
+                var r = {
+                    name : name,
+                    type : (f.optional || f.references) ? "auto" : f.type
+                };
+                if (r.type == "utctime" || r.type == "day")
+                    r.type = "date";
+                if ('default' in f)
+                    r.defaultValue = f['default'];
+                if (mapping != undefined) {
+                    r.mapping = mapping;
+                }
+                return r;
+            }),
+            proxy: proxy
+        }, cb);
+
+    }
     function saveError(responseText) {
         Ext.Msg.alert(__('saveError.title'), 
                      __('saveError.message') + ": " + responseText);
@@ -295,6 +322,31 @@ var yesodDsl = function(defs, __, config) {
             });
         });
     });
+    defs.entities.forEach(function (e) {
+        var modelName = config.name + '.model.' + e.name,
+            route = defaultRoute(e.name);
+        if (route) {
+            var proxy = {
+                type: 'rest',
+                url: routeInfo(defaultRoute(e.name)).url,
+                reader: {
+                    type: 'json',
+                    root: 'result',
+                    totalProperty: 'totalCount'
+                },
+                listeners: {
+                    exception: function (proxy, response, operation) {
+                        if (response.request.options.method != 'GET')
+                            saveError(response.responseText);
+                    }
+                }
+            };
+            defineModel(modelName, e.fields, proxy);
+
+        }
+
+    });
+
     defs.routes.forEach(function (r) {
 
         var info = routeInfo(r),
@@ -328,20 +380,7 @@ var yesodDsl = function(defs, __, config) {
                             }
                         }
                     };
-                Ext.define(modelName, {
-                    extend: 'Ext.data.Model',
-                    fields: _.map(h.outputs, function (o) {
-                        var t = o.references ? "auto" : o.type;
-                        if (t == "utctime" || t == "day")
-                            t = "date";
-                        return {
-                            "name" : o.name,
-                            "type" : t
-                        };
-                    }),
-                    proxy: proxy
-                   
-                }, function (model) {
+                defineModel(modelName, h.outputs, proxy, function(model) {
                     var storeDef = {
                         extend: 'Ext.data.Store',
                         filters: [],
@@ -620,26 +659,33 @@ var yesodDsl = function(defs, __, config) {
                                                                                }
                                                                            });
                                                                        }
-                                                                       if (btn.url) {
-                                                                           Ext.Ajax.request({
-                                                                               url: btn.url.replace('(ID)',''+record.getId()),
-                                                                               params: form.getValues(),
-                                                                               failure: function(request) {
-                                                                                   saveError(request.responseText);
-                                                                               }
-                                                                           });
-
-                                                                       } else {
-                                                                           record.save({
-                                                                               success: function(rec, op) {
-                                                                                   var r = JSON.parse(op.getResponse().responseText)
-                                                                                   if (!record.getId()) {
-                                                                                       record.setId(r.id);
-                                                                                       refreshGrids(entityRouteInfo.name);
+                                                                       function formSubmit() {
+                                                                           if (btn.url) {
+                                                                               Ext.Ajax.request({
+                                                                                   url: btn.url.replace('(ID)',''+record.getId()),
+                                                                                   params: form.getValues(),
+                                                                                   failure: function(request) {
+                                                                                       saveError(request.responseText);
                                                                                    }
-                                                                               }
-                                                                           });
+                                                                               });
+
+                                                                           } else {
+                                                                               record.save({
+                                                                                   success: function(rec, op) {
+                                                                                       var r = JSON.parse(op.getResponse().responseText)
+                                                                                       if (!record.getId()) {
+                                                                                           record.setId(r.id);
+                                                                                           refreshGrids(entityRouteInfo.name);
+                                                                                       }
+                                                                                   }
+                                                                               });
+                                                                           }
                                                                        }
+                                                                       $.when.apply($, _.map(formCfg.beforeSubmit || [], 
+                                                                                             function(bf) { return bf(form, record); } ))
+                                                                            .then(formSubmit);
+
+
    
                                                                        
 
