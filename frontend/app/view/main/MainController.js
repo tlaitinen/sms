@@ -127,6 +127,17 @@ Ext.define('Receipts.view.main.MainController', {
                                                  panel.down('usergroupitemsgrid'),
                                                  'ReadWrite');
                 }
+            },
+            'button[name=logout]' : {
+                click: function(button) {
+                    $.ajax({
+                        url:'backend/auth/logout',
+                        type:'POST',
+                        dataType:'json'
+                    }).always(function() {
+                        location.reload();
+                    });
+                }
             }
         });
     }

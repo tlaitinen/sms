@@ -23,6 +23,7 @@ function __(k,d) {
         'username' : 'Käyttäjänimi',
         'password' : 'Salasana',
         'login.login' : 'Kirjaudu sisään',
+        'maintab.signout' : 'Kirjaudu ulos',
         'receipts' : 'Tositteet',
         'instructions' : 'Ohje',
         'users' : 'Käyttäjät',
