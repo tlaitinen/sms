@@ -21,6 +21,17 @@ Ext.define('Receipts.view.main.Main', {
     items: [{
         region: 'center',
         xtype: 'tabpanel',
+        tabBar: {
+            items: [
+                { xtype: 'tbfill' },
+                {
+                    text:__('maintab.signout'),
+                    xtype:'button',
+                    closable:false,
+                    name:'logout'
+                }
+            ]
+        },
         items:[
             {
                 name:'receipts',

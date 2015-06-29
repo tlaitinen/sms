@@ -1,11 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleInstances #-}
 module Handler.DB.Enums where
 import qualified Handler.DB.PathPieces as PP
 import Database.Persist.TH
 import qualified Data.Aeson as A
 import Prelude
 import Control.Monad (mzero)
+import Handler.DB.Esqueleto
 data UserGroupMode = UserGroupModeReadWrite | UserGroupModeReadOnly deriving (Eq, Ord, Enum)
 
 instance Read UserGroupMode where
@@ -40,4 +42,5 @@ instance PP.PathPiece UserGroupMode where
     toPathPiece UserGroupModeReadOnly = "ReadOnly"
 
 
-
+instance FieldFilter UserGroupMode where
+instance FieldFilter (Maybe UserGroupMode) where

@@ -32,6 +32,9 @@ library
         Handler.Common
         Handler.SetUserPassword
         Handler.File
+        Handler.Home
+        Handler.Utils
+        Handler.UploadFiles
         Handler.DB
         Handler.DB.Internal
         Handler.DB.Enums
@@ -39,6 +42,7 @@ library
         Handler.DB.Esqueleto
         Handler.DB.PathPieces
         Handler.DB.Validation
+        Handler.DB.FilterSort
         Handler.DB.RouteFiles
         Handler.DB.RouteFilesFile
         Handler.DB.RouteFileusergroupcontents
@@ -50,11 +54,8 @@ library
         Handler.DB.RouteUsers
         Handler.DB.RouteUsersUser
         Handler.DB.RouteVersions
-        Handler.Home
-        Handler.Utils
         Handler.DB.RouteReceipts
         Handler.DB.RouteReceiptsReceipt
-        Handler.UploadFiles
         Handler.DB.RouteProcessperiods
         Handler.DB.RouteProcessperiodsProcessPeriod
     build-depends:

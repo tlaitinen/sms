@@ -40,7 +40,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "date"
+                            "type": "utctime"
                         },
                         {
                             "references": "User",
@@ -97,7 +97,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "date"
+                            "type": "utctime"
                         },
                         {
                             "references": "User",
@@ -128,7 +128,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "date"
+                            "type": "utctime"
                         }
                     ],
                     "outputs": [],
@@ -155,7 +155,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "date"
+                            "type": "utctime"
                         }
                     ],
                     "outputs": [],
@@ -724,7 +724,7 @@
                         {
                             "references": null,
                             "name": "time",
-                            "type": "date"
+                            "type": "utctime"
                         },
                         {
                             "references": "User",
@@ -777,7 +777,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "date"
+                            "type": "utctime"
                         },
                         {
                             "references": "User",
@@ -871,7 +871,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "date"
+                            "type": "utctime"
                         },
                         {
                             "references": "User",
@@ -907,7 +907,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "date"
+                            "type": "utctime"
                         }
                     ],
                     "outputs": [],
@@ -939,7 +939,7 @@
                         {
                             "references": null,
                             "name": "insertionTime",
-                            "type": "date"
+                            "type": "utctime"
                         }
                     ],
                     "outputs": [],
@@ -968,12 +968,12 @@
                         {
                             "references": null,
                             "name": "firstDay",
-                            "type": "date"
+                            "type": "day"
                         },
                         {
                             "references": null,
                             "name": "lastDay",
-                            "type": "date"
+                            "type": "day"
                         },
                         {
                             "references": null,
@@ -1009,12 +1009,12 @@
                         {
                             "references": null,
                             "name": "firstDay",
-                            "type": "date"
+                            "type": "day"
                         },
                         {
                             "references": null,
                             "name": "lastDay",
-                            "type": "date"
+                            "type": "day"
                         }
                     ],
                     "outputs": [],
@@ -1060,7 +1060,7 @@
                     "references": null,
                     "default": null,
                     "name": "insertionTime",
-                    "type": "date",
+                    "type": "utctime",
                     "optional": false
                 },
                 {
@@ -1260,7 +1260,7 @@
                     "references": null,
                     "default": null,
                     "name": "time",
-                    "type": "date",
+                    "type": "utctime",
                     "optional": false
                 },
                 {
@@ -1307,7 +1307,7 @@
                     "references": null,
                     "default": null,
                     "name": "insertionTime",
-                    "type": "date",
+                    "type": "utctime",
                     "optional": false
                 },
                 {
@@ -1326,14 +1326,14 @@
                     "references": null,
                     "default": null,
                     "name": "firstDay",
-                    "type": "date",
+                    "type": "day",
                     "optional": false
                 },
                 {
                     "references": null,
                     "default": null,
                     "name": "lastDay",
-                    "type": "date",
+                    "type": "day",
                     "optional": false
                 },
                 {
@@ -1366,6 +1366,12 @@
     "classes": [
         {
             "name": "Named",
+            "instances": [
+                "File",
+                "UserGroup",
+                "User",
+                "Receipt"
+            ],
             "fields": [
                 {
                     "references": null,
@@ -1378,12 +1384,16 @@
         },
         {
             "name": "HasInsertInfo",
+            "instances": [
+                "File",
+                "Receipt"
+            ],
             "fields": [
                 {
                     "references": null,
                     "default": null,
                     "name": "insertionTime",
-                    "type": "date",
+                    "type": "utctime",
                     "optional": false
                 },
                 {
@@ -1397,14 +1407,35 @@
         },
         {
             "name": "Restricted",
+            "instances": [
+                "File",
+                "UserGroup",
+                "User",
+                "Receipt",
+                "ProcessPeriod"
+            ],
             "fields": []
         },
         {
             "name": "Versioned",
+            "instances": [
+                "File",
+                "UserGroup",
+                "User",
+                "Receipt"
+            ],
             "fields": []
         },
         {
             "name": "Deletable",
+            "instances": [
+                "File",
+                "UserGroupContent",
+                "UserGroup",
+                "UserGroupItem",
+                "User",
+                "Receipt"
+            ],
             "fields": []
         }
     ]

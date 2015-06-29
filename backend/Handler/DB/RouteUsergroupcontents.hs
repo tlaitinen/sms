@@ -20,6 +20,7 @@ import Handler.DB.Enums
 import Handler.DB.Esqueleto
 import Handler.DB.Internal
 import Handler.DB.Validation
+import qualified Handler.DB.FilterSort as FS
 import qualified Handler.DB.PathPieces as PP
 import Prelude
 import Database.Esqueleto
@@ -71,9 +72,9 @@ getUsergroupcontentsR  = lift $ runDB $ do
     authId <- lift $ requireAuthId
     (filterParam_hideDeleted :: Maybe Text) <- lookupGetParam "hideDeleted"
     defaultFilterParam <- lookupGetParam "filter"
-    let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FilterJsonMsg]
+    let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FS.Filter]
     defaultSortParam <- lookupGetParam "sort"
-    let defaultSortJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultSortParam) :: Maybe [SortJsonMsg]
+    let defaultSortJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultSortParam) :: Maybe [FS.Sort]
     defaultOffsetParam <- lookupGetParam "start"
     defaultLimitParam <- lookupGetParam "limit"
     let defaultOffset = (maybe Nothing PP.fromPathPiece defaultOffsetParam) :: Maybe Int64
@@ -88,8 +89,8 @@ getUsergroupcontentsR  = lift $ runDB $ do
                 offset 0
                 limit 10000
                 case defaultSortJson of 
-                    Just xs -> mapM_ (\sjm -> case sortJsonMsg_property sjm of
-                            "userGroupName" -> case (sortJsonMsg_direction sjm) of 
+                    Just xs -> mapM_ (\sjm -> case FS.s_field sjm of
+                            "userGroupName" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (ug  ^.  UserGroupName) ] 
                                 "DESC" -> orderBy [ desc (ug  ^.  UserGroupName) ] 
                                 _      -> return ()
@@ -107,45 +108,60 @@ getUsergroupcontentsR  = lift $ runDB $ do
                  
             else return ()
         case defaultFilterJson of 
-            Just xs -> mapM_ (\fjm -> case filterJsonMsg_field_or_property fjm of
-                "id" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ugc  ^.  UserGroupContentId) (val v')
+            Just xs -> mapM_ (\fjm -> case FS.f_field fjm of
+                "id" -> case (FS.f_value fjm >>= PP.fromPathPiece)  of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentId) (val v')
                     _        -> return ()
-                "createPeriods" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupCreatePeriods) ((val v'))
+                "createPeriods" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupCreatePeriods) ((val v'))
                     _        -> return ()
-                "email" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupEmail) ((val v'))
+                "email" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupEmail) ((val v'))
                     _        -> return ()
-                "current" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupCurrent) ((val v'))
+                "current" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupCurrent) ((val v'))
                     _        -> return ()
-                "name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupName) ((val v'))
+                "name" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupName) ((val v'))
                     _        -> return ()
-                "userGroupId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ugc  ^.  UserGroupContentUserGroupId) ((val v'))
+                "userGroupId" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentUserGroupId) ((val v'))
                     _        -> return ()
-                "fileContentId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ugc  ^.  UserGroupContentFileContentId) (just ((val v')))
-                    _        -> return ()
-                "userGroupContentId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ugc  ^.  UserGroupContentUserGroupContentId) (just ((val v')))
-                    _        -> return ()
-                "userContentId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ugc  ^.  UserGroupContentUserContentId) (just ((val v')))
-                    _        -> return ()
-                "receiptContentId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ugc  ^.  UserGroupContentReceiptContentId) (just ((val v')))
-                    _        -> return ()
-                "processPeriodContentId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ugc  ^.  UserGroupContentProcessPeriodContentId) (just ((val v')))
-                    _        -> return ()
+                "fileContentId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentFileContentId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentFileContentId) nothing
+                           
+                "userGroupContentId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentUserGroupContentId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentUserGroupContentId) nothing
+                           
+                "userContentId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentUserContentId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentUserContentId) nothing
+                           
+                "receiptContentId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentReceiptContentId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentReceiptContentId) nothing
+                           
+                "processPeriodContentId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentProcessPeriodContentId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentProcessPeriodContentId) nothing
+                           
 
                 _ -> return ()
                 ) xs
             Nothing -> return ()  
-        if hasDefaultFilter filterParam_hideDeleted defaultFilterJson "hideDeleted" 
+        if FS.hasDefaultFilter filterParam_hideDeleted defaultFilterJson "hideDeleted" 
             then do 
                  
                 where_ $ (ugc ^. UserGroupContentDeletedVersionId) `is` (nothing)

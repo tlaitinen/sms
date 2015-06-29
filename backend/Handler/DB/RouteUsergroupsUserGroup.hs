@@ -20,6 +20,7 @@ import Handler.DB.Enums
 import Handler.DB.Esqueleto
 import Handler.DB.Internal
 import Handler.DB.Validation
+import qualified Handler.DB.FilterSort as FS
 import qualified Handler.DB.PathPieces as PP
 import Prelude
 import Database.Esqueleto

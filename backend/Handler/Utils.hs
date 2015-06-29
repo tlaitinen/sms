@@ -15,7 +15,7 @@ hasReadPermMaybe aId fld = exists $ from $ \ugc -> do
         on $ ug ^. UserGroupId ==. ugi ^. UserGroupItemUserGroupId
         where_ $ ugi ^. UserGroupItemUserId ==. aId
         where_ $ not_ $ isNothing $ ugc ^. (userGroupContentContentIdField fld)
-        where_ $ ugi ^. UserGroupItemDeletedVersionId `is` nothing
+        where_ $ isNothing $ ugi ^. UserGroupItemDeletedVersionId
         where_ $ ug ^. UserGroupId ==. ugc ^. UserGroupContentUserGroupId
         where_ $ isNothing $ ugc ^. UserGroupContentDeletedVersionId
 
@@ -32,6 +32,6 @@ hasWritePerm aId fld' = let fld = just fld' in exists $ from $ \ugc -> do
         where_ $ ugi ^. UserGroupItemUserId ==. aId
         where_ $ ugi ^. UserGroupItemMode ==. val UserGroupModeReadWrite
         where_ $ not_ $ isNothing $ ugc ^. (userGroupContentContentIdField fld)
-        where_ $ ugi ^. UserGroupItemDeletedVersionId `is` nothing
+        where_ $ isNothing $ ugi ^. UserGroupItemDeletedVersionId
         where_ $ ug ^. UserGroupId ==. ugc ^. UserGroupContentUserGroupId
         where_ $ isNothing $ ugc ^. UserGroupContentDeletedVersionId

@@ -20,6 +20,7 @@ import Handler.DB.Enums
 import Handler.DB.Esqueleto
 import Handler.DB.Internal
 import Handler.DB.Validation
+import qualified Handler.DB.FilterSort as FS
 import qualified Handler.DB.PathPieces as PP
 import Prelude
 import Database.Esqueleto
@@ -70,9 +71,9 @@ getReceiptsR :: forall master. (
 getReceiptsR  = lift $ runDB $ do
     authId <- lift $ requireAuthId
     defaultFilterParam <- lookupGetParam "filter"
-    let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FilterJsonMsg]
+    let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FS.Filter]
     defaultSortParam <- lookupGetParam "sort"
-    let defaultSortJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultSortParam) :: Maybe [SortJsonMsg]
+    let defaultSortJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultSortParam) :: Maybe [FS.Sort]
     defaultOffsetParam <- lookupGetParam "start"
     defaultLimitParam <- lookupGetParam "limit"
     let defaultOffset = (maybe Nothing PP.fromPathPiece defaultOffsetParam) :: Maybe Int64
@@ -91,28 +92,28 @@ getReceiptsR  = lift $ runDB $ do
                 offset 0
                 limit 10000
                 case defaultSortJson of 
-                    Just xs -> mapM_ (\sjm -> case sortJsonMsg_property sjm of
-                            "fileId" -> case (sortJsonMsg_direction sjm) of 
+                    Just xs -> mapM_ (\sjm -> case FS.s_field sjm of
+                            "fileId" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (r  ^.  ReceiptFileId) ] 
                                 "DESC" -> orderBy [ desc (r  ^.  ReceiptFileId) ] 
                                 _      -> return ()
-                            "processPeriodId" -> case (sortJsonMsg_direction sjm) of 
+                            "processPeriodId" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (r  ^.  ReceiptProcessPeriodId) ] 
                                 "DESC" -> orderBy [ desc (r  ^.  ReceiptProcessPeriodId) ] 
                                 _      -> return ()
-                            "amount" -> case (sortJsonMsg_direction sjm) of 
+                            "amount" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (r  ^.  ReceiptAmount) ] 
                                 "DESC" -> orderBy [ desc (r  ^.  ReceiptAmount) ] 
                                 _      -> return ()
-                            "name" -> case (sortJsonMsg_direction sjm) of 
+                            "name" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (r  ^.  ReceiptName) ] 
                                 "DESC" -> orderBy [ desc (r  ^.  ReceiptName) ] 
                                 _      -> return ()
-                            "insertionTime" -> case (sortJsonMsg_direction sjm) of 
+                            "insertionTime" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (r  ^.  ReceiptInsertionTime) ] 
                                 "DESC" -> orderBy [ desc (r  ^.  ReceiptInsertionTime) ] 
                                 _      -> return ()
-                            "insertedByUserId" -> case (sortJsonMsg_direction sjm) of 
+                            "insertedByUserId" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (r  ^.  ReceiptInsertedByUserId) ] 
                                 "DESC" -> orderBy [ desc (r  ^.  ReceiptInsertedByUserId) ] 
                                 _      -> return ()
@@ -130,79 +131,106 @@ getReceiptsR  = lift $ runDB $ do
                  
             else return ()
         case defaultFilterJson of 
-            Just xs -> mapM_ (\fjm -> case filterJsonMsg_field_or_property fjm of
-                "id" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptId) (val v')
+            Just xs -> mapM_ (\fjm -> case FS.f_field fjm of
+                "id" -> case (FS.f_value fjm >>= PP.fromPathPiece)  of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (r  ^.  ReceiptId) (val v')
                     _        -> return ()
-                "f.contentType" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileContentType) ((val v'))
+                "f.contentType" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileContentType) ((val v'))
                     _        -> return ()
-                "f.size" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileSize) ((val v'))
+                "f.size" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileSize) ((val v'))
                     _        -> return ()
-                "f.previewOfFileId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FilePreviewOfFileId) (just ((val v')))
+                "f.previewOfFileId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FilePreviewOfFileId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FilePreviewOfFileId) nothing
+                           
+                "f.name" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileName) ((val v'))
                     _        -> return ()
-                "f.name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileName) ((val v'))
+                "f.insertionTime" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileInsertionTime) ((val v'))
                     _        -> return ()
-                "f.insertionTime" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileInsertionTime) ((val v'))
+                "f.insertedByUserId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileInsertedByUserId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileInsertedByUserId) nothing
+                           
+                "pf.contentType" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pf  ?.  FileContentType) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pf  ?.  FileContentType) nothing
+                           
+                "pf.size" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pf  ?.  FileSize) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pf  ?.  FileSize) nothing
+                           
+                "pf.previewOfFileId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pf  ?.  FilePreviewOfFileId) (just (just ((val v'))))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pf  ?.  FilePreviewOfFileId) nothing
+                           
+                "pf.name" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pf  ?.  FileName) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pf  ?.  FileName) nothing
+                           
+                "pf.insertionTime" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pf  ?.  FileInsertionTime) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pf  ?.  FileInsertionTime) nothing
+                           
+                "pf.insertedByUserId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pf  ?.  FileInsertedByUserId) (just (just ((val v'))))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pf  ?.  FileInsertedByUserId) nothing
+                           
+                "fileId" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (r  ^.  ReceiptFileId) ((val v'))
                     _        -> return ()
-                "f.insertedByUserId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileInsertedByUserId) (just ((val v')))
+                "processPeriodId" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (r  ^.  ReceiptProcessPeriodId) ((val v'))
                     _        -> return ()
-                "pf.contentType" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pf  ?.  FileContentType) (just ((val v')))
+                "amount" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (r  ^.  ReceiptAmount) ((val v'))
                     _        -> return ()
-                "pf.size" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pf  ?.  FileSize) (just ((val v')))
+                "name" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (r  ^.  ReceiptName) ((val v'))
                     _        -> return ()
-                "pf.previewOfFileId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pf  ?.  FilePreviewOfFileId) (just (just ((val v'))))
+                "insertionTime" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (r  ^.  ReceiptInsertionTime) ((val v'))
                     _        -> return ()
-                "pf.name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pf  ?.  FileName) (just ((val v')))
-                    _        -> return ()
-                "pf.insertionTime" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pf  ?.  FileInsertionTime) (just ((val v')))
-                    _        -> return ()
-                "pf.insertedByUserId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (pf  ?.  FileInsertedByUserId) (just (just ((val v'))))
-                    _        -> return ()
-                "fileId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptFileId) ((val v'))
-                    _        -> return ()
-                "processPeriodId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptProcessPeriodId) ((val v'))
-                    _        -> return ()
-                "amount" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptAmount) ((val v'))
-                    _        -> return ()
-                "name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptName) ((val v'))
-                    _        -> return ()
-                "insertionTime" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptInsertionTime) ((val v'))
-                    _        -> return ()
-                "insertedByUserId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (r  ^.  ReceiptInsertedByUserId) (just ((val v')))
-                    _        -> return ()
+                "insertedByUserId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (r  ^.  ReceiptInsertedByUserId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (r  ^.  ReceiptInsertedByUserId) nothing
+                           
 
                 _ -> return ()
                 ) xs
             Nothing -> return ()  
-        case getDefaultFilter filterParam_query defaultFilterJson "query" of
+        case FS.getDefaultFilter filterParam_query defaultFilterJson "query" of
             Just localParam -> do 
                 
                 where_ $ (r ^. ReceiptName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))
             Nothing -> return ()
-        if hasDefaultFilter filterParam_hideDeleted defaultFilterJson "hideDeleted" 
+        if FS.hasDefaultFilter filterParam_hideDeleted defaultFilterJson "hideDeleted" 
             then do 
                  
                 where_ $ (r ^. ReceiptDeletedVersionId) `is` (nothing)
             else return ()
-        case getDefaultFilter filterParam_processPeriodId defaultFilterJson "processPeriodId" of
+        case FS.getDefaultFilter filterParam_processPeriodId defaultFilterJson "processPeriodId" of
             Just localParam -> do 
                 
                 where_ $ (r ^. ReceiptProcessPeriodId) ==. (val localParam)

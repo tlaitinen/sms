@@ -14,6 +14,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
+{-# OPTIONS_GHC -fno-warn-unused-matches #-}
 module Handler.DB.Internal where
 import Handler.DB.Enums
 import Handler.DB.Esqueleto
@@ -22,7 +23,7 @@ import Prelude
 import Control.Monad (forM_, when)
 import Control.Monad.Catch (MonadThrow)
 import Database.Esqueleto
-import Database.Esqueleto.Internal.Sql (unsafeSqlBinOp, unsafeSqlExtractSubField, UnsafeSqlFunctionArgument)
+import qualified Database.Esqueleto as E
 import qualified Database.Persist as P
 import Database.Persist.TH
 import Yesod.Auth (requireAuth, requireAuthId, YesodAuth, AuthId, YesodAuthPersist)
@@ -60,74 +61,8 @@ import qualified Data.HashMap.Strict as HMS
 import qualified Data.Text.Lazy.Builder as TLB
 data DB = DB
 
-data FilterJsonMsg = FilterJsonMsg {
-    filterJsonMsg_type :: Text,
-    filterJsonMsg_value :: Text,
-    filterJsonMsg_field :: Text,
-    filterJsonMsg_property :: Text,
-    filterJsonMsg_comparison :: Text
-} 
-filterJsonMsg_field_or_property :: FilterJsonMsg -> Text
-filterJsonMsg_field_or_property fjm
-    | not $ T.null $ filterJsonMsg_field fjm = filterJsonMsg_field fjm
-    | otherwise = filterJsonMsg_property fjm
 
-instance FromJSON FilterJsonMsg where
-    parseJSON (A.Object v) = FilterJsonMsg <$>
-        v .:? "type" .!= "string" <*> 
-        (parseStringOrInt v) <*>
-        v .:? "field" .!= "" <*>
-        v .:? "property" .!= "" <*>
-        v .:? "comparison" .!= "eq"
-    parseJSON _ = mzero
-
-instance IsString (Maybe Text) where
-    fromString "" = Nothing
-    fromString a  = Just $ T.pack a
-
-parseStringOrInt :: HMS.HashMap Text A.Value -> AT.Parser Text
-parseStringOrInt hm = case HMS.lookup "value" hm of
-    Just (A.Number n) -> return $ T.pack $ show n
-    Just (A.String s) -> return s
-    _ -> mzero
-
-data SortJsonMsg = SortJsonMsg {
-    sortJsonMsg_property :: Text,
-    sortJsonMsg_direction :: Text
-}
-
-$(deriveJSON defaultOptions{fieldLabelModifier = drop 12} ''SortJsonMsg)
-
--- defaultFilterOp :: forall v typ. PersistField typ => Text -> EntityField v typ -> typ -> Filter v
-defaultFilterOp "eq" = (==.)
-defaultFilterOp "neq" = (!=.)
-defaultFilterOp "lt" = (<.)
-defaultFilterOp "gt" = (>.)
-defaultFilterOp "le" = (<=.)
-defaultFilterOp "ge" = (>=.)
-defaultFilterOp _ = (==.)
-
-is = unsafeSqlBinOp " IS "
-
-extractSubField :: UnsafeSqlFunctionArgument a => TLB.Builder -> a -> SqlExpr (Database.Esqueleto.Value Double)
-extractSubField = unsafeSqlExtractSubField
-
-getDefaultFilter maybeGetParam defaultFilterJson p = do
-    f <- maybe maybeGetParam Just getFilter
-    PP.fromPathPiece f
-    where 
-        getFilter = do            
-            j <- defaultFilterJson
-            v <- DL.find (\fjm -> filterJsonMsg_property fjm == p) j
-            return (filterJsonMsg_value v)
-hasDefaultFilter maybeGetParam defaultFilterJson p = isJust $
-    maybe maybeGetParam Just getFilter
-    where
-        getFilter = do
-            j <- defaultFilterJson
-            v <- DL.find (\fjm -> filterJsonMsg_property fjm == p) j
-            return (filterJsonMsg_value v)
-share [mkPersist sqlOnlySettings, mkMigrate "migrateDB" ] [persistLowerCase|
+share [mkPersist sqlSettings, mkMigrate "migrateDB" ] [persistLowerCase|
 File json
     contentType Text  
     size Int32  

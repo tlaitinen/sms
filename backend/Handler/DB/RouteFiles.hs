@@ -20,6 +20,7 @@ import Handler.DB.Enums
 import Handler.DB.Esqueleto
 import Handler.DB.Internal
 import Handler.DB.Validation
+import qualified Handler.DB.FilterSort as FS
 import qualified Handler.DB.PathPieces as PP
 import Prelude
 import Database.Esqueleto
@@ -70,9 +71,9 @@ getFilesR :: forall master. (
 getFilesR  = lift $ runDB $ do
     authId <- lift $ requireAuthId
     defaultFilterParam <- lookupGetParam "filter"
-    let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FilterJsonMsg]
+    let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FS.Filter]
     defaultSortParam <- lookupGetParam "sort"
-    let defaultSortJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultSortParam) :: Maybe [SortJsonMsg]
+    let defaultSortJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultSortParam) :: Maybe [FS.Sort]
     defaultOffsetParam <- lookupGetParam "start"
     defaultLimitParam <- lookupGetParam "limit"
     let defaultOffset = (maybe Nothing PP.fromPathPiece defaultOffsetParam) :: Maybe Int64
@@ -90,28 +91,28 @@ getFilesR  = lift $ runDB $ do
                 offset 0
                 limit 10000
                 case defaultSortJson of 
-                    Just xs -> mapM_ (\sjm -> case sortJsonMsg_property sjm of
-                            "contentType" -> case (sortJsonMsg_direction sjm) of 
+                    Just xs -> mapM_ (\sjm -> case FS.s_field sjm of
+                            "contentType" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (f  ^.  FileContentType) ] 
                                 "DESC" -> orderBy [ desc (f  ^.  FileContentType) ] 
                                 _      -> return ()
-                            "size" -> case (sortJsonMsg_direction sjm) of 
+                            "size" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (f  ^.  FileSize) ] 
                                 "DESC" -> orderBy [ desc (f  ^.  FileSize) ] 
                                 _      -> return ()
-                            "previewOfFileId" -> case (sortJsonMsg_direction sjm) of 
+                            "previewOfFileId" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (f  ^.  FilePreviewOfFileId) ] 
                                 "DESC" -> orderBy [ desc (f  ^.  FilePreviewOfFileId) ] 
                                 _      -> return ()
-                            "name" -> case (sortJsonMsg_direction sjm) of 
+                            "name" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (f  ^.  FileName) ] 
                                 "DESC" -> orderBy [ desc (f  ^.  FileName) ] 
                                 _      -> return ()
-                            "insertionTime" -> case (sortJsonMsg_direction sjm) of 
+                            "insertionTime" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (f  ^.  FileInsertionTime) ] 
                                 "DESC" -> orderBy [ desc (f  ^.  FileInsertionTime) ] 
                                 _      -> return ()
-                            "insertedByUserId" -> case (sortJsonMsg_direction sjm) of 
+                            "insertedByUserId" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (f  ^.  FileInsertedByUserId) ] 
                                 "DESC" -> orderBy [ desc (f  ^.  FileInsertedByUserId) ] 
                                 _      -> return ()
@@ -129,48 +130,54 @@ getFilesR  = lift $ runDB $ do
                  
             else return ()
         case defaultFilterJson of 
-            Just xs -> mapM_ (\fjm -> case filterJsonMsg_field_or_property fjm of
-                "id" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileId) (val v')
+            Just xs -> mapM_ (\fjm -> case FS.f_field fjm of
+                "id" -> case (FS.f_value fjm >>= PP.fromPathPiece)  of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileId) (val v')
                     _        -> return ()
-                "contentType" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileContentType) ((val v'))
+                "contentType" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileContentType) ((val v'))
                     _        -> return ()
-                "size" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileSize) ((val v'))
+                "size" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileSize) ((val v'))
                     _        -> return ()
-                "previewOfFileId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FilePreviewOfFileId) (just ((val v')))
+                "previewOfFileId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FilePreviewOfFileId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FilePreviewOfFileId) nothing
+                           
+                "name" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileName) ((val v'))
                     _        -> return ()
-                "name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileName) ((val v'))
+                "insertionTime" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileInsertionTime) ((val v'))
                     _        -> return ()
-                "insertionTime" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileInsertionTime) ((val v'))
-                    _        -> return ()
-                "insertedByUserId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (f  ^.  FileInsertedByUserId) (just ((val v')))
-                    _        -> return ()
+                "insertedByUserId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileInsertedByUserId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileInsertedByUserId) nothing
+                           
 
                 _ -> return ()
                 ) xs
             Nothing -> return ()  
-        case getDefaultFilter filterParam_query defaultFilterJson "query" of
+        case FS.getDefaultFilter filterParam_query defaultFilterJson "query" of
             Just localParam -> do 
                 
                 where_ $ (f ^. FileName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))
             Nothing -> return ()
-        case getDefaultFilter filterParam_contentType defaultFilterJson "contentType" of
+        case FS.getDefaultFilter filterParam_contentType defaultFilterJson "contentType" of
             Just localParam -> do 
                 
                 where_ $ (f ^. FileContentType) ==. (val localParam)
             Nothing -> return ()
-        case getDefaultFilter filterParam_contentTypeList defaultFilterJson "contentTypeList" of
+        case FS.getDefaultFilter filterParam_contentTypeList defaultFilterJson "contentTypeList" of
             Just localParam -> do 
                 
                 where_ $ (f ^. FileContentType) `in_` (valList localParam)
             Nothing -> return ()
-        if hasDefaultFilter filterParam_hideDeleted defaultFilterJson "hideDeleted" 
+        if FS.hasDefaultFilter filterParam_hideDeleted defaultFilterJson "hideDeleted" 
             then do 
                  
                 where_ $ (f ^. FileDeletedVersionId) `is` (nothing)

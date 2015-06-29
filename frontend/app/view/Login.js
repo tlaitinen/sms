@@ -18,12 +18,14 @@ Ext.define('Receipts.view.Login',{
                 {
                     fieldLabel: __('login.username'),
                     name: 'username',
+                    enableKeyEvents:true,
                     allowBlank:false
                 },
                 {
                     fieldLabel : __('login.password'),
                     name : 'password',
                     inputType:'password',
+                    enableKeyEvents:true,
                     allowBlank:false
                 }
             ],

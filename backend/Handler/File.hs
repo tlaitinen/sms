@@ -1,6 +1,6 @@
 module Handler.File where
 
-import Import hiding ((==.), on)
+import Import hiding ((==.), on, isNothing)
 import Handler.DB
 import Yesod.Auth
 import Data.Int
@@ -29,7 +29,7 @@ getFileR fileId = do
                             (subList_select $ from $ (\(ug `InnerJoin` ugi) -> do
                                 on (ugi ^. UserGroupItemUserGroupId ==. ug ^. UserGroupId)
                                 where_ (ugi ^. UserGroupItemUserId ==. (val authId))
-                                where_ (ugi ^. UserGroupItemDeletedVersionId `is` nothing)
+                                where_ $ isNothing $ ugi ^. UserGroupItemDeletedVersionId
                                 return (ug ^. UserGroupId))))
                         return $ ugc ^. UserGroupContentFileContentId))
             where_ (f ^. FileId ==. (val fileId))

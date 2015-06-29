@@ -20,6 +20,7 @@ import Handler.DB.Enums
 import Handler.DB.Esqueleto
 import Handler.DB.Internal
 import Handler.DB.Validation
+import qualified Handler.DB.FilterSort as FS
 import qualified Handler.DB.PathPieces as PP
 import Prelude
 import Database.Esqueleto
@@ -70,9 +71,9 @@ getUsergroupsR :: forall master. (
 getUsergroupsR  = lift $ runDB $ do
     authId <- lift $ requireAuthId
     defaultFilterParam <- lookupGetParam "filter"
-    let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FilterJsonMsg]
+    let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FS.Filter]
     defaultSortParam <- lookupGetParam "sort"
-    let defaultSortJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultSortParam) :: Maybe [SortJsonMsg]
+    let defaultSortJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultSortParam) :: Maybe [FS.Sort]
     defaultOffsetParam <- lookupGetParam "start"
     defaultLimitParam <- lookupGetParam "limit"
     let defaultOffset = (maybe Nothing PP.fromPathPiece defaultOffsetParam) :: Maybe Int64
@@ -89,20 +90,20 @@ getUsergroupsR  = lift $ runDB $ do
                 offset 0
                 limit 10000
                 case defaultSortJson of 
-                    Just xs -> mapM_ (\sjm -> case sortJsonMsg_property sjm of
-                            "createPeriods" -> case (sortJsonMsg_direction sjm) of 
+                    Just xs -> mapM_ (\sjm -> case FS.s_field sjm of
+                            "createPeriods" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (ug  ^.  UserGroupCreatePeriods) ] 
                                 "DESC" -> orderBy [ desc (ug  ^.  UserGroupCreatePeriods) ] 
                                 _      -> return ()
-                            "email" -> case (sortJsonMsg_direction sjm) of 
+                            "email" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (ug  ^.  UserGroupEmail) ] 
                                 "DESC" -> orderBy [ desc (ug  ^.  UserGroupEmail) ] 
                                 _      -> return ()
-                            "current" -> case (sortJsonMsg_direction sjm) of 
+                            "current" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (ug  ^.  UserGroupCurrent) ] 
                                 "DESC" -> orderBy [ desc (ug  ^.  UserGroupCurrent) ] 
                                 _      -> return ()
-                            "name" -> case (sortJsonMsg_direction sjm) of 
+                            "name" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (ug  ^.  UserGroupName) ] 
                                 "DESC" -> orderBy [ desc (ug  ^.  UserGroupName) ] 
                                 _      -> return ()
@@ -120,37 +121,37 @@ getUsergroupsR  = lift $ runDB $ do
                  
             else return ()
         case defaultFilterJson of 
-            Just xs -> mapM_ (\fjm -> case filterJsonMsg_field_or_property fjm of
-                "id" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupId) (val v')
+            Just xs -> mapM_ (\fjm -> case FS.f_field fjm of
+                "id" -> case (FS.f_value fjm >>= PP.fromPathPiece)  of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupId) (val v')
                     _        -> return ()
-                "createPeriods" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupCreatePeriods) ((val v'))
+                "createPeriods" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupCreatePeriods) ((val v'))
                     _        -> return ()
-                "email" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupEmail) ((val v'))
+                "email" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupEmail) ((val v'))
                     _        -> return ()
-                "current" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupCurrent) ((val v'))
+                "current" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupCurrent) ((val v'))
                     _        -> return ()
-                "name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (ug  ^.  UserGroupName) ((val v'))
+                "name" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupName) ((val v'))
                     _        -> return ()
 
                 _ -> return ()
                 ) xs
             Nothing -> return ()  
-        case getDefaultFilter filterParam_query defaultFilterJson "query" of
+        case FS.getDefaultFilter filterParam_query defaultFilterJson "query" of
             Just localParam -> do 
                 
                 where_ $ (ug ^. UserGroupName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))
             Nothing -> return ()
-        case getDefaultFilter filterParam_musicPieceIdList defaultFilterJson "musicPieceIdList" of
+        case FS.getDefaultFilter filterParam_musicPieceIdList defaultFilterJson "musicPieceIdList" of
             Just localParam -> do 
                 
                 where_ $ (ug ^. UserGroupId) `in_` (subList_select $ from $ \(ugi) -> do {  ; where_ (((ugi ^. UserGroupItemUserId) `in_` (valList localParam)) &&. ((ugi ^. UserGroupItemDeletedVersionId) `is` (nothing))) ; return (ugi ^. UserGroupItemUserGroupId) ; })
             Nothing -> return ()
-        if hasDefaultFilter filterParam_hideDeleted defaultFilterJson "hideDeleted" 
+        if FS.hasDefaultFilter filterParam_hideDeleted defaultFilterJson "hideDeleted" 
             then do 
                  
                 where_ $ (ug ^. UserGroupDeletedVersionId) `is` (nothing)

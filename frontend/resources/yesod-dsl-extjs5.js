@@ -332,7 +332,7 @@ var yesodDsl = function(defs, __, config) {
                     extend: 'Ext.data.Model',
                     fields: _.map(h.outputs, function (o) {
                         var t = o.references ? "auto" : o.type;
-                        if (t == "utctime")
+                        if (t == "utctime" || t == "day")
                             t = "date";
                         return {
                             "name" : o.name,

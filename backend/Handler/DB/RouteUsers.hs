@@ -20,6 +20,7 @@ import Handler.DB.Enums
 import Handler.DB.Esqueleto
 import Handler.DB.Internal
 import Handler.DB.Validation
+import qualified Handler.DB.FilterSort as FS
 import qualified Handler.DB.PathPieces as PP
 import Prelude
 import Database.Esqueleto
@@ -70,9 +71,9 @@ getUsersR :: forall master. (
 getUsersR  = lift $ runDB $ do
     authId <- lift $ requireAuthId
     defaultFilterParam <- lookupGetParam "filter"
-    let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FilterJsonMsg]
+    let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FS.Filter]
     defaultSortParam <- lookupGetParam "sort"
-    let defaultSortJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultSortParam) :: Maybe [SortJsonMsg]
+    let defaultSortJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultSortParam) :: Maybe [FS.Sort]
     defaultOffsetParam <- lookupGetParam "start"
     defaultLimitParam <- lookupGetParam "limit"
     let defaultOffset = (maybe Nothing PP.fromPathPiece defaultOffsetParam) :: Maybe Int64
@@ -89,32 +90,32 @@ getUsersR  = lift $ runDB $ do
                 offset 0
                 limit 10000
                 case defaultSortJson of 
-                    Just xs -> mapM_ (\sjm -> case sortJsonMsg_property sjm of
-                            "name" -> case (sortJsonMsg_direction sjm) of 
+                    Just xs -> mapM_ (\sjm -> case FS.s_field sjm of
+                            "name" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (u  ^.  UserName) ] 
                                 "DESC" -> orderBy [ desc (u  ^.  UserName) ] 
                                 _      -> return ()
-                            "firstName" -> case (sortJsonMsg_direction sjm) of 
+                            "firstName" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (u  ^.  UserFirstName) ] 
                                 "DESC" -> orderBy [ desc (u  ^.  UserFirstName) ] 
                                 _      -> return ()
-                            "lastName" -> case (sortJsonMsg_direction sjm) of 
+                            "lastName" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (u  ^.  UserLastName) ] 
                                 "DESC" -> orderBy [ desc (u  ^.  UserLastName) ] 
                                 _      -> return ()
-                            "organization" -> case (sortJsonMsg_direction sjm) of 
+                            "organization" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (u  ^.  UserOrganization) ] 
                                 "DESC" -> orderBy [ desc (u  ^.  UserOrganization) ] 
                                 _      -> return ()
-                            "timeZone" -> case (sortJsonMsg_direction sjm) of 
+                            "timeZone" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (u  ^.  UserTimeZone) ] 
                                 "DESC" -> orderBy [ desc (u  ^.  UserTimeZone) ] 
                                 _      -> return ()
-                            "defaultUserGroupId" -> case (sortJsonMsg_direction sjm) of 
+                            "defaultUserGroupId" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (u  ^.  UserDefaultUserGroupId) ] 
                                 "DESC" -> orderBy [ desc (u  ^.  UserDefaultUserGroupId) ] 
                                 _      -> return ()
-                            "email" -> case (sortJsonMsg_direction sjm) of 
+                            "email" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (u  ^.  UserEmail) ] 
                                 "DESC" -> orderBy [ desc (u  ^.  UserEmail) ] 
                                 _      -> return ()
@@ -132,57 +133,57 @@ getUsersR  = lift $ runDB $ do
                  
             else return ()
         case defaultFilterJson of 
-            Just xs -> mapM_ (\fjm -> case filterJsonMsg_field_or_property fjm of
-                "id" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserId) (val v')
+            Just xs -> mapM_ (\fjm -> case FS.f_field fjm of
+                "id" -> case (FS.f_value fjm >>= PP.fromPathPiece)  of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserId) (val v')
                     _        -> return ()
-                "firstName" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserFirstName) ((val v'))
+                "firstName" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserFirstName) ((val v'))
                     _        -> return ()
-                "lastName" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserLastName) ((val v'))
+                "lastName" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserLastName) ((val v'))
                     _        -> return ()
-                "organization" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserOrganization) ((val v'))
+                "organization" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserOrganization) ((val v'))
                     _        -> return ()
-                "admin" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserAdmin) ((val v'))
+                "admin" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserAdmin) ((val v'))
                     _        -> return ()
-                "email" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserEmail) ((val v'))
+                "email" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserEmail) ((val v'))
                     _        -> return ()
-                "defaultUserGroupId" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserDefaultUserGroupId) ((val v'))
+                "defaultUserGroupId" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserDefaultUserGroupId) ((val v'))
                     _        -> return ()
-                "timeZone" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserTimeZone) ((val v'))
+                "timeZone" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserTimeZone) ((val v'))
                     _        -> return ()
-                "current" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserCurrent) ((val v'))
+                "current" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserCurrent) ((val v'))
                     _        -> return ()
-                "config" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserConfig) ((val v'))
+                "config" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserConfig) ((val v'))
                     _        -> return ()
-                "name" -> case (PP.fromPathPiece $ filterJsonMsg_value fjm) of 
-                    (Just v') -> where_ $ defaultFilterOp (filterJsonMsg_comparison fjm) (u  ^.  UserName) ((val v'))
+                "name" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserName) ((val v'))
                     _        -> return ()
 
                 _ -> return ()
                 ) xs
             Nothing -> return ()  
-        case getDefaultFilter filterParam_query defaultFilterJson "query" of
+        case FS.getDefaultFilter filterParam_query defaultFilterJson "query" of
             Just localParam -> do 
                 
                 where_ $ (u ^. UserName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))
             Nothing -> return ()
-        case getDefaultFilter filterParam_userGroupId defaultFilterJson "userGroupId" of
+        case FS.getDefaultFilter filterParam_userGroupId defaultFilterJson "userGroupId" of
             Just localParam -> from $ \(ugi) -> do
  
                 where_ ((u ^. UserId) ==. (ugi ^. UserGroupItemUserId))
                 
                 where_ $ (ugi ^. UserGroupItemUserGroupId) ==. (val localParam)
             Nothing -> return ()
-        if hasDefaultFilter filterParam_hideDeleted defaultFilterJson "hideDeleted" 
+        if FS.hasDefaultFilter filterParam_hideDeleted defaultFilterJson "hideDeleted" 
             then do 
                  
                 where_ $ (u ^. UserDeletedVersionId) `is` (nothing)
