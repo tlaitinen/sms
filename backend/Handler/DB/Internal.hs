@@ -83,7 +83,7 @@ UserGroupContent json
     processPeriodContentId ProcessPeriodId Maybe   default=NULL
     deletedVersionId VersionId Maybe   default=NULL
 UserGroup json
-    createPeriods Bool  "default=True"
+    createPeriods Int32  "default=1"
     email Text  "default=''"
     current Checkmark  "default=True" nullable
     name Text  
@@ -161,7 +161,7 @@ newUserGroupContent userGroupId_ = UserGroupContent {
 }    
 newUserGroup :: Text -> UserGroup
 newUserGroup name_ = UserGroup {
-    userGroupCreatePeriods = True,
+    userGroupCreatePeriods = 1,
     userGroupEmail = "",
     userGroupCurrent = Active,
     userGroupName = name_,
@@ -918,6 +918,41 @@ instance UserGroupContentContentIdField UserGroup where
 instance UserGroupContentContentIdField File where
     userGroupContentContentIdField _ = UserGroupContentFileContentId
     
+
+userGroupContentContentIdExprFromString :: Text -> SqlExpr (Entity UserGroupContent) -> Text -> Maybe Text -> Maybe (SqlExpr (E.Value Bool))
+userGroupContentContentIdExprFromString "ProcessPeriod" e op vt = case vt of 
+    Just vt' -> PP.fromPathPiece vt' >>= \v -> Just $ defaultFilterOp False op (e ^. UserGroupContentProcessPeriodContentId) (val v)
+    Nothing -> Just $ defaultFilterOp False op (e ^. UserGroupContentProcessPeriodContentId) nothing
+   
+userGroupContentContentIdExprFromString "Receipt" e op vt = case vt of 
+    Just vt' -> PP.fromPathPiece vt' >>= \v -> Just $ defaultFilterOp False op (e ^. UserGroupContentReceiptContentId) (val v)
+    Nothing -> Just $ defaultFilterOp False op (e ^. UserGroupContentReceiptContentId) nothing
+   
+userGroupContentContentIdExprFromString "User" e op vt = case vt of 
+    Just vt' -> PP.fromPathPiece vt' >>= \v -> Just $ defaultFilterOp False op (e ^. UserGroupContentUserContentId) (val v)
+    Nothing -> Just $ defaultFilterOp False op (e ^. UserGroupContentUserContentId) nothing
+   
+userGroupContentContentIdExprFromString "UserGroup" e op vt = case vt of 
+    Just vt' -> PP.fromPathPiece vt' >>= \v -> Just $ defaultFilterOp False op (e ^. UserGroupContentUserGroupContentId) (val v)
+    Nothing -> Just $ defaultFilterOp False op (e ^. UserGroupContentUserGroupContentId) nothing
+   
+userGroupContentContentIdExprFromString "File" e op vt = case vt of 
+    Just vt' -> PP.fromPathPiece vt' >>= \v -> Just $ defaultFilterOp False op (e ^. UserGroupContentFileContentId) (val v)
+    Nothing -> Just $ defaultFilterOp False op (e ^. UserGroupContentFileContentId) nothing
+   
+
+userGroupContentContentIdExprFromString _ _ _ _ = Nothing
+
+userGroupContentContentIdExpr2FromString :: Text -> SqlExpr (Entity UserGroupContent) -> Text -> SqlExpr (Entity UserGroupContent) -> Maybe (SqlExpr (E.Value Bool))
+userGroupContentContentIdExpr2FromString "ProcessPeriod" e op e2 = Just $ defaultFilterOp False op (e ^. UserGroupContentProcessPeriodContentId) (e2 ^. UserGroupContentProcessPeriodContentId)
+userGroupContentContentIdExpr2FromString "Receipt" e op e2 = Just $ defaultFilterOp False op (e ^. UserGroupContentReceiptContentId) (e2 ^. UserGroupContentReceiptContentId)
+userGroupContentContentIdExpr2FromString "User" e op e2 = Just $ defaultFilterOp False op (e ^. UserGroupContentUserContentId) (e2 ^. UserGroupContentUserContentId)
+userGroupContentContentIdExpr2FromString "UserGroup" e op e2 = Just $ defaultFilterOp False op (e ^. UserGroupContentUserGroupContentId) (e2 ^. UserGroupContentUserGroupContentId)
+userGroupContentContentIdExpr2FromString "File" e op e2 = Just $ defaultFilterOp False op (e ^. UserGroupContentFileContentId) (e2 ^. UserGroupContentFileContentId)
+
+userGroupContentContentIdExpr2FromString _ _ _ _ = Nothing
+
+
 instance ToJSON Day where
     toJSON = toJSON . show
 

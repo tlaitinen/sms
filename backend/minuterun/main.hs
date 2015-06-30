@@ -43,46 +43,48 @@ minuteRun settings = do
     createProcessPeriods
     processLockedPeriods settings
 
+
+
+periodDatesRange :: Day -> Day -> [(Day,Day)]
+periodDatesRange start end
+    | sDay > 1 = periodDatesRange next end
+    | monthEnd < end = (start, monthEnd) : periodDatesRange next end
+    | otherwise = [(start,monthEnd)]
+    where
+        (sYear, sMonth, sDay) = toGregorian start
+        next = addGregorianMonthsRollOver 1 (fromGregorian sYear sMonth 1)
+        monthEnd = fromGregorian sYear sMonth (gregorianMonthLength sYear sMonth)
+    
 createProcessPeriods :: SqlPersistT (LoggingT IO) () 
 createProcessPeriods = do
     now <- liftIO $ getCurrentTime
-
     let today = utctDay now
-        (year, month, _) = toGregorian today
-        firstDay = fromGregorian year month 1
-        lastDay = fromGregorian year month (gregorianMonthLength year month)
-        prevMonthFirst = addGregorianMonthsRollOver (-1) firstDay
-        (prevYear, prevMonth, _) = toGregorian prevMonthFirst
-        prevMonthLast = fromGregorian prevYear prevMonth (gregorianMonthLength prevYear prevMonth)
-
+        (todayYear, todayMonth, _) = toGregorian today
+        firstDay periods = addGregorianMonthsRollOver (-periods)
+                                      (fromGregorian todayYear todayMonth 1)
+        
+        
     ugs <- select $ from $ \ug -> do
-        where_ $ ug ^. UserGroupCreatePeriods ==. val True
+        where_ $ ug ^. UserGroupCreatePeriods >=. val 0
         where_ $ isNothing $ ug ^. UserGroupDeletedVersionId
-        where_ $ notExists $ from $ \pp -> do
-            where_ $ pp ^. ProcessPeriodLastDay >=. val today
-            where_ $ exists $ from $ \ugc -> do
-                where_ $ ugc ^. UserGroupContentUserGroupId ==. ug ^. UserGroupId
-                where_ $ ugc ^. UserGroupContentProcessPeriodContentId ==. just (pp ^. ProcessPeriodId)
-                where_ $ isNothing $ ugc ^. UserGroupContentDeletedVersionId
         return ug        
-    forM_ ugs $ \(Entity ugId _) -> do
-        lastDayRows <- select $ from $ \pp -> do
-            where_ $ exists $ from $ \ugc -> do
-                where_ $ ugc ^. UserGroupContentUserGroupId ==. val ugId
-                where_ $ ugc ^. UserGroupContentProcessPeriodContentId ==. just (pp ^. ProcessPeriodId)
-                where_ $ isNothing $ ugc ^. UserGroupContentDeletedVersionId
-            return (max_ $ pp ^. ProcessPeriodLastDay)
-        let maxDay = case lastDayRows of
-                (E.Value (Just d)):_ -> d
-                _ -> addDays (-1) prevMonthFirst
-            periods = if maxDay < prevMonthLast 
-                    then [ (prevMonthFirst, prevMonthLast), (firstDay, lastDay) ] 
-                    else [ (firstDay, lastDay) ]
+    forM_ ugs $ \(Entity ugId ug) -> do
+        let periods = periodDatesRange (firstDay $ fromIntegral $ userGroupCreatePeriods ug) today
         forM_ periods $ \(fDay, lDay) -> void $ do
-            ppId <- insert $ newProcessPeriod fDay lDay 
-            insert $ (newUserGroupContent ugId) {
-                    userGroupContentProcessPeriodContentId = Just ppId
-                }
+            rows <- select $ from $ \pp -> do
+                where_ $ pp ^. ProcessPeriodFirstDay ==. val fDay
+                where_ $ pp ^. ProcessPeriodLastDay ==. val lDay
+                where_ $ notExists $ from $ \ugc -> do
+                    where_ $ ugc ^. UserGroupContentUserGroupId ==. val ugId
+                    where_ $ ugc ^. UserGroupContentProcessPeriodContentId ==. just (pp ^. ProcessPeriodId)
+                    where_ $ isNothing $ ugc ^. UserGroupContentDeletedVersionId            
+                return $ pp ^. ProcessPeriodId
+            when (null rows) $ do
+                ppId <- insert $ newProcessPeriod fDay lDay 
+                _ <- insert $ (newUserGroupContent ugId) {
+                        userGroupContentProcessPeriodContentId = Just ppId
+                    }
+                return ()    
 
 packReceipts :: AppSettings -> [(Entity Receipt, Entity File)] -> IO [Archive]
 packReceipts settings receipts = pack emptyArchive receipts

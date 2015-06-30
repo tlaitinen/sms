@@ -257,7 +257,7 @@
                         {
                             "references": null,
                             "name": "createPeriods",
-                            "type": "boolean"
+                            "type": "integer"
                         },
                         {
                             "references": null,
@@ -283,7 +283,7 @@
                         {
                             "references": null,
                             "name": "createPeriods",
-                            "type": "boolean"
+                            "type": "integer"
                         },
                         {
                             "references": null,
@@ -330,7 +330,7 @@
                         {
                             "references": null,
                             "name": "createPeriods",
-                            "type": "boolean"
+                            "type": "integer"
                         },
                         {
                             "references": null,
@@ -1124,9 +1124,9 @@
             "fields": [
                 {
                     "references": null,
-                    "default": true,
+                    "default": 1,
                     "name": "createPeriods",
-                    "type": "boolean",
+                    "type": "integer",
                     "optional": false
                 },
                 {

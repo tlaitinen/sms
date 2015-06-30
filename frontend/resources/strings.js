@@ -71,7 +71,7 @@ function __(k,d) {
         'upload.button' : 'Lisää tositteita tiputtamalla tiedostoja tähän.',
         'upload.uploading' : 'Ladataan...',
         'usergroupform.title' : 'Käyttäjäryhmän tietojen muokkaaminen',
-        'usergroupform.createPeriods' : 'Luo kirjanpitokuukaudet'
+        'usergroupform.createPeriods' : 'Luotavien kirjanpitokuukausien lkm.'
 
     };
     var parts = k.split('.');

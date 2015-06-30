@@ -16,7 +16,7 @@ entity UserGroupContent {
 
 entity UserGroup {
     instance of Named, Versioned, Deletable, Restricted;
-    createPeriods Bool default True;
+    createPeriods Int32 default 1;
     email Text default "";
 
     current Checkmark default CheckmarkActive;
