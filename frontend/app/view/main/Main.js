@@ -21,6 +21,8 @@ Ext.define('Receipts.view.main.Main', {
     items: [{
         region: 'center',
         xtype: 'tabpanel',
+        id: 'maintab',
+        reference: 'mainTab',
         tabBar: {
             items: [
                 { xtype: 'tbfill' },
@@ -35,6 +37,7 @@ Ext.define('Receipts.view.main.Main', {
         items:[
             {
                 name:'receipts',
+                id:'maintab-receipts',
                 reference: 'receiptsTab',
                 title: __('maintab.receipts'),
                 layout:{
@@ -54,6 +57,7 @@ Ext.define('Receipts.view.main.Main', {
             {
                 reference: 'usersTab',
                 hidden:true,
+                id:'maintab-users',
                 title: __('maintab.users'),
                 layout:'fit',
                 items: [

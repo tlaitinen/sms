@@ -6,7 +6,27 @@ Ext.define('Receipts.view.main.MainController', {
     ],
 
     alias: 'controller.main',
-
+    config: {
+        control: {
+            '#maintab' : {
+                tabchange: 'onTabChange'
+            }
+        },
+        routes : {
+            'maintab:id' : {
+                action     : 'showTab',
+                conditions : {
+                    ':id'    : '(?:(?::){1}([%a-zA-Z0-9\-\_\s,]+))?'
+                }
+            },
+            'preview:id' : {
+                action     : 'showPreview',
+                conditions : {
+                    ':id'    : '(?:(?::){1}([%a-zA-Z0-9\-\_\s,]+))?'
+                }
+            }
+        }
+    },
     getProcessPeriodCombo: function() {
         return Ext.ComponentQuery.query('panel[name=receipts] receiptsgrid processperiodscombo')[0];
     },
@@ -24,12 +44,13 @@ Ext.define('Receipts.view.main.MainController', {
         });
     },
     onLogin: function() {
-
+        
         if (Receipts.GlobalState.user.config.usersTab == true) {
             this.lookupReference('usersTab').tab.show();
         }
 
         this.resetProcessPeriodCombo();
+        this.redirectTo('maintab:maintab-receipts');
     },
 
     addUserGroupItems: function(userGrid, userGroupGrid, userGroupItemsGrid, mode) {
@@ -51,6 +72,52 @@ Ext.define('Receipts.view.main.MainController', {
         }
         userGroupItems.sync();
     },
+    onTabChange: function(tabPanel, newItem) {
+        var id = newItem.getId();
+        this.redirectTo('maintab:' + id);
+    },
+    showTab : function(id) {    
+        Ext.WindowManager.each(function(cmp) { cmp.destroy(); });
+        var tabPanel = this.lookupReference('mainTab');
+        if (!id) {
+            id = 0;
+        }
+        var child = tabPanel.getComponent(id);
+        tabPanel.setActiveTab(child);
+        var previewWin = Ext.getCmp('preview');
+        if (previewWin)
+            previewWin.close();
+    },
+    showPreview: function(id) {
+        var controller = this;
+        var win = new Ext.Window({
+            id:'preview',
+            layout:'fit',
+            width:'80%',
+            height:'80%',
+            closable:true,
+            resizable:true,
+            plain:true,
+            title: __('preview'),
+            items: [
+                { 
+                    xtype:'panel',
+                    html: '<img src="backend/file/' + id + '"/>',
+                    autoScroll:true,
+                    listeners: {
+                       'render': function(panel) {
+                           panel.body.on('click', function() {
+                                win.close();
+                                controller.redirectTo('maintab:maintab-receipts');
+                           });
+                        }
+                    }
+                }
+            ]
+        });
+        win.show();
+
+    },
     init: function() {
         var controller = this;
         Receipts.GlobalState.on('login', function() {
@@ -62,31 +129,8 @@ Ext.define('Receipts.view.main.MainController', {
             'receiptsgrid' : {
                 cellclick: function( grid, td, cellIndex, record, tr, rowIndex, e, eOpts ) {
                     if (cellIndex == 2) {
-                        var win = new Ext.Window({
-                            id:'preview',
-                            layout:'fit',
-                            width:'100%',
-                            height:'100%',
-                            closable:false,
-                            resizable:false,
-                            plain:true,
-                            title: __('preview'),
-                            items: [
-                                { 
-                                    xtype:'panel',
-                                    html: '<img src="backend/file/' + record.get('previewFileId') + '"/>',
-                                    autoScroll:true,
-                                    listeners: {
-                                       'render': function(panel) {
-                                           panel.body.on('click', function() {
-                                                win.close();
-                                           });
-                                        }
-                                    }
-                                }
-                            ]
-                        });
-                        win.show();
+                        controller.redirectTo('maintab:maintab-receipts|preview:' + record.get('previewFileId'));
+                        controller.showPreview(record.get('previewFileId'));
                     }
                 }
 

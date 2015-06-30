@@ -1,3 +1,4 @@
+
 /**
  * The main application class. An instance of this class is created by app.js when it calls
  * Ext.application(). This is the ideal place to handle application launch and initialization
@@ -21,6 +22,7 @@ Ext.define('Receipts.Application', {
     ],
     
     init:function() {
+        Ext.History.init();
         Ext.define('Receipts.CustomReader', {
             extend: 'Ext.data.reader.Reader',
             alias: 'reader.customreader',
