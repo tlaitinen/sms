@@ -54,7 +54,22 @@ periodDatesRange start end
         (sYear, sMonth, sDay) = toGregorian start
         next = addGregorianMonthsRollOver 1 (fromGregorian sYear sMonth 1)
         monthEnd = fromGregorian sYear sMonth (gregorianMonthLength sYear sMonth)
-    
+monthName :: [Text] -> Day -> Text
+monthName langs d = renderMessage (error "" :: App) langs $ case month of
+    1 -> MsgJanuary
+    2 -> MsgFebruary
+    3 -> MsgMarch
+    4 -> MsgApril
+    5 -> MsgMay
+    6 -> MsgJune
+    7 -> MsgJuly
+    8 -> MsgAugust
+    9 -> MsgSeptember
+    10 -> MsgOctober
+    11 -> MsgNovember
+    12 -> MsgDecember
+    where
+        (_, month, _) = toGregorian d 
 createProcessPeriods :: SqlPersistT (LoggingT IO) () 
 createProcessPeriods = do
     now <- liftIO $ getCurrentTime
@@ -74,13 +89,16 @@ createProcessPeriods = do
             rows <- select $ from $ \pp -> do
                 where_ $ pp ^. ProcessPeriodFirstDay ==. val fDay
                 where_ $ pp ^. ProcessPeriodLastDay ==. val lDay
-                where_ $ notExists $ from $ \ugc -> do
+                where_ $ exists $ from $ \ugc -> do
                     where_ $ ugc ^. UserGroupContentUserGroupId ==. val ugId
                     where_ $ ugc ^. UserGroupContentProcessPeriodContentId ==. just (pp ^. ProcessPeriodId)
                     where_ $ isNothing $ ugc ^. UserGroupContentDeletedVersionId            
                 return $ pp ^. ProcessPeriodId
             when (null rows) $ do
-                ppId <- insert $ newProcessPeriod fDay lDay 
+                let
+                    (year, _, _) = toGregorian fDay
+                    name = T.concat [ monthName ["fi"] fDay, " ", T.pack $ show year ]
+                ppId <- insert $ newProcessPeriod fDay lDay name
                 _ <- insert $ (newUserGroupContent ugId) {
                         userGroupContentProcessPeriodContentId = Just ppId
                     }
@@ -126,9 +144,10 @@ processLockedPeriods settings = do
             lastDay  = processPeriodLastDay pp
         forM_ (zip [1..] archives) $ \(part,a) -> liftIO $ withSystemTempDirectory "receipts" $ \tempDir -> do
             let tmpPath = tempDir </> (concat [show firstDay, "_", show lastDay, ".zip"])
+                app = (error "" :: App)
                 msg = (MsgReceiptEmailTitle (userGroupName ug)  firstDay lastDay
                                       part (length archives))
-                message = renderMessage (error "" :: App) ["fi"] msg 
+                message = renderMessage app ["fi"] msg 
             LB.writeFile tmpPath (fromArchive a)        
             mail <- mySimpleMail 
                 (Address (Just $ userGroupName ug) (userGroupEmail ug))

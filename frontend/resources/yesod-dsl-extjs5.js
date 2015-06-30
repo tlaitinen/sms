@@ -414,7 +414,7 @@ var yesodDsl = function(defs, __, config) {
                                     '</tpl>');
                             }
 
-                            Ext.define(comboName, {
+                            var cfg = {
                                 extend: config.name + '.view.Combo',
                                 alias: 'widget.' + name + 'combo',
                                 tpl: tpl, 
@@ -423,7 +423,9 @@ var yesodDsl = function(defs, __, config) {
                                 myStore: storeName,
                                 getFilters: comboCfg.getFilters,
                                 forceSelection: comboCfg.forceSelection || false
-                            });
+                            };
+                                
+                            Ext.define(comboName, cfg);
                         } 
 
                         var globalStore = createStore(storeClass, name);

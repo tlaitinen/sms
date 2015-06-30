@@ -1,5 +1,6 @@
+import "Named.ydsl";
 entity ProcessPeriod {
-    instance of Restricted;
+    instance of Restricted, Named;
 
     firstDay    Day;
     lastDay     Day;
@@ -13,6 +14,9 @@ route /processperiods {
             where hasReadPerm $auth.id pp.id
               and pp.locked = False
             order by pp.firstDay asc;
+        if param "query" = $$ then
+            where pp.name ilike "%" || $$ || "%";
+        default-filter-sort;
     }
 }
 route /processperiods/#ProcessPeriodId {

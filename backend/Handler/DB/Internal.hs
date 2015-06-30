@@ -135,6 +135,7 @@ ProcessPeriod json
     lastDay Day  
     locked Bool  "default=False"
     processed Bool  "default=False"
+    name Text  
 |]
 newFile :: Text -> Int32 -> Text -> UTCTime -> File
 newFile contentType_ size_ name_ insertionTime_ = File {
@@ -214,12 +215,13 @@ newReceipt fileId_ processPeriodId_ amount_ name_ insertionTime_ = Receipt {
     receiptInsertionTime = insertionTime_,
     receiptInsertedByUserId = Nothing
 }    
-newProcessPeriod :: Day -> Day -> ProcessPeriod
-newProcessPeriod firstDay_ lastDay_ = ProcessPeriod {
+newProcessPeriod :: Day -> Day -> Text -> ProcessPeriod
+newProcessPeriod firstDay_ lastDay_ name_ = ProcessPeriod {
     processPeriodFirstDay = firstDay_,
     processPeriodLastDay = lastDay_,
     processPeriodLocked = False,
-    processPeriodProcessed = False
+    processPeriodProcessed = False,
+    processPeriodName = name_
 }    
 class Named a where
     namedName :: a -> Text
@@ -232,16 +234,20 @@ instance Named User where
     namedName = userName
 instance Named Receipt where
     namedName = receiptName
+instance Named ProcessPeriod where
+    namedName = processPeriodName
 data NamedInstance = NamedInstanceFile (Entity File)
     | NamedInstanceUserGroup (Entity UserGroup)
     | NamedInstanceUser (Entity User)
     | NamedInstanceReceipt (Entity Receipt)
+    | NamedInstanceProcessPeriod (Entity ProcessPeriod)
 
 
 data NamedInstanceId = NamedInstanceFileId FileId
     | NamedInstanceUserGroupId UserGroupId
     | NamedInstanceUserId UserId
     | NamedInstanceReceiptId ReceiptId
+    | NamedInstanceProcessPeriodId ProcessPeriodId
 
 
 instance Named NamedInstance where
@@ -250,6 +256,7 @@ instance Named NamedInstance where
         NamedInstanceUserGroup (Entity _ e) -> userGroupName e
         NamedInstanceUser (Entity _ e) -> userName e
         NamedInstanceReceipt (Entity _ e) -> receiptName e
+        NamedInstanceProcessPeriod (Entity _ e) -> processPeriodName e
     
 data NamedInstanceFilterType = NamedInstanceNameFilter (SqlExpr (Database.Esqueleto.Value (Text)) -> SqlExpr (Database.Esqueleto.Value Bool))
 selectNamed :: forall (m :: * -> *). 
@@ -292,12 +299,22 @@ selectNamed filters = do
             ) exprs
     
         return e
+    result_ProcessPeriod <- select $ from $ \e -> do
+        let _ = e ^. ProcessPeriodId
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                NamedInstanceNameFilter op -> op $ e ^. ProcessPeriodName
+    
+            ) exprs
+    
+        return e
 
     return $ concat [
         map NamedInstanceFile result_File
         , map NamedInstanceUserGroup result_UserGroup
         , map NamedInstanceUser result_User
         , map NamedInstanceReceipt result_Receipt
+        , map NamedInstanceProcessPeriod result_ProcessPeriod
 
         ]
 data NamedInstanceUpdateType = NamedInstanceUpdateName (SqlExpr (Database.Esqueleto.Value (Text)))
@@ -356,6 +373,20 @@ updateNamed filters updates = do
         forM_ filters $ \exprs -> 
             when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
                 NamedInstanceNameFilter op -> op $ e ^. ReceiptName
+    
+            ) exprs
+    
+     
+                
+    update $ \e -> do
+        let _ = e ^. ProcessPeriodId
+        set e $ map (\u -> case u of
+                    NamedInstanceUpdateName v -> ProcessPeriodName =. v
+    
+            ) updates
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                NamedInstanceNameFilter op -> op $ e ^. ProcessPeriodName
     
             ) exprs
     

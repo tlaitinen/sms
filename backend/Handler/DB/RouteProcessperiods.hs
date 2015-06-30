@@ -70,6 +70,15 @@ getProcessperiodsR :: forall master. (
     => HandlerT DB (HandlerT master IO) A.Value
 getProcessperiodsR  = lift $ runDB $ do
     authId <- lift $ requireAuthId
+    (filterParam_query) <- lookupGetParam "query"
+    defaultFilterParam <- lookupGetParam "filter"
+    let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FS.Filter]
+    defaultSortParam <- lookupGetParam "sort"
+    let defaultSortJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultSortParam) :: Maybe [FS.Sort]
+    defaultOffsetParam <- lookupGetParam "start"
+    defaultLimitParam <- lookupGetParam "limit"
+    let defaultOffset = (maybe Nothing PP.fromPathPiece defaultOffsetParam) :: Maybe Int64
+    let defaultLimit = (maybe Nothing PP.fromPathPiece defaultLimitParam) :: Maybe Int64
     let baseQuery limitOffsetOrder = from $ \(pp ) -> do
         let ppId' = pp ^. ProcessPeriodId
         where_ ((hasReadPerm (val authId) (pp ^. ProcessPeriodId)) &&. ((pp ^. ProcessPeriodLocked) ==. ((val False))))
@@ -78,11 +87,71 @@ getProcessperiodsR  = lift $ runDB $ do
             then do 
                 offset 0
                 limit 10000
-                orderBy [ asc (pp ^. ProcessPeriodFirstDay) ]
+                case defaultSortJson of 
+                    Just xs -> mapM_ (\sjm -> case FS.s_field sjm of
+                            "firstDay" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (pp  ^.  ProcessPeriodFirstDay) ] 
+                                "DESC" -> orderBy [ desc (pp  ^.  ProcessPeriodFirstDay) ] 
+                                _      -> return ()
+                            "lastDay" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (pp  ^.  ProcessPeriodLastDay) ] 
+                                "DESC" -> orderBy [ desc (pp  ^.  ProcessPeriodLastDay) ] 
+                                _      -> return ()
+                            "locked" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (pp  ^.  ProcessPeriodLocked) ] 
+                                "DESC" -> orderBy [ desc (pp  ^.  ProcessPeriodLocked) ] 
+                                _      -> return ()
+                            "processed" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (pp  ^.  ProcessPeriodProcessed) ] 
+                                "DESC" -> orderBy [ desc (pp  ^.  ProcessPeriodProcessed) ] 
+                                _      -> return ()
+                            "name" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (pp  ^.  ProcessPeriodName) ] 
+                                "DESC" -> orderBy [ desc (pp  ^.  ProcessPeriodName) ] 
+                                _      -> return ()
+                
+                            _ -> return ()
+                        ) xs
+                    Nothing -> orderBy [ asc (pp ^. ProcessPeriodFirstDay) ]
 
+                case defaultOffset of
+                    Just o -> offset o
+                    Nothing -> return ()
+                case defaultLimit of
+                    Just l -> limit (min 10000 l)
+                    Nothing -> return ()
                  
             else return ()
-        return (pp ^. ProcessPeriodId, pp ^. ProcessPeriodFirstDay, pp ^. ProcessPeriodLastDay, pp ^. ProcessPeriodLocked, pp ^. ProcessPeriodProcessed)
+        case defaultFilterJson of 
+            Just xs -> mapM_ (\fjm -> case FS.f_field fjm of
+                "id" -> case (FS.f_value fjm >>= PP.fromPathPiece)  of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pp  ^.  ProcessPeriodId) (val v')
+                    _        -> return ()
+                "firstDay" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pp  ^.  ProcessPeriodFirstDay) ((val v'))
+                    _        -> return ()
+                "lastDay" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pp  ^.  ProcessPeriodLastDay) ((val v'))
+                    _        -> return ()
+                "locked" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pp  ^.  ProcessPeriodLocked) ((val v'))
+                    _        -> return ()
+                "processed" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pp  ^.  ProcessPeriodProcessed) ((val v'))
+                    _        -> return ()
+                "name" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pp  ^.  ProcessPeriodName) ((val v'))
+                    _        -> return ()
+
+                _ -> return ()
+                ) xs
+            Nothing -> return ()  
+        case FS.getDefaultFilter filterParam_query defaultFilterJson "query" of
+            Just localParam -> do 
+                
+                where_ $ (pp ^. ProcessPeriodName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))
+            Nothing -> return ()
+        return (pp ^. ProcessPeriodId, pp ^. ProcessPeriodFirstDay, pp ^. ProcessPeriodLastDay, pp ^. ProcessPeriodLocked, pp ^. ProcessPeriodProcessed, pp ^. ProcessPeriodName)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -92,12 +161,13 @@ getProcessperiodsR  = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6)) -> A.object [
                     "id" .= toJSON f1,
                     "firstDay" .= toJSON f2,
                     "lastDay" .= toJSON f3,
                     "locked" .= toJSON f4,
-                    "processed" .= toJSON f5                                    
+                    "processed" .= toJSON f5,
+                    "name" .= toJSON f6                                    
                     ]
                 _ -> A.object []
             ) results)

@@ -66,7 +66,6 @@ Ext.define('Receipts.Application', {
 
                         processperiods: {
                             combo: {
-                                template: 'firstDay:date("F Y")',
                                 forceSelection: true
                             }
                         },

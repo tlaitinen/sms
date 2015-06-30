@@ -984,6 +984,11 @@
                             "references": null,
                             "name": "processed",
                             "type": "boolean"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
                         }
                     ],
                     "type": "GET",
@@ -1015,6 +1020,11 @@
                             "references": null,
                             "name": "lastDay",
                             "type": "day"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
+                            "type": "string"
                         }
                     ],
                     "outputs": [],
@@ -1349,6 +1359,13 @@
                     "name": "processed",
                     "type": "boolean",
                     "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "name",
+                    "type": "string",
+                    "optional": false
                 }
             ]
         }
@@ -1370,7 +1387,8 @@
                 "File",
                 "UserGroup",
                 "User",
-                "Receipt"
+                "Receipt",
+                "ProcessPeriod"
             ],
             "fields": [
                 {

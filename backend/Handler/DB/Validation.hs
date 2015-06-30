@@ -109,5 +109,5 @@ instance Validatable Receipt where
 instance Validatable ProcessPeriod where
     validate v = do
         results <- sequence [
-            ]
+                checkResult "ProcessPeriod.name nonEmpty" (nonEmpty $ processPeriodName v)            ]
         return $ catMaybes results
