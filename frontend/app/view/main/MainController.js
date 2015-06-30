@@ -128,7 +128,7 @@ Ext.define('Receipts.view.main.MainController', {
         this.control({
             'receiptsgrid' : {
                 cellclick: function( grid, td, cellIndex, record, tr, rowIndex, e, eOpts ) {
-                    if (cellIndex == 2) {
+                    if (cellIndex == 3) {
                         controller.redirectTo('maintab:maintab-receipts|preview:' + record.get('previewFileId'));
                         controller.showPreview(record.get('previewFileId'));
                     }
