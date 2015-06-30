@@ -105,6 +105,10 @@ getReceiptsR  = lift $ runDB $ do
                                 "ASC"  -> orderBy [ asc (r  ^.  ReceiptAmount) ] 
                                 "DESC" -> orderBy [ desc (r  ^.  ReceiptAmount) ] 
                                 _      -> return ()
+                            "processed" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (r  ^.  ReceiptProcessed) ] 
+                                "DESC" -> orderBy [ desc (r  ^.  ReceiptProcessed) ] 
+                                _      -> return ()
                             "name" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (r  ^.  ReceiptName) ] 
                                 "DESC" -> orderBy [ desc (r  ^.  ReceiptName) ] 
@@ -204,6 +208,9 @@ getReceiptsR  = lift $ runDB $ do
                 "amount" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (r  ^.  ReceiptAmount) ((val v'))
                     _        -> return ()
+                "processed" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (r  ^.  ReceiptProcessed) ((val v'))
+                    _        -> return ()
                 "name" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (r  ^.  ReceiptName) ((val v'))
                     _        -> return ()
@@ -235,7 +242,7 @@ getReceiptsR  = lift $ runDB $ do
                 
                 where_ $ (r ^. ReceiptProcessPeriodId) ==. (val localParam)
             Nothing -> return ()
-        return (r ^. ReceiptId, r ^. ReceiptFileId, r ^. ReceiptProcessPeriodId, r ^. ReceiptAmount, r ^. ReceiptName, r ^. ReceiptInsertionTime, r ^. ReceiptInsertedByUserId, pf ?. FileId)
+        return (r ^. ReceiptId, r ^. ReceiptFileId, r ^. ReceiptProcessPeriodId, r ^. ReceiptAmount, r ^. ReceiptProcessed, r ^. ReceiptName, r ^. ReceiptInsertionTime, r ^. ReceiptInsertedByUserId, pf ?. FileId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -245,15 +252,16 @@ getReceiptsR  = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9)) -> A.object [
                     "id" .= toJSON f1,
                     "fileId" .= toJSON f2,
                     "processPeriodId" .= toJSON f3,
                     "amount" .= toJSON f4,
-                    "name" .= toJSON f5,
-                    "insertionTime" .= toJSON f6,
-                    "insertedByUserId" .= toJSON f7,
-                    "previewFileId" .= toJSON f8                                    
+                    "processed" .= toJSON f5,
+                    "name" .= toJSON f6,
+                    "insertionTime" .= toJSON f7,
+                    "insertedByUserId" .= toJSON f8,
+                    "previewFileId" .= toJSON f9                                    
                     ]
                 _ -> A.object []
             ) results)
@@ -324,6 +332,8 @@ postReceiptsR  = lift $ runDB $ do
                             receiptProcessPeriodId = attr_processPeriodId
                     ,
                             receiptAmount = attr_amount
+                    ,
+                            receiptProcessed = False
                     ,
                             receiptName = attr_name
                     ,

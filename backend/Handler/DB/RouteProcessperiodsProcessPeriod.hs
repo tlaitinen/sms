@@ -73,7 +73,7 @@ postProcessperiodsProcessPeriodIdR p1 = lift $ runDB $ do
     _ <- do
         result <- select $ from $ \(pp ) -> do
             let ppId' = pp ^. ProcessPeriodId
-            where_ (((pp ^. ProcessPeriodId) ==. (val p1)) &&. ((hasWritePerm (val authId) (pp ^. ProcessPeriodId)) &&. ((pp ^. ProcessPeriodLocked) ==. ((val False)))))
+            where_ (((pp ^. ProcessPeriodId) ==. (val p1)) &&. (hasWritePerm (val authId) (pp ^. ProcessPeriodId)))
 
             limit 1
             return pp
@@ -95,7 +95,7 @@ postProcessperiodsProcessPeriodIdR p1 = lift $ runDB $ do
                     ]
     
             return $ e {
-                            processPeriodLocked = True
+                            processPeriodQueued = True
     
                 }
         vErrors <- lift $ validate e2

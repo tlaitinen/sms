@@ -135,24 +135,23 @@ Ext.define('Receipts.view.main.MainController', {
                 }
 
             },
-            'receiptsgrid button[name=lock]': {
+            'receiptsgrid button[name=send]': {
                 click: function(button) {
-                    Ext.MessageBox.confirm(__('confirmlock.title'), __('confirmlock.message'),
+                    Ext.MessageBox.confirm(__('confirmsend.title'), __('confirmsend.message'),
                         function (button) {
                         if (button == "yes") {
                             var ppCombo = controller.getProcessPeriodCombo();
                             Ext.Ajax.request({
                                 url: 'backend/db/processperiods/' + ppCombo.getValue(),
                                 method: 'POST',
-                                params: {},
-                                success: function () {
-                                    controller.resetProcessPeriodCombo();
+                                params: {
                                 }
                             });
                         }
                     });
                 }
             },
+
             'panel[name=users] button[name=addReadPerm]': {
                 click: function(button) {
                     var panel = button.up('panel[name=users]');

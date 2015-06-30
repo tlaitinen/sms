@@ -771,6 +771,11 @@
                         },
                         {
                             "references": null,
+                            "name": "processed",
+                            "type": "boolean"
+                        },
+                        {
+                            "references": null,
                             "name": "name",
                             "type": "string"
                         },
@@ -862,6 +867,11 @@
                             "references": null,
                             "name": "amount",
                             "type": "number"
+                        },
+                        {
+                            "references": null,
+                            "name": "processed",
+                            "type": "boolean"
                         },
                         {
                             "references": null,
@@ -977,7 +987,7 @@
                         },
                         {
                             "references": null,
-                            "name": "locked",
+                            "name": "queued",
                             "type": "boolean"
                         },
                         {
@@ -1308,6 +1318,13 @@
                 },
                 {
                     "references": null,
+                    "default": false,
+                    "name": "processed",
+                    "type": "boolean",
+                    "optional": false
+                },
+                {
+                    "references": null,
                     "default": null,
                     "name": "name",
                     "type": "string",
@@ -1349,7 +1366,7 @@
                 {
                     "references": null,
                     "default": false,
-                    "name": "locked",
+                    "name": "queued",
                     "type": "boolean",
                     "optional": false
                 },

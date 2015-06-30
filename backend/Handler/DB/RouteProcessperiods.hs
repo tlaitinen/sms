@@ -81,7 +81,7 @@ getProcessperiodsR  = lift $ runDB $ do
     let defaultLimit = (maybe Nothing PP.fromPathPiece defaultLimitParam) :: Maybe Int64
     let baseQuery limitOffsetOrder = from $ \(pp ) -> do
         let ppId' = pp ^. ProcessPeriodId
-        where_ ((hasReadPerm (val authId) (pp ^. ProcessPeriodId)) &&. ((pp ^. ProcessPeriodLocked) ==. ((val False))))
+        where_ (hasReadPerm (val authId) (pp ^. ProcessPeriodId))
 
         _ <- if limitOffsetOrder
             then do 
@@ -97,9 +97,9 @@ getProcessperiodsR  = lift $ runDB $ do
                                 "ASC"  -> orderBy [ asc (pp  ^.  ProcessPeriodLastDay) ] 
                                 "DESC" -> orderBy [ desc (pp  ^.  ProcessPeriodLastDay) ] 
                                 _      -> return ()
-                            "locked" -> case (FS.s_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (pp  ^.  ProcessPeriodLocked) ] 
-                                "DESC" -> orderBy [ desc (pp  ^.  ProcessPeriodLocked) ] 
+                            "queued" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (pp  ^.  ProcessPeriodQueued) ] 
+                                "DESC" -> orderBy [ desc (pp  ^.  ProcessPeriodQueued) ] 
                                 _      -> return ()
                             "processed" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (pp  ^.  ProcessPeriodProcessed) ] 
@@ -112,7 +112,7 @@ getProcessperiodsR  = lift $ runDB $ do
                 
                             _ -> return ()
                         ) xs
-                    Nothing -> orderBy [ asc (pp ^. ProcessPeriodFirstDay) ]
+                    Nothing -> orderBy [ desc (pp ^. ProcessPeriodFirstDay) ]
 
                 case defaultOffset of
                     Just o -> offset o
@@ -133,8 +133,8 @@ getProcessperiodsR  = lift $ runDB $ do
                 "lastDay" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pp  ^.  ProcessPeriodLastDay) ((val v'))
                     _        -> return ()
-                "locked" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
-                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pp  ^.  ProcessPeriodLocked) ((val v'))
+                "queued" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pp  ^.  ProcessPeriodQueued) ((val v'))
                     _        -> return ()
                 "processed" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (pp  ^.  ProcessPeriodProcessed) ((val v'))
@@ -151,7 +151,7 @@ getProcessperiodsR  = lift $ runDB $ do
                 
                 where_ $ (pp ^. ProcessPeriodName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))
             Nothing -> return ()
-        return (pp ^. ProcessPeriodId, pp ^. ProcessPeriodFirstDay, pp ^. ProcessPeriodLastDay, pp ^. ProcessPeriodLocked, pp ^. ProcessPeriodProcessed, pp ^. ProcessPeriodName)
+        return (pp ^. ProcessPeriodId, pp ^. ProcessPeriodFirstDay, pp ^. ProcessPeriodLastDay, pp ^. ProcessPeriodQueued, pp ^. ProcessPeriodProcessed, pp ^. ProcessPeriodName)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -165,7 +165,7 @@ getProcessperiodsR  = lift $ runDB $ do
                     "id" .= toJSON f1,
                     "firstDay" .= toJSON f2,
                     "lastDay" .= toJSON f3,
-                    "locked" .= toJSON f4,
+                    "queued" .= toJSON f4,
                     "processed" .= toJSON f5,
                     "name" .= toJSON f6                                    
                     ]

@@ -5,6 +5,7 @@ entity Receipt {
     fileId FileId;
     processPeriodId ProcessPeriodId;
     amount Double;
+    processed Bool default False;
 }
 
 route /receipts {

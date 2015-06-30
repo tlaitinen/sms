@@ -4,7 +4,7 @@ entity ProcessPeriod {
 
     firstDay    Day;
     lastDay     Day;
-    locked      Bool default False;
+    queued      Bool default False;
     processed   Bool default False;
 }
 
@@ -12,8 +12,7 @@ route /processperiods {
     get {
         select pp.id, pp.* from ProcessPeriod as pp
             where hasReadPerm $auth.id pp.id
-              and pp.locked = False
-            order by pp.firstDay asc;
+            order by pp.firstDay desc;
         if param "query" = $$ then
             where pp.name ilike "%" || $$ || "%";
         default-filter-sort;
@@ -21,9 +20,9 @@ route /processperiods {
 }
 route /processperiods/#ProcessPeriodId {
     post {
-        require ProcessPeriod as pp where pp.id = $1 and hasWritePerm $auth.id pp.id and pp.locked = False;
+        require ProcessPeriod as pp where pp.id = $1 and hasWritePerm $auth.id pp.id;
         update ProcessPeriod identified by $1 with {
-            locked = True
+            queued = True
         };
     }
 }

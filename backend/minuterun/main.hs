@@ -41,7 +41,7 @@ mkMessage "App" "messages" "fi"
 minuteRun :: AppSettings -> SqlPersistT (LoggingT IO) ()
 minuteRun settings = do
     createProcessPeriods
-    processLockedPeriods settings
+    processQueuedPeriods settings
 
 
 
@@ -122,19 +122,19 @@ packReceipts settings receipts = pack emptyArchive receipts
                 return $ a:a'
         pack a [] = return [a]
 
-processLockedPeriods :: AppSettings -> SqlPersistT (LoggingT IO) ()
-processLockedPeriods settings = do
+processQueuedPeriods :: AppSettings -> SqlPersistT (LoggingT IO) ()
+processQueuedPeriods settings = do
     pps <- select $ from $ \(pp `InnerJoin` ugc `InnerJoin` ug)-> do
         on (ugc ^. UserGroupContentUserGroupId ==. ug ^. UserGroupId)
         on (ugc ^. UserGroupContentProcessPeriodContentId ==. just (pp ^. ProcessPeriodId))
-        where_ $ pp ^. ProcessPeriodLocked ==. val True
-        where_ $ pp ^. ProcessPeriodProcessed ==. val False
+        where_ $ pp ^. ProcessPeriodQueued ==. val True
         where_ $ isNothing $ ugc ^. UserGroupContentDeletedVersionId
         return (pp, ugc ^. UserGroupContentUserGroupId, ug)
 
     forM_ pps $ \(Entity ppId pp, E.Value ugId, Entity _ ug) -> do
         receipts <- select $ from $ \(r `InnerJoin` f)-> do
             on (f ^. FileId ==. r ^. ReceiptFileId)
+            where_ $ r ^. ReceiptProcessed ==. val False
             where_ $ r ^. ReceiptProcessPeriodId ==. val ppId
             where_ $ isNothing $ r ^. ReceiptDeletedVersionId
             return (r,f)        
@@ -145,8 +145,10 @@ processLockedPeriods settings = do
         forM_ (zip [1..] archives) $ \(part,a) -> liftIO $ withSystemTempDirectory "receipts" $ \tempDir -> do
             let tmpPath = tempDir </> (concat [show firstDay, "_", show lastDay, ".zip"])
                 app = (error "" :: App)
-                msg = (MsgReceiptEmailTitle (userGroupName ug)  firstDay lastDay
-                                      part (length archives))
+                partInfo = T.pack $ if length archives > 1 then concat ["(", show part, " / ", show $ length archives, ")" ] else ""
+                msg = if processPeriodProcessed pp == False
+                        then MsgReceiptEmailTitle (userGroupName ug)  firstDay lastDay partInfo
+                        else MsgMoreReceiptsEmailTitle (userGroupName ug)  firstDay lastDay partInfo
                 message = renderMessage app ["fi"] msg 
             LB.writeFile tmpPath (fromArchive a)        
             mail <- mySimpleMail 
@@ -157,7 +159,13 @@ processLockedPeriods settings = do
             sendMail (appSmtpAddress settings) mail
         update $ \pp' -> do
             where_ $ pp' ^. ProcessPeriodId ==. val ppId
-            set pp' [ ProcessPeriodProcessed =. val True ]
+            set pp' [ 
+                    ProcessPeriodProcessed =. val True,
+                    ProcessPeriodQueued =. val False
+                ]
+        forM_ receipts $ \(Entity rId _, _) -> update $ \r -> do
+            set r [ ReceiptProcessed =. val True ]
+            where_ $ r ^. ReceiptId ==. val rId
     where
         mySimpleMail to from subject plainBody attachments = do
             let m = ((emptyMail from) { mailTo = [to]

@@ -1,4 +1,5 @@
-ReceiptEmailTitle client@Text firstDay@Day lastDay@Day part@Int parts@Int: Asiakkaan #{client} kirjanpitoaineisto ajalta #{fmtDay firstDay} - #{fmtDay lastDay} (#{show part} / #{show parts})
+ReceiptEmailTitle client@Text firstDay@Day lastDay@Day part@Text: Asiakkaan #{client} kirjanpitoaineisto ajalta #{fmtDay firstDay} - #{fmtDay lastDay} #{part}
+MoreReceiptsEmailTitle client@Text firstDay@Day lastDay@Day part@Text: Lisäys asiakkaan #{client} kirjanpitoaineistoon ajalta #{fmtDay firstDay} - #{fmtDay lastDay} #{part}
 January:Tammikuu
 February:Helmikuu
 March:Maaliskuu

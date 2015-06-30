@@ -86,18 +86,28 @@ Ext.define('Receipts.Application', {
                                     ],
                                     columns: [ 
                                         { field:'name', editor: { allowBlank:false}, flex:5 }, 
-                                        { field:'amount', editor: {}, flex:1 },
+                                        { field:'amount', editor: {}, flex:1 ,
+                                         
+                                        },
+                                        { 
+                                            field:'processed', 
+                                            renderer: function (value,meta, record) {
+                                                if (record.get('processed') == true)
+                                                    return '<span class="glyphicon glyphicon-ok"></span>';
+                                                return ' ';
+                                            }
+                                        },
                                         { 
                                             field:'previewFileId', 
                                             flex:1,
-                                            renderer: function (record) {
+                                            renderer: function (value) {
                                                 return '<span class="glyphicon glyphicon-picture"></span>';
                                             }
                                         } 
                                     ],
                                     bottomToolbar: [
                                         { name: 'remove', action:'remove' },
-                                        { name: 'lock' }
+                                        { name: 'send' }
                                     ]
 
                                 }

@@ -123,6 +123,7 @@ Receipt json
     fileId FileId  
     processPeriodId ProcessPeriodId  
     amount Double  
+    processed Bool  "default=False"
     name Text  
     activeId ReceiptId Maybe   default=NULL
     activeStartTime UTCTime Maybe  
@@ -133,7 +134,7 @@ Receipt json
 ProcessPeriod json
     firstDay Day  
     lastDay Day  
-    locked Bool  "default=False"
+    queued Bool  "default=False"
     processed Bool  "default=False"
     name Text  
 |]
@@ -207,6 +208,7 @@ newReceipt fileId_ processPeriodId_ amount_ name_ insertionTime_ = Receipt {
     receiptFileId = fileId_,
     receiptProcessPeriodId = processPeriodId_,
     receiptAmount = amount_,
+    receiptProcessed = False,
     receiptName = name_,
     receiptActiveId = Nothing,
     receiptActiveStartTime = Nothing,
@@ -219,7 +221,7 @@ newProcessPeriod :: Day -> Day -> Text -> ProcessPeriod
 newProcessPeriod firstDay_ lastDay_ name_ = ProcessPeriod {
     processPeriodFirstDay = firstDay_,
     processPeriodLastDay = lastDay_,
-    processPeriodLocked = False,
+    processPeriodQueued = False,
     processPeriodProcessed = False,
     processPeriodName = name_
 }    
