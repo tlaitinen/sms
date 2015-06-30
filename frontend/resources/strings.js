@@ -5,6 +5,7 @@ function __(k,d) {
         'confirmsend.title' : 'Kirjanpitoaineiston lähettäminen',
         'confirmsend.message' : 'Lähetetäänkö kirjanpitojakson tositteet käsiteltäväksi?`',
         'preview' : 'Esikatselu',
+        'preview.title' : 'Esikatselu (voit sulkea ikkunan klikkaamalla kuvaa)',
         'previewFileId' : 'preview',
         'saveError.title': 'Tietojen tallentaminen epäonnistui',
         'saveError.message': 'Tietojen tallentaminen epäonnistui: ',

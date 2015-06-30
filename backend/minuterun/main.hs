@@ -143,7 +143,7 @@ processQueuedPeriods settings = do
         let firstDay = processPeriodFirstDay pp
             lastDay  = processPeriodLastDay pp
         forM_ (zip [1..] archives) $ \(part,a) -> liftIO $ withSystemTempDirectory "receipts" $ \tempDir -> do
-            let tmpPath = tempDir </> (concat [show firstDay, "_", show lastDay, ".zip"])
+            let tmpPath = tempDir </> (concat [ T.unpack $ userGroupName ug, "_", show firstDay, "_", show lastDay, ".zip"])
                 app = (error "" :: App)
                 partInfo = T.pack $ if length archives > 1 then concat ["(", show part, " / ", show $ length archives, ")" ] else ""
                 msg = if processPeriodProcessed pp == False

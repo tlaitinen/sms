@@ -89,11 +89,13 @@ Ext.define('Receipts.Application', {
                                         { 
                                             field:'amount', 
                                             editor: {
-                                                xtype: 'numberfield',
-                                                format: 'currency'
+                                                xtype: 'numberfield'
                                             }, 
                                             flex:1,
-                                            format: 'currency'
+                                            renderer: function(v) {
+                                                return Ext.util.Format.currency(v, '€', 2, true);
+                                            }
+
                                         },
                                         { 
                                             field:'processed', 

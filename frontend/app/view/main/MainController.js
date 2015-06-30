@@ -98,7 +98,7 @@ Ext.define('Receipts.view.main.MainController', {
             closable:true,
             resizable:true,
             plain:true,
-            title: __('preview'),
+            title: __('preview.title'),
             items: [
                 { 
                     xtype:'panel',
