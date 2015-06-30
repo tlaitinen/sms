@@ -86,8 +86,14 @@ Ext.define('Receipts.Application', {
                                     ],
                                     columns: [ 
                                         { field:'name', editor: { allowBlank:false}, flex:5 }, 
-                                        { field:'amount', editor: {}, flex:1 ,
-                                         
+                                        { 
+                                            field:'amount', 
+                                            editor: {
+                                                xtype: 'numberfield',
+                                                format: 'currency'
+                                            }, 
+                                            flex:1,
+                                            format: 'currency'
                                         },
                                         { 
                                             field:'processed', 

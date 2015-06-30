@@ -132,6 +132,13 @@ Ext.define('Receipts.view.main.MainController', {
                         controller.redirectTo('maintab:maintab-receipts|preview:' + record.get('previewFileId'));
                         controller.showPreview(record.get('previewFileId'));
                     }
+                },
+                beforeedit: function(editor, context, eOpts) {
+                    
+                },
+                edit: function(editor, context, eOpts) {
+                   //  context.record.set('amount', context.value.replace(",","."));
+
                 }
 
             },
