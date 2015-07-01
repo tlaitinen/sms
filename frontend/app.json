@@ -2,7 +2,7 @@
     /**
      * The application's namespace.
      */
-    "name": "Receipts",
+    "name": "SMS",
     
     /**
      * The version of the application.
@@ -33,7 +33,7 @@
      * The name of the theme for this application.
      */
     
-    "theme": "ext-theme-neptune",
+    "theme": "ext-theme-crisp",
     
     /**
      * The list of required packages (with optional versions; default is "latest").
@@ -55,13 +55,13 @@
     "sass": {
         /**
          * The root namespace to use when mapping *.scss files to classes in the
-         * sass/src and sass/var directories. For example, "Receipts.view.Foo" would
-         * map to "sass/src/view/Foo.scss". If we changed this to "Receipts.view" then
+         * sass/src and sass/var directories. For example, "SMS.view.Foo" would
+         * map to "sass/src/view/Foo.scss". If we changed this to "SMS.view" then
          * it would map to "sass/src/Foo.scss". To style classes outside the app's
          * root namespace, change this to "". Doing so would change the mapping of
-         * "Receipts.view.Foo" to "sass/src/Receipts/view/Foo.scss".
+         * "SMS.view.Foo" to "sass/src/SMS/view/Foo.scss".
          */
-        "namespace": "Receipts"
+        "namespace": "SMS"
     },
 
     /**

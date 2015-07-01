@@ -145,17 +145,11 @@ getUsergroupcontentsR  = lift $ runDB $ do
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentUserContentId) nothing
                            
-                "receiptContentId" -> case FS.f_value fjm of
+                "clientContentId" -> case FS.f_value fjm of
                     Just value -> case PP.fromPathPiece value of 
-                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentReceiptContentId) (just ((val v')))
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentClientContentId) (just ((val v')))
                             _        -> return ()
-                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentReceiptContentId) nothing
-                           
-                "processPeriodContentId" -> case FS.f_value fjm of
-                    Just value -> case PP.fromPathPiece value of 
-                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentProcessPeriodContentId) (just ((val v')))
-                            _        -> return ()
-                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentProcessPeriodContentId) nothing
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentClientContentId) nothing
                            
 
                 _ -> return ()

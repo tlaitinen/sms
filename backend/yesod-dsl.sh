@@ -1,2 +1,2 @@
 #!/bin/bash
-yesod-dsl --json ../frontend/backend.json backend.ydsl
+yesod-dsl --json ../frontend/resources/backend.json backend.ydsl

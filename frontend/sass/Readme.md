@@ -16,19 +16,19 @@ mixins, etc.).
 
 This folder contains Sass files defining CSS rules corresponding to classes
 included in the application's JavaScript code build. By default, files in this 
-folder are mapped to the application's root namespace, 'Receipts'. This is set in
+folder are mapped to the application's root namespace, 'SMS'. This is set in
 `"app.json"`:
 
     "sass": {
-        "namespace": "Receipts"
+        "namespace": "SMS"
     }
 
 ### ./sass/var
 
 This folder contains Sass files defining Sass variables corresponding to classes
 included in the application's JavaScript code build. By default, files in this 
-folder are mapped to the application's root namespace, 'Receipts' in the same way
-as `"Receipts/sass/src"`.
+folder are mapped to the application's root namespace, 'SMS' in the same way
+as `"SMS/sass/src"`.
 
 ## Slicing
 

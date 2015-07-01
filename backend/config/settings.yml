@@ -18,19 +18,19 @@ ip-from-header: "_env:IP_FROM_HEADER:false"
 # skip-combining: false
 
 database:
-  user:     "_env:PGUSER:receipts"
-  password: "_env:PGPASS:receipts"
+  user:     "_env:PGUSER:sms"
+  password: "_env:PGPASS:sms"
   host:     "_env:PGHOST:localhost"
   port:     "_env:PGPORT:5432"
-  database: "_env:PGDATABASE:receipts"
+  database: "_env:PGDATABASE:sms"
   poolsize: "_env:PGPOOLSIZE:10"
 
 copyright: Copyright (C) 2015 Feriko Oy
 upload-dir: "_env:UPLOADDIR:upload"
-admin-user: "_env:ADMINUSER:Receipts"
-admin-password: "_env:ADMINPASSWORD:Receipts"
+admin-user: "_env:ADMINUSER:SMS"
+admin-password: "_env:ADMINPASSWORD:SMS"
 max-email-size: "_env:MAXEMAILSIZE:10000000"
 smtp-address: "_env:SMTPADDRESS:127.0.0.1"
-sender-email: "_env:SENDEREMAIL:receipts@example.com"
+sender-email: "_env:SENDEREMAIL:sms@example.com"
 
 #analytics: UA-YOURCODE

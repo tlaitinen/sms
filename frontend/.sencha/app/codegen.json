@@ -35,23 +35,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "Receipts",
+        "appName": "SMS",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "Receipts.controller",
+        "controllerNamespace": "SMS.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "Receipts.model",
-        "name": "Receipts",
+        "modelNamespace": "SMS.model",
+        "name": "SMS",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "2448b91b-ed1f-4a7a-93e9-66e19a2c2d11",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "Receipts.view"
+        "viewNamespace": "SMS.view"
       }
     },
     ".sencha/app/development.properties": {
@@ -60,23 +60,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "Receipts",
+        "appName": "SMS",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "Receipts.controller",
+        "controllerNamespace": "SMS.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "Receipts.model",
-        "name": "Receipts",
+        "modelNamespace": "SMS.model",
+        "name": "SMS",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "2448b91b-ed1f-4a7a-93e9-66e19a2c2d11",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "Receipts.view"
+        "viewNamespace": "SMS.view"
       }
     },
     ".sencha/app/native.properties": {
@@ -85,23 +85,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "Receipts",
+        "appName": "SMS",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "Receipts.controller",
+        "controllerNamespace": "SMS.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "Receipts.model",
-        "name": "Receipts",
+        "modelNamespace": "SMS.model",
+        "name": "SMS",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "2448b91b-ed1f-4a7a-93e9-66e19a2c2d11",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "Receipts.view"
+        "viewNamespace": "SMS.view"
       }
     },
     ".sencha/app/package.properties": {
@@ -110,23 +110,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "Receipts",
+        "appName": "SMS",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "Receipts.controller",
+        "controllerNamespace": "SMS.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "Receipts.model",
-        "name": "Receipts",
+        "modelNamespace": "SMS.model",
+        "name": "SMS",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "2448b91b-ed1f-4a7a-93e9-66e19a2c2d11",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "Receipts.view"
+        "viewNamespace": "SMS.view"
       }
     },
     ".sencha/app/production.properties": {
@@ -135,23 +135,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "Receipts",
+        "appName": "SMS",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "Receipts.controller",
+        "controllerNamespace": "SMS.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "Receipts.model",
-        "name": "Receipts",
+        "modelNamespace": "SMS.model",
+        "name": "SMS",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "2448b91b-ed1f-4a7a-93e9-66e19a2c2d11",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "Receipts.view"
+        "viewNamespace": "SMS.view"
       }
     },
     ".sencha/app/sencha.cfg": {
@@ -160,23 +160,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "Receipts",
+        "appName": "SMS",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "Receipts.controller",
+        "controllerNamespace": "SMS.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "Receipts.model",
-        "name": "Receipts",
+        "modelNamespace": "SMS.model",
+        "name": "SMS",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "2448b91b-ed1f-4a7a-93e9-66e19a2c2d11",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "Receipts.view"
+        "viewNamespace": "SMS.view"
       }
     },
     ".sencha/app/testing.properties": {
@@ -185,23 +185,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "Receipts",
+        "appName": "SMS",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "Receipts.controller",
+        "controllerNamespace": "SMS.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "Receipts.model",
-        "name": "Receipts",
+        "modelNamespace": "SMS.model",
+        "name": "SMS",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "2448b91b-ed1f-4a7a-93e9-66e19a2c2d11",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "Receipts.view"
+        "viewNamespace": "SMS.view"
       }
     },
     "index.html": {
@@ -210,23 +210,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "Receipts",
+        "appName": "SMS",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "Receipts.controller",
+        "controllerNamespace": "SMS.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "Receipts.model",
-        "name": "Receipts",
+        "modelNamespace": "SMS.model",
+        "name": "SMS",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "2448b91b-ed1f-4a7a-93e9-66e19a2c2d11",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "Receipts.view"
+        "viewNamespace": "SMS.view"
       }
     },
     "sass/config.rb": {
@@ -235,23 +235,23 @@
       "parameters": {
         "appControllers": "",
         "appModels": "",
-        "appName": "Receipts",
+        "appName": "SMS",
         "appStores": "",
         "appViews": "",
         "controllerFileName": "Main",
         "controllerName": "Main",
-        "controllerNamespace": "Receipts.controller",
+        "controllerNamespace": "SMS.controller",
         "frameworkName": "ext",
         "frameworkPath": "ext",
-        "modelNamespace": "Receipts.model",
-        "name": "Receipts",
+        "modelNamespace": "SMS.model",
+        "name": "SMS",
         "packagesRelPath": "ext/packages",
         "senchadir": ".sencha",
         "themeName": "default",
         "uniqueId": "2448b91b-ed1f-4a7a-93e9-66e19a2c2d11",
         "viewFileName": "Main",
         "viewName": "Main",
-        "viewNamespace": "Receipts.view"
+        "viewNamespace": "SMS.view"
       }
     }
   }

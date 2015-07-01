@@ -1,5 +1,4 @@
 module DB;
 import "File.ydsl";
 import "UserGroup.ydsl";
-import "Receipt.ydsl";
-
+import "Client.ydsl";

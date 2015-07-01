@@ -1,4 +1,4 @@
-Ext.define('Receipts.view.Login',{
+Ext.define('SMS.view.Login',{
     extend: 'Ext.form.Panel',
     alias: 'widget.login',
     layout: {

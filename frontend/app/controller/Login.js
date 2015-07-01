@@ -1,4 +1,4 @@
-Ext.define('Receipts.controller.Login', {
+Ext.define('SMS.controller.Login', {
     extend: 'Ext.app.Controller',
     views: ['Login'],
     loadUser: function() {
@@ -10,9 +10,9 @@ Ext.define('Receipts.controller.Login', {
                     var obj = JSON.parse(response.responseText)
                     if ("user" in obj) {
                         win.close();
-                        Receipts.GlobalState.user = obj.user;
+                        SMS.GlobalState.user = obj.user;
                         try {
-                            Receipts.GlobalState.user.config = JSON.parse(obj.user.config);
+                            SMS.GlobalState.user.config = JSON.parse(obj.user.config);
                         } catch (e) {
                             console.log("Warning: invalid user config: " + e);
                         }
@@ -24,7 +24,7 @@ Ext.define('Receipts.controller.Login', {
                                 }
                             ]
                         });
-                        Receipts.GlobalState.fireEvent('login');
+                        SMS.GlobalState.fireEvent('login');
                     }
                 } catch (e) {
                     console.log(e);

@@ -54,10 +54,8 @@ library
         Handler.DB.RouteUsers
         Handler.DB.RouteUsersUser
         Handler.DB.RouteVersions
-        Handler.DB.RouteReceipts
-        Handler.DB.RouteReceiptsReceipt
-        Handler.DB.RouteProcessperiods
-        Handler.DB.RouteProcessperiodsProcessPeriod
+        Handler.DB.RouteClients
+        Handler.DB.RouteClientsClient
     build-depends:
         unordered-containers -any,
         transformers -any,

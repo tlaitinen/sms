@@ -1,0 +1,89 @@
+entity Client {
+    instance of Restricted, Deletable, Versioned, HasInsertInfo;
+    firstName Text default "";
+    lastName Text default "";
+    email Maybe Text;
+    phone Maybe Text;
+    dateOfBirth Maybe Day;
+    card Maybe Text;
+    allowSms Bool default True;
+    allowEmail Bool default True;
+}
+route /clients {
+    get {
+        select c.id, c.* from Client as c
+            where hasReadPerm $auth.id c.id
+            order by c.lastName asc, c.firstName asc;
+        default-filter-sort;
+        if param "hideDeleted" = _ then
+            where c.deletedVersionId is Nothing;
+        if param "query" = $$ then
+            where c.firstName ilike "%" || $$ || "%"
+                or c.lastName ilike "%" || $$ || "%"
+                or c.email ilike "%" || $$ || "%"
+                or c.phone ilike "%" || $$ || "%"
+                or c.card ilike "%" || $$ || "%";
+              
+
+    }
+    post {
+        cId <- insert Client from {
+            firstName = $request.firstName,
+            lastName = $request.lastName,
+            email = $request.email,
+            phone = $request.phone,
+            dateOfBirth = $request.dateOfBirth,
+            card = $request.card,
+            allowSms = $request.allowSms,
+            allowEmail = $request.allowEmail,
+            insertionTime = now(),
+            insertedByUserId = $auth.id
+        };
+        insert UserGroupContent from {
+            userGroupId = $auth.defaultUserGroupId,
+            clientContentId = cId
+        };
+        return {
+            'id' = cId
+        };
+    }
+}
+route /clients/#ClientId {
+    delete {
+        require Client as c where c.id = $1 and hasWritePerm $auth.id c.id;
+        versionId <- insert Version from {
+            time = now(),
+            userId = $auth.id
+        };
+        update Client identified by $1 with {
+            deletedVersionId = versionId,
+            activeEndTime = now()
+        };
+    }
+    put {
+        require Client as c where c.id = $1 and hasWritePerm $auth.id c.id;
+        versionId <- insert Version from {
+            time = now(),
+            userId = $auth.id
+        };
+        c <- get Client identified by $1;
+        insert Client from c {
+            activeId = $1,
+            activeEndTime = now(),
+            deletedVersionId = versionId
+        };
+        update Client identified by $1 with {
+            firstName = $request.firstName,
+            lastName = $request.lastName,
+            email = $request.email,
+            phone = $request.phone,
+            dateOfBirth = $request.dateOfBirth,
+            card = $request.card,
+            allowSms = $request.allowSms,
+            allowEmail = $request.allowEmail
+        };
+    }
+}
+
+
+

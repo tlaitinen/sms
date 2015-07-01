@@ -741,7 +741,7 @@
             "path": [
                 {
                     "references": "null",
-                    "value": "receipts",
+                    "value": "clients",
                     "type": "string"
                 }
             ],
@@ -750,34 +750,49 @@
                     "inputs": [],
                     "outputs": [
                         {
-                            "references": "Receipt",
+                            "references": "Client",
                             "name": "id",
                             "type": "integer"
                         },
                         {
-                            "references": "File",
-                            "name": "fileId",
-                            "type": "integer"
-                        },
-                        {
-                            "references": "ProcessPeriod",
-                            "name": "processPeriodId",
-                            "type": "integer"
+                            "references": null,
+                            "name": "firstName",
+                            "type": "string"
                         },
                         {
                             "references": null,
-                            "name": "amount",
-                            "type": "number"
+                            "name": "lastName",
+                            "type": "string"
                         },
                         {
                             "references": null,
-                            "name": "processed",
+                            "name": "email",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "phone",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "dateOfBirth",
+                            "type": "day"
+                        },
+                        {
+                            "references": null,
+                            "name": "card",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "allowSms",
                             "type": "boolean"
                         },
                         {
                             "references": null,
-                            "name": "name",
-                            "type": "string"
+                            "name": "allowEmail",
+                            "type": "boolean"
                         },
                         {
                             "references": null,
@@ -788,11 +803,6 @@
                             "references": "User",
                             "name": "insertedByUserId",
                             "type": "integer"
-                        },
-                        {
-                            "references": "File",
-                            "name": "previewFileId",
-                            "type": "integer"
                         }
                     ],
                     "type": "GET",
@@ -801,24 +811,44 @@
                 {
                     "inputs": [
                         {
-                            "references": "File",
-                            "name": "fileId",
-                            "type": "integer"
-                        },
-                        {
-                            "references": "ProcessPeriod",
-                            "name": "processPeriodId",
-                            "type": "integer"
-                        },
-                        {
                             "references": null,
-                            "name": "amount",
-                            "type": "number"
-                        },
-                        {
-                            "references": null,
-                            "name": "name",
+                            "name": "firstName",
                             "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "lastName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "email",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "phone",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "dateOfBirth",
+                            "type": "day"
+                        },
+                        {
+                            "references": null,
+                            "name": "card",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "allowSms",
+                            "type": "boolean"
+                        },
+                        {
+                            "references": null,
+                            "name": "allowEmail",
+                            "type": "boolean"
                         }
                     ],
                     "outputs": [
@@ -836,84 +866,17 @@
             "path": [
                 {
                     "references": "null",
-                    "value": "receipts",
+                    "value": "clients",
                     "type": "string"
                 },
                 {
-                    "references": "Receipt",
+                    "references": "Client",
                     "type": "integer"
                 }
             ],
             "handlers": [
                 {
-                    "inputs": [],
-                    "outputs": [
-                        {
-                            "references": "Receipt",
-                            "name": "id",
-                            "type": "integer"
-                        },
-                        {
-                            "references": "File",
-                            "name": "fileId",
-                            "type": "integer"
-                        },
-                        {
-                            "references": "ProcessPeriod",
-                            "name": "processPeriodId",
-                            "type": "integer"
-                        },
-                        {
-                            "references": null,
-                            "name": "amount",
-                            "type": "number"
-                        },
-                        {
-                            "references": null,
-                            "name": "processed",
-                            "type": "boolean"
-                        },
-                        {
-                            "references": null,
-                            "name": "name",
-                            "type": "string"
-                        },
-                        {
-                            "references": null,
-                            "name": "insertionTime",
-                            "type": "utctime"
-                        },
-                        {
-                            "references": "User",
-                            "name": "insertedByUserId",
-                            "type": "integer"
-                        }
-                    ],
-                    "type": "GET",
-                    "public": false
-                },
-                {
                     "inputs": [
-                        {
-                            "references": "File",
-                            "name": "fileId",
-                            "type": "integer"
-                        },
-                        {
-                            "references": "ProcessPeriod",
-                            "name": "processPeriodId",
-                            "type": "integer"
-                        },
-                        {
-                            "references": null,
-                            "name": "amount",
-                            "type": "number"
-                        },
-                        {
-                            "references": null,
-                            "name": "name",
-                            "type": "string"
-                        },
                         {
                             "references": null,
                             "name": "insertionTime",
@@ -927,118 +890,53 @@
                 {
                     "inputs": [
                         {
-                            "references": "File",
-                            "name": "fileId",
-                            "type": "integer"
-                        },
-                        {
-                            "references": "ProcessPeriod",
-                            "name": "processPeriodId",
-                            "type": "integer"
+                            "references": null,
+                            "name": "insertionTime",
+                            "type": "utctime"
                         },
                         {
                             "references": null,
-                            "name": "amount",
-                            "type": "number"
-                        },
-                        {
-                            "references": null,
-                            "name": "name",
+                            "name": "firstName",
                             "type": "string"
                         },
                         {
                             "references": null,
-                            "name": "insertionTime",
-                            "type": "utctime"
+                            "name": "lastName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "email",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "phone",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "dateOfBirth",
+                            "type": "day"
+                        },
+                        {
+                            "references": null,
+                            "name": "card",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "allowSms",
+                            "type": "boolean"
+                        },
+                        {
+                            "references": null,
+                            "name": "allowEmail",
+                            "type": "boolean"
                         }
                     ],
                     "outputs": [],
                     "type": "PUT",
-                    "public": false
-                }
-            ]
-        },
-        {
-            "path": [
-                {
-                    "references": "null",
-                    "value": "processperiods",
-                    "type": "string"
-                }
-            ],
-            "handlers": [
-                {
-                    "inputs": [],
-                    "outputs": [
-                        {
-                            "references": "ProcessPeriod",
-                            "name": "id",
-                            "type": "integer"
-                        },
-                        {
-                            "references": null,
-                            "name": "firstDay",
-                            "type": "day"
-                        },
-                        {
-                            "references": null,
-                            "name": "lastDay",
-                            "type": "day"
-                        },
-                        {
-                            "references": null,
-                            "name": "queued",
-                            "type": "boolean"
-                        },
-                        {
-                            "references": null,
-                            "name": "processed",
-                            "type": "boolean"
-                        },
-                        {
-                            "references": null,
-                            "name": "name",
-                            "type": "string"
-                        }
-                    ],
-                    "type": "GET",
-                    "public": false
-                }
-            ]
-        },
-        {
-            "path": [
-                {
-                    "references": "null",
-                    "value": "processperiods",
-                    "type": "string"
-                },
-                {
-                    "references": "ProcessPeriod",
-                    "type": "integer"
-                }
-            ],
-            "handlers": [
-                {
-                    "inputs": [
-                        {
-                            "references": null,
-                            "name": "firstDay",
-                            "type": "day"
-                        },
-                        {
-                            "references": null,
-                            "name": "lastDay",
-                            "type": "day"
-                        },
-                        {
-                            "references": null,
-                            "name": "name",
-                            "type": "string"
-                        }
-                    ],
-                    "outputs": [],
-                    "type": "POST",
                     "public": false
                 }
             ]
@@ -1124,16 +1022,9 @@
                     "optional": true
                 },
                 {
-                    "references": "Receipt",
+                    "references": "Client",
                     "default": null,
-                    "name": "receiptContentId",
-                    "type": "integer",
-                    "optional": true
-                },
-                {
-                    "references": "ProcessPeriod",
-                    "default": null,
-                    "name": "processPeriodContentId",
+                    "name": "clientContentId",
                     "type": "integer",
                     "optional": true
                 }
@@ -1293,41 +1184,62 @@
             ]
         },
         {
-            "name": "Receipt",
+            "name": "Client",
             "fields": [
                 {
-                    "references": "File",
-                    "default": null,
-                    "name": "fileId",
-                    "type": "integer",
+                    "references": null,
+                    "default": "",
+                    "name": "firstName",
+                    "type": "string",
                     "optional": false
                 },
                 {
-                    "references": "ProcessPeriod",
-                    "default": null,
-                    "name": "processPeriodId",
-                    "type": "integer",
+                    "references": null,
+                    "default": "",
+                    "name": "lastName",
+                    "type": "string",
                     "optional": false
                 },
                 {
                     "references": null,
                     "default": null,
-                    "name": "amount",
-                    "type": "number",
-                    "optional": false
+                    "name": "email",
+                    "type": "string",
+                    "optional": true
                 },
                 {
                     "references": null,
-                    "default": false,
-                    "name": "processed",
+                    "default": null,
+                    "name": "phone",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "dateOfBirth",
+                    "type": "day",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "card",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": true,
+                    "name": "allowSms",
                     "type": "boolean",
                     "optional": false
                 },
                 {
                     "references": null,
-                    "default": null,
-                    "name": "name",
-                    "type": "string",
+                    "default": true,
+                    "name": "allowEmail",
+                    "type": "boolean",
                     "optional": false
                 },
                 {
@@ -1343,46 +1255,6 @@
                     "name": "insertedByUserId",
                     "type": "integer",
                     "optional": true
-                }
-            ]
-        },
-        {
-            "name": "ProcessPeriod",
-            "fields": [
-                {
-                    "references": null,
-                    "default": null,
-                    "name": "firstDay",
-                    "type": "day",
-                    "optional": false
-                },
-                {
-                    "references": null,
-                    "default": null,
-                    "name": "lastDay",
-                    "type": "day",
-                    "optional": false
-                },
-                {
-                    "references": null,
-                    "default": false,
-                    "name": "queued",
-                    "type": "boolean",
-                    "optional": false
-                },
-                {
-                    "references": null,
-                    "default": false,
-                    "name": "processed",
-                    "type": "boolean",
-                    "optional": false
-                },
-                {
-                    "references": null,
-                    "default": null,
-                    "name": "name",
-                    "type": "string",
-                    "optional": false
                 }
             ]
         }
@@ -1403,9 +1275,7 @@
             "instances": [
                 "File",
                 "UserGroup",
-                "User",
-                "Receipt",
-                "ProcessPeriod"
+                "User"
             ],
             "fields": [
                 {
@@ -1421,7 +1291,7 @@
             "name": "HasInsertInfo",
             "instances": [
                 "File",
-                "Receipt"
+                "Client"
             ],
             "fields": [
                 {
@@ -1446,8 +1316,7 @@
                 "File",
                 "UserGroup",
                 "User",
-                "Receipt",
-                "ProcessPeriod"
+                "Client"
             ],
             "fields": []
         },
@@ -1457,7 +1326,7 @@
                 "File",
                 "UserGroup",
                 "User",
-                "Receipt"
+                "Client"
             ],
             "fields": []
         },
@@ -1469,7 +1338,7 @@
                 "UserGroup",
                 "UserGroupItem",
                 "User",
-                "Receipt"
+                "Client"
             ],
             "fields": []
         }

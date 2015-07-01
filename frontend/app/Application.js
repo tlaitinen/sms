@@ -4,26 +4,32 @@
  * Ext.application(). This is the ideal place to handle application launch and initialization
  * details.
  */
-Ext.define('Receipts.Application', {
+Ext.define('SMS.Application', {
     extend: 'Ext.app.Application',
     
-    name: 'Receipts',
+    name: 'SMS',
     requires: [
         'Ext.data.proxy.Rest', 
         'Ext.form.field.Checkbox',
         'Ext.grid.Panel',
-        'Ext.grid.plugin.CellEditing'
+        'Ext.grid.plugin.CellEditing',
+        'Ext.grid.plugin.RowEditing'
     ],
     controllers: [
-        'Login@Receipts.controller'
+        'Login@SMS.controller'
     ],
 
     stores: [
     ],
     
     init:function() {
+        function boolRenderer(value,meta, record) {
+            if (value == true)
+                return '<span class="glyphicon glyphicon-ok"></span>';
+            return ' ';
+        }
         Ext.History.init();
-        Ext.define('Receipts.CustomReader', {
+        Ext.define('SMS.CustomReader', {
             extend: 'Ext.data.reader.Reader',
             alias: 'reader.customreader',
             read: function(xhr)  {
@@ -32,9 +38,9 @@ Ext.define('Receipts.Application', {
         }, function (customReader) {
             function maybeCreateDefaultUserGroup(form, record) {
                 if (!record.get('defaultUserGroupId')) {
-                    var ug = Ext.create('Receipts.model.UserGroup');
+                    var ug = Ext.create('SMS.model.UserGroup');
                     ug.set('name', record.get('name'));
-                    ug.set('email', Receipts.GlobalState.user.defaultUserGroupEmail);
+                    ug.set('email', SMS.GlobalState.user.defaultUserGroupEmail);
                     var dfd = jQuery.Deferred();
                     ug.save({
                         success: function (rec, op) {
@@ -53,8 +59,9 @@ Ext.define('Receipts.Application', {
                 }
             }
             $.get("resources/backend.json").done(function(defs) {
+                console.log(Ext.util.Format.dateFormat);
                 var config = {
-                    name: 'Receipts',
+                    name: 'SMS',
                     urlBase: 'backend/db',
                     defaultStoreFilters: [
                         {
@@ -63,61 +70,40 @@ Ext.define('Receipts.Application', {
                         }
                     ],
                     routes: {
-
-                        processperiods: {
-                            combo: {
-                                forceSelection: true
-                            }
-                        },
-                        receipts: {
+                        clients: {
 
                             autoSync:true,
                             grids: [
                                 {
-                                    widget: 'receiptsgrid',
+                                    widget: 'clientsgrid',
                                     globalStore:true,
                                     preload:false,
-                                    plugins: 'cellediting',
-                                    toolbar: [
-                                        {
-                                            xtype:'processperiodscombo',
-                                            filterField:'processPeriodId'
-                                        }
-                                    ],
+                                    plugins: 'rowediting',
                                     columns: [ 
-                                        { field:'name', editor: { allowBlank:false}, flex:5 }, 
+                                        { field:'firstName', editor: { allowBlank:false}, flex:3 }, 
+                                        { field:'lastName', editor: { allowBlank:false}, flex:5 }, 
+                                        { field:'email', editor: { }, flex:5 },
+                                        { field:'phone', editor: {}, flex:3 },
                                         { 
-                                            field:'amount', 
-                                            editor: {
-                                                xtype: 'numberfield'
-                                            }, 
-                                            flex:1,
-                                            renderer: function(v) {
-                                                return Ext.util.Format.currency(v, '€', 2, true);
-                                            }
-
+                                            field: 'dateOfBirth', 
+                                            editor:{ xtype:'datefield'}, 
+                                            flex:2,
+                                            xtype:'datecolumn',
+                                            format:Ext.util.Format.dateFormat 
                                         },
+                                        { field:'card', editor:{}, flex:3 },
                                         { 
-                                            field:'processed', 
-                                            renderer: function (value,meta, record) {
-                                                if (record.get('processed') == true)
-                                                    return '<span class="glyphicon glyphicon-ok"></span>';
-                                                return ' ';
-                                            }
+                                            field:'allowSms', editor:{ xtype: 'checkbox'}, flex:1,
+                                            renderer:boolRenderer
                                         },
-                                        { 
-                                            field:'previewFileId', 
-                                            flex:1,
-                                            renderer: function (value) {
-                                                return '<span class="glyphicon glyphicon-picture"></span>';
-                                            }
-                                        } 
-                                    ],
+                                        { field:'allowEmail', editor:{ xtype:'checkbox'}, flex:1,
+                                            renderer:boolRenderer
+                                        }
+                                   ],
                                     bottomToolbar: [
-                                        { name: 'remove', action:'remove' },
-                                        { name: 'send' }
+                                        { name: 'add', action:'add' },
+                                        { name: 'remove', action:'remove' }
                                     ]
-
                                 }
                             ]
                         },
@@ -248,7 +234,7 @@ Ext.define('Receipts.Application', {
        });
    }
 });
-Ext.define('Receipts.GlobalState', {
+Ext.define('SMS.GlobalState', {
     extend: 'Ext.util.Observable',
     singleton:true
 });

@@ -5,11 +5,10 @@
  *
  * TODO - Replace this content of this view to suite the needs of your application.
  */
-Ext.define('Receipts.view.main.Main', {
+Ext.define('SMS.view.main.Main', {
     extend: 'Ext.container.Container',
     requires: [
-        'Receipts.view.main.MainController',
-        'Receipts.view.main.ReceiptUpload'
+        'SMS.view.main.MainController'
     ],
 
     xtype: 'app-main',
@@ -36,22 +35,16 @@ Ext.define('Receipts.view.main.Main', {
         },
         items:[
             {
-                name:'receipts',
-                id:'maintab-receipts',
-                reference: 'receiptsTab',
-                title: __('maintab.receipts'),
+                name:'clients',
+                id:'maintab-clients',
+                reference: 'clientsTab',
+                title: __('maintab.clients'),
                 layout:{
                     type:'vbox',
                     align:'stretch'
                 },
                 items: [
-                    { xtype: 'receiptsgrid', flex:3 },
-                    { 
-                        xtype: 'receiptupload', 
-                        flex:1,
-                        title: __('upload.title'),
-                        autoscroll:true
-                    }
+                    { xtype: 'clientsgrid', flex:3 }
                 ]
             },
             {

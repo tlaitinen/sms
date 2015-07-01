@@ -68,8 +68,11 @@ var yesodDsl = function(defs, __, config) {
                     name : name,
                     type : (f.optional || f.references) ? "auto" : f.type
                 };
-                if (r.type == "utctime" || r.type == "day")
+                if (f.type == "utctime" || f.type == "day")
                     r.type = "date";
+                if (f.type == "day") {
+                    r.dateFormat = "Y-m-d";
+                }
                 if ('default' in f)
                     r.defaultValue = f['default'];
                 if (mapping != undefined) {
@@ -538,6 +541,17 @@ var yesodDsl = function(defs, __, config) {
                                                                            gridCfg.formHeight || config.formHeight || 630,
                                                                            record);
 
+                                                        } else if (tb.action == 'add') {
+                                                            var record = Ext.create(modelName, entityDefaults(entityName));
+                                                            record.setId(0);
+                                                            record.save({
+                                                                success: function(rec, op) {
+                                                                    var r = JSON.parse(op.getResponse().responseText)
+                                                                    record.setId(r.id);
+                                                                    record.setId(0);
+                                                                    store.insert(0, record);
+                                                                }
+                                                            });
                                                         }
                                                     }
                                                 }

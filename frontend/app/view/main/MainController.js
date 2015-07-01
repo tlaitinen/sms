@@ -1,4 +1,4 @@
-Ext.define('Receipts.view.main.MainController', {
+Ext.define('SMS.view.main.MainController', {
     extend: 'Ext.app.ViewController',
 
     requires: [
@@ -18,39 +18,16 @@ Ext.define('Receipts.view.main.MainController', {
                 conditions : {
                     ':id'    : '(?:(?::){1}([%a-zA-Z0-9\-\_\s,]+))?'
                 }
-            },
-            'preview:id' : {
-                action     : 'showPreview',
-                conditions : {
-                    ':id'    : '(?:(?::){1}([%a-zA-Z0-9\-\_\s,]+))?'
-                }
             }
         }
     },
-    getProcessPeriodCombo: function() {
-        return Ext.ComponentQuery.query('panel[name=receipts] receiptsgrid processperiodscombo')[0];
-    },
-    resetProcessPeriodCombo: function() {
-        var ppCombo = this.getProcessPeriodCombo(),
-            pps = Ext.getStore('processperiods');
-        pps.load(function() {
-
-            ppCombo.clearValue();
-            if (pps.getCount() > 0) {
-                ppCombo.setValue(pps.getAt(0).getId());
-            }
-            ppCombo.fireEvent('select', ppCombo);
-            ppCombo.configStore();
-        });
-    },
-    onLogin: function() {
+   onLogin: function() {
         
-        if (Receipts.GlobalState.user.config.usersTab == true) {
+        if (SMS.GlobalState.user.config.usersTab == true) {
             this.lookupReference('usersTab').tab.show();
         }
 
-        this.resetProcessPeriodCombo();
-        this.redirectTo('maintab:maintab-receipts');
+        this.redirectTo('maintab:maintab-clients');
     },
 
     addUserGroupItems: function(userGrid, userGroupGrid, userGroupItemsGrid, mode) {
@@ -60,7 +37,7 @@ Ext.define('Receipts.view.main.MainController', {
         for (var i = 0; i < users.length; i++) {
             for (var i2 = 0; i2 < userGroups.length; i2++) {
                 (function(user, userGroup) {
-                    userGroupItems.add(Ext.create('Receipts.model.usergroupitems',
+                    userGroupItems.add(Ext.create('SMS.model.usergroupitems',
                             {
                             userId: user.getId(),
                             userName: user.getData()['name'],
@@ -84,82 +61,16 @@ Ext.define('Receipts.view.main.MainController', {
         }
         var child = tabPanel.getComponent(id);
         tabPanel.setActiveTab(child);
-        var previewWin = Ext.getCmp('preview');
-        if (previewWin)
-            previewWin.close();
-    },
-    showPreview: function(id) {
-        var controller = this;
-        var win = new Ext.Window({
-            id:'preview',
-            layout:'fit',
-            width:'80%',
-            height:'80%',
-            closable:true,
-            resizable:true,
-            plain:true,
-            title: __('preview.title'),
-            items: [
-                { 
-                    xtype:'panel',
-                    html: '<img src="backend/file/' + id + '"/>',
-                    autoScroll:true,
-                    listeners: {
-                       'render': function(panel) {
-                           panel.body.on('click', function() {
-                                win.close();
-                                controller.redirectTo('maintab:maintab-receipts');
-                           });
-                        }
-                    }
-                }
-            ]
-        });
-        win.show();
-
     },
     init: function() {
         var controller = this;
-        Receipts.GlobalState.on('login', function() {
+        SMS.GlobalState.on('login', function() {
             controller.onLogin();
             
         });
 
         this.control({
-            'receiptsgrid' : {
-                cellclick: function( grid, td, cellIndex, record, tr, rowIndex, e, eOpts ) {
-                    if (cellIndex == 3) {
-                        controller.redirectTo('maintab:maintab-receipts|preview:' + record.get('previewFileId'));
-                        controller.showPreview(record.get('previewFileId'));
-                    }
-                },
-                beforeedit: function(editor, context, eOpts) {
-                    
-                },
-                edit: function(editor, context, eOpts) {
-                   //  context.record.set('amount', context.value.replace(",","."));
-
-                }
-
-            },
-            'receiptsgrid button[name=send]': {
-                click: function(button) {
-                    Ext.MessageBox.confirm(__('confirmsend.title'), __('confirmsend.message'),
-                        function (button) {
-                        if (button == "yes") {
-                            var ppCombo = controller.getProcessPeriodCombo();
-                            Ext.Ajax.request({
-                                url: 'backend/db/processperiods/' + ppCombo.getValue(),
-                                method: 'POST',
-                                params: {
-                                }
-                            });
-                        }
-                    });
-                }
-            },
-
-            'panel[name=users] button[name=addReadPerm]': {
+           'panel[name=users] button[name=addReadPerm]': {
                 click: function(button) {
                     var panel = button.up('panel[name=users]');
                     controller.addUserGroupItems(panel.down('usersgrid'),
