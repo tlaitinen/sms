@@ -1,6 +1,6 @@
 import "Named.ydsl";
 import "Versioned.ydsl";
-import Handler.Utils (hasReadPerm, hasReadPermMaybe, hasWritePerm);
+import Handler.Utils (hasReadPerm, hasReadPermMaybe, hasWritePerm, prepareNewUser);
 
 
 class Restricted {
@@ -229,6 +229,7 @@ route /users {
             timeZone           = $request.timeZone,
             activeStartTime    = now()
         };
+        prepareNewUser $auth.id userId;
         insert UserGroupContent from {
             userGroupId = $auth.defaultUserGroupId,
             userContentId = userId                        

@@ -60,7 +60,7 @@ import Control.Applicative ((<$>), (<*>))
 import qualified Data.HashMap.Lazy as HML
 import qualified Data.HashMap.Strict as HMS
 import Handler.Utils (nonEmpty)
-import Handler.Utils (hasWritePerm,hasReadPermMaybe,hasReadPerm)
+import Handler.Utils (prepareNewUser,hasWritePerm,hasReadPermMaybe,hasReadPerm)
 
 getUsersR :: forall master. (
     YesodAuthPersist master,
@@ -355,7 +355,8 @@ postUsersR  = lift $ runDB $ do
                     ])
             _ -> return ()
         result_userId <- P.insert (e2 :: User)
-        e3 <- do
+        prepareNewUser (authId) (result_userId)
+        e4 <- do
     
             return $ UserGroupContent {
                             userGroupContentUserGroupId = userDefaultUserGroupId __auth
@@ -373,13 +374,13 @@ postUsersR  = lift $ runDB $ do
                             userGroupContentDeletedVersionId = Nothing
     
                 }
-        vErrors <- lift $ validate e3
+        vErrors <- lift $ validate e4
         case vErrors of
             xs@(_:_) -> sendResponseStatus status400 (A.object [ 
                         "message" .= ("Entity validation failed" :: Text),
                         "errors" .= toJSON xs 
                     ])
             _ -> return ()
-        P.insert (e3 :: UserGroupContent)
+        P.insert (e4 :: UserGroupContent)
         return $ A.object [ "id" .= (toJSON result_userId) ]
     return $ runDB_result

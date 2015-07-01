@@ -150,7 +150,12 @@ Ext.define('Receipts.Application', {
                                         { xtype:'button', name:'setUserPassword', 
                                          form:'userpasswordform', formHeight:200 }
                                     ],
-                                    beforeSubmit: [maybeCreateDefaultUserGroup]
+                                    beforeSubmit: [maybeCreateDefaultUserGroup],
+                                    success: [function(record) {
+                                        ['usergroupsgrid', 'usergroupitemsgrid'].forEach(function (n) {
+                                            Ext.ComponentQuery.query(n).forEach(function(g) { g.store.reload(); });
+                                        });
+                                    }]
                                 },
                                 {
                                     widget: 'userpasswordform',

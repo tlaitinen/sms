@@ -679,6 +679,7 @@ var yesodDsl = function(defs, __, config) {
                                                                                            record.setId(r.id);
                                                                                            refreshGrids(entityRouteInfo.name);
                                                                                        }
+                                                                                       _.each(formCfg.success || [], function (cb) { cb(record); });
                                                                                    }
                                                                                });
                                                                            }

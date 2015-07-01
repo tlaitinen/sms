@@ -60,7 +60,7 @@ import Control.Applicative ((<$>), (<*>))
 import qualified Data.HashMap.Lazy as HML
 import qualified Data.HashMap.Strict as HMS
 import Handler.Utils (nonEmpty)
-import Handler.Utils (hasWritePerm,hasReadPermMaybe,hasReadPerm)
+import Handler.Utils (prepareNewUser,hasWritePerm,hasReadPermMaybe,hasReadPerm)
 
 putUsergroupsUserGroupIdR :: forall master. (
     YesodAuthPersist master,
