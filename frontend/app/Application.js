@@ -80,11 +80,16 @@ Ext.define('SMS.Application', {
                                     widget: 'clientsgrid',
                                     globalStore:true,
                                     preload:true,
-                                    plugins: 'rowediting',
+                                    plugins: {
+                                        pluginId: 'rowediting',
+                                        ptype: 'rowediting',
+                                        saveBtnText: __('rowedit.save'),
+                                        cancelBtnText: __('rowedit.cancel')
+                                    },
                                     columns: [ 
                                         { field:'firstName', editor: { allowBlank:false}, flex:3 }, 
                                         { field:'lastName', editor: { allowBlank:false}, flex:5 }, 
-                                        { field:'email', editor: { }, flex:5 },
+                                        { field:'email', editor: { }, flex:3 },
                                         { field:'phone', editor: {}, flex:3 },
                                         { 
                                             field: 'dateOfBirth', 

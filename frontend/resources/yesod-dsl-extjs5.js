@@ -548,8 +548,14 @@ var yesodDsl = function(defs, __, config) {
                                                                 success: function(rec, op) {
                                                                     var r = JSON.parse(op.getResponse().responseText)
                                                                     record.setId(r.id);
-                                                                    record.setId(0);
                                                                     store.insert(0, record);
+                                                                    var rowEdit = grid.getPlugin('rowediting');
+                                                                    if (rowEdit) {
+                                                                        rowEdit.startEdit(0, 0);
+                                                                    }
+
+
+
                                                                 }
                                                             });
                                                         }

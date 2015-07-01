@@ -1,12 +1,15 @@
 function __(k,d) {
     var strings = {
+        'rowedit.save' : 'Tallenna',
+        'rowedit.cancel' : 'Peruuta',
         'phone' : 'Puhelinnumero',
         'dateOfBirth' : 'Syntymäaika',
-        'card' : 'Kortin numero',
+        'card' : 'Kortti',
         'allowSms' : 'SMS',
         'allowEmail' : '@',
         'clientsgrid.title' : 'Kanta-asiakkaat',
         'clientsgrid.emptyPaging' : 'Ei kanta-asiakkaita',
+        'clientsgrid.add' : 'Uusi kanta-asiakas',
         'clientsgrid.remove' : 'Poista valitut kanta-asiakkaat',
         'preview' : 'Esikatselu',
         'preview.title' : 'Esikatselu (voit sulkea ikkunan klikkaamalla kuvaa)',
