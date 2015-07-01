@@ -28,6 +28,9 @@ Ext.define('SMS.Application', {
                 return '<span class="glyphicon glyphicon-ok"></span>';
             return ' ';
         }
+        function dateRenderer(value,meta,record) {
+            return Ext.Date.format(value, Ext.util.Format.dateFormat);
+        }
         Ext.History.init();
         Ext.define('SMS.CustomReader', {
             extend: 'Ext.data.reader.Reader',
@@ -59,7 +62,6 @@ Ext.define('SMS.Application', {
                 }
             }
             $.get("resources/backend.json").done(function(defs) {
-                console.log(Ext.util.Format.dateFormat);
                 var config = {
                     name: 'SMS',
                     urlBase: 'backend/db',
@@ -71,13 +73,13 @@ Ext.define('SMS.Application', {
                     ],
                     routes: {
                         clients: {
-
                             autoSync:true,
+
                             grids: [
                                 {
                                     widget: 'clientsgrid',
                                     globalStore:true,
-                                    preload:false,
+                                    preload:true,
                                     plugins: 'rowediting',
                                     columns: [ 
                                         { field:'firstName', editor: { allowBlank:false}, flex:3 }, 
@@ -86,10 +88,12 @@ Ext.define('SMS.Application', {
                                         { field:'phone', editor: {}, flex:3 },
                                         { 
                                             field: 'dateOfBirth', 
-                                            editor:{ xtype:'datefield'}, 
+                                            editor:{ 
+                                                xtype:'datefield',
+                                                submitFormat: 'Y-m-d'
+                                            }, 
                                             flex:2,
-                                            xtype:'datecolumn',
-                                            format:Ext.util.Format.dateFormat 
+                                            renderer:dateRenderer
                                         },
                                         { field:'card', editor:{}, flex:3 },
                                         { 

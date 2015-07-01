@@ -70,9 +70,9 @@ var yesodDsl = function(defs, __, config) {
                 };
                 if (f.type == "utctime" || f.type == "day")
                     r.type = "date";
-                if (f.type == "day") {
-                    r.dateFormat = "Y-m-d";
-                }
+                if (f.type == "day") 
+                    r.dateFormat = 'Y-m-d';
+                    
                 if ('default' in f)
                     r.defaultValue = f['default'];
                 if (mapping != undefined) {
