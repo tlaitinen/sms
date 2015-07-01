@@ -15,7 +15,7 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
-module Handler.DB.RouteUsergroups where
+module Handler.DB.RouteTextmessages where
 import Handler.DB.Enums
 import Handler.DB.Esqueleto
 import Handler.DB.Internal
@@ -61,15 +61,17 @@ import qualified Data.HashMap.Lazy as HML
 import qualified Data.HashMap.Strict as HMS
 import Handler.Utils (nonEmpty)
 import Handler.Utils (prepareNewUser,hasWritePerm,hasReadPermMaybe,hasReadPerm)
+import Handler.TextMessage (addTextMessageRecipients)
 
-getUsergroupsR :: forall master. (
+getTextmessagesR :: forall master. (
     YesodAuthPersist master,
     AuthEntity master ~ User,
     AuthId master ~ Key User,
     YesodPersistBackend master ~ SqlBackend)
     => HandlerT DB (HandlerT master IO) A.Value
-getUsergroupsR  = lift $ runDB $ do
+getTextmessagesR  = lift $ runDB $ do
     authId <- lift $ requireAuthId
+    (filterParam_query) <- lookupGetParam "query"
     defaultFilterParam <- lookupGetParam "filter"
     let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FS.Filter]
     defaultSortParam <- lookupGetParam "sort"
@@ -78,11 +80,9 @@ getUsergroupsR  = lift $ runDB $ do
     defaultLimitParam <- lookupGetParam "limit"
     let defaultOffset = (maybe Nothing PP.fromPathPiece defaultOffsetParam) :: Maybe Int64
     let defaultLimit = (maybe Nothing PP.fromPathPiece defaultLimitParam) :: Maybe Int64
-    (filterParam_query) <- lookupGetParam "query"
-    (filterParam_musicPieceIdList) <- lookupGetParam "musicPieceIdList"
-    let baseQuery limitOffsetOrder = from $ \(ug ) -> do
-        let ugId' = ug ^. UserGroupId
-        where_ (hasReadPerm (val authId) (ug ^. UserGroupId))
+    let baseQuery limitOffsetOrder = from $ \(t ) -> do
+        let tId' = t ^. TextMessageId
+        where_ (hasReadPerm (val authId) (t ^. TextMessageId))
 
         _ <- if limitOffsetOrder
             then do 
@@ -90,26 +90,34 @@ getUsergroupsR  = lift $ runDB $ do
                 limit 10000
                 case defaultSortJson of 
                     Just xs -> mapM_ (\sjm -> case FS.s_field sjm of
-                            "createPeriods" -> case (FS.s_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupCreatePeriods) ] 
-                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupCreatePeriods) ] 
+                            "text" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (t  ^.  TextMessageText) ] 
+                                "DESC" -> orderBy [ desc (t  ^.  TextMessageText) ] 
                                 _      -> return ()
-                            "email" -> case (FS.s_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupEmail) ] 
-                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupEmail) ] 
+                            "sendertextMessageId" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (t  ^.  TextMessageSendertextMessageId) ] 
+                                "DESC" -> orderBy [ desc (t  ^.  TextMessageSendertextMessageId) ] 
                                 _      -> return ()
-                            "current" -> case (FS.s_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupCurrent) ] 
-                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupCurrent) ] 
+                            "queued" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (t  ^.  TextMessageQueued) ] 
+                                "DESC" -> orderBy [ desc (t  ^.  TextMessageQueued) ] 
                                 _      -> return ()
-                            "name" -> case (FS.s_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupName) ] 
-                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupName) ] 
+                            "sent" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (t  ^.  TextMessageSent) ] 
+                                "DESC" -> orderBy [ desc (t  ^.  TextMessageSent) ] 
+                                _      -> return ()
+                            "insertionTime" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (t  ^.  TextMessageInsertionTime) ] 
+                                "DESC" -> orderBy [ desc (t  ^.  TextMessageInsertionTime) ] 
+                                _      -> return ()
+                            "insertedByUserId" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (t  ^.  TextMessageInsertedByUserId) ] 
+                                "DESC" -> orderBy [ desc (t  ^.  TextMessageInsertedByUserId) ] 
                                 _      -> return ()
                 
                             _ -> return ()
                         ) xs
-                    Nothing -> orderBy [ asc (ug ^. UserGroupName) ]
+                    Nothing -> orderBy [ desc (t ^. TextMessageInsertionTime) ]
 
                 case defaultOffset of
                     Just o -> offset o
@@ -122,20 +130,38 @@ getUsergroupsR  = lift $ runDB $ do
         case defaultFilterJson of 
             Just xs -> mapM_ (\fjm -> case FS.f_field fjm of
                 "id" -> case (FS.f_value fjm >>= PP.fromPathPiece)  of 
-                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupId) (val v')
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageId) (val v')
                     _        -> return ()
-                "createPeriods" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
-                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupCreatePeriods) ((val v'))
+                "text" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageText) ((val v'))
                     _        -> return ()
-                "email" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
-                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupEmail) ((val v'))
+                "sendertextMessageId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageSendertextMessageId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageSendertextMessageId) nothing
+                           
+                "queued" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageQueued) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageQueued) nothing
+                           
+                "sent" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageSent) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageSent) nothing
+                           
+                "insertionTime" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageInsertionTime) ((val v'))
                     _        -> return ()
-                "current" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
-                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupCurrent) ((val v'))
-                    _        -> return ()
-                "name" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
-                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupName) ((val v'))
-                    _        -> return ()
+                "insertedByUserId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageInsertedByUserId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageInsertedByUserId) nothing
+                           
 
                 _ -> return ()
                 ) xs
@@ -143,14 +169,9 @@ getUsergroupsR  = lift $ runDB $ do
         case FS.getDefaultFilter filterParam_query defaultFilterJson "query" of
             Just localParam -> do 
                 
-                where_ $ (ug ^. UserGroupName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))
+                where_ $ (t ^. TextMessageText) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))
             Nothing -> return ()
-        case FS.getDefaultFilter filterParam_musicPieceIdList defaultFilterJson "musicPieceIdList" of
-            Just localParam -> do 
-                
-                where_ $ (ug ^. UserGroupId) `in_` (subList_select $ from $ \(ugi) -> do {  ; where_ (((ugi ^. UserGroupItemUserId) `in_` (valList localParam)) &&. ((ugi ^. UserGroupItemDeletedVersionId) `is` (nothing))) ; return (ugi ^. UserGroupItemUserGroupId) ; })
-            Nothing -> return ()
-        return (ug ^. UserGroupId, ug ^. UserGroupCreatePeriods, ug ^. UserGroupEmail, ug ^. UserGroupCurrent, ug ^. UserGroupName)
+        return (t ^. TextMessageId, t ^. TextMessageText, t ^. TextMessageSendertextMessageId, t ^. TextMessageQueued, t ^. TextMessageSent, t ^. TextMessageInsertionTime, t ^. TextMessageInsertedByUserId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -160,23 +181,25 @@ getUsergroupsR  = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7)) -> A.object [
                     "id" .= toJSON f1,
-                    "createPeriods" .= toJSON f2,
-                    "email" .= toJSON f3,
-                    "current" .= toJSON f4,
-                    "name" .= toJSON f5                                    
+                    "text" .= toJSON f2,
+                    "sendertextMessageId" .= toJSON f3,
+                    "queued" .= toJSON f4,
+                    "sent" .= toJSON f5,
+                    "insertionTime" .= toJSON f6,
+                    "insertedByUserId" .= toJSON f7                                    
                     ]
                 _ -> A.object []
             ) results)
        ]
-postUsergroupsR :: forall master. (
+postTextmessagesR :: forall master. (
     YesodAuthPersist master,
     AuthEntity master ~ User,
     AuthId master ~ Key User,
     YesodPersistBackend master ~ SqlBackend)
     => HandlerT DB (HandlerT master IO) A.Value
-postUsergroupsR  = lift $ runDB $ do
+postTextmessagesR  = lift $ runDB $ do
     authId <- lift $ requireAuthId
     jsonResult <- parseJsonBody
     jsonBody <- case jsonResult of
@@ -185,57 +208,41 @@ postUsergroupsR  = lift $ runDB $ do
     jsonBodyObj <- case jsonBody of
         A.Object o -> return o
         v -> sendResponseStatus status400 $ A.object [ "message" .= ("Expected JSON object in the request body, got: " ++ show v) ]
-    attr_email <- case HML.lookup "email" jsonBodyObj of 
+    attr_text <- case HML.lookup "text" jsonBodyObj of 
         Just v -> case A.fromJSON v of
             A.Success v' -> return v'
             A.Error err -> sendResponseStatus status400 $ A.object [
-                    "message" .= ("Could not parse value from attribute email in the JSON object in request body" :: Text),
+                    "message" .= ("Could not parse value from attribute text in the JSON object in request body" :: Text),
                     "error" .= err
                 ]
         Nothing -> sendResponseStatus status400 $ A.object [
-                "message" .= ("Expected attribute email in the JSON object in request body" :: Text)
-            ]
-    attr_createPeriods <- case HML.lookup "createPeriods" jsonBodyObj of 
-        Just v -> case A.fromJSON v of
-            A.Success v' -> return v'
-            A.Error err -> sendResponseStatus status400 $ A.object [
-                    "message" .= ("Could not parse value from attribute createPeriods in the JSON object in request body" :: Text),
-                    "error" .= err
-                ]
-        Nothing -> sendResponseStatus status400 $ A.object [
-                "message" .= ("Expected attribute createPeriods in the JSON object in request body" :: Text)
-            ]
-    attr_name <- case HML.lookup "name" jsonBodyObj of 
-        Just v -> case A.fromJSON v of
-            A.Success v' -> return v'
-            A.Error err -> sendResponseStatus status400 $ A.object [
-                    "message" .= ("Could not parse value from attribute name in the JSON object in request body" :: Text),
-                    "error" .= err
-                ]
-        Nothing -> sendResponseStatus status400 $ A.object [
-                "message" .= ("Expected attribute name in the JSON object in request body" :: Text)
+                "message" .= ("Expected attribute text in the JSON object in request body" :: Text)
             ]
     __currentTime <- liftIO $ getCurrentTime
     (Entity _ __auth) <- lift $ requireAuth
     runDB_result <- do
         e1 <- do
     
-            return $ UserGroup {
-                            userGroupCreatePeriods = attr_createPeriods
+            return $ TextMessage {
+                            textMessageText = attr_text
                     ,
-                            userGroupEmail = attr_email
+                            textMessageSendertextMessageId = Nothing
                     ,
-                            userGroupCurrent = Active
+                            textMessageQueued = Nothing
                     ,
-                            userGroupName = attr_name
+                            textMessageSent = Nothing
                     ,
-                            userGroupActiveId = Nothing
+                            textMessageDeletedVersionId = Nothing
                     ,
-                            userGroupActiveStartTime = (Just __currentTime)
+                            textMessageActiveId = Nothing
                     ,
-                            userGroupActiveEndTime = Nothing
+                            textMessageActiveStartTime = Nothing
                     ,
-                            userGroupDeletedVersionId = Nothing
+                            textMessageActiveEndTime = Nothing
+                    ,
+                            textMessageInsertionTime = __currentTime
+                    ,
+                            textMessageInsertedByUserId = (Just authId)
     
                 }
         vErrors <- lift $ validate e1
@@ -245,32 +252,33 @@ postUsergroupsR  = lift $ runDB $ do
                         "errors" .= toJSON xs 
                     ])
             _ -> return ()
-        result_ugId <- P.insert (e1 :: UserGroup)
-        e2 <- do
+        result_tId <- P.insert (e1 :: TextMessage)
+        addTextMessageRecipients (authId) (result_tId)
+        e3 <- do
     
             return $ UserGroupContent {
                             userGroupContentUserGroupId = userDefaultUserGroupId __auth
                     ,
                             userGroupContentFileContentId = Nothing
                     ,
-                            userGroupContentUserGroupContentId = (Just result_ugId)
+                            userGroupContentUserGroupContentId = Nothing
                     ,
                             userGroupContentUserContentId = Nothing
                     ,
                             userGroupContentClientContentId = Nothing
                     ,
-                            userGroupContentTextMessageContentId = Nothing
+                            userGroupContentTextMessageContentId = (Just result_tId)
                     ,
                             userGroupContentDeletedVersionId = Nothing
     
                 }
-        vErrors <- lift $ validate e2
+        vErrors <- lift $ validate e3
         case vErrors of
             xs@(_:_) -> sendResponseStatus status400 (A.object [ 
                         "message" .= ("Entity validation failed" :: Text),
                         "errors" .= toJSON xs 
                     ])
             _ -> return ()
-        P.insert (e2 :: UserGroupContent)
-        return $ A.object [ "id" .= (toJSON result_ugId) ]
+        P.insert (e3 :: UserGroupContent)
+        return $ A.object [ "id" .= (toJSON result_tId) ]
     return $ runDB_result

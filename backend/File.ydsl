@@ -19,8 +19,6 @@ route /files {
             where f.contentType = $$;
         if param "contentTypeList" = $$ then
             where f.contentType in $$;
-        if param "hideDeleted" = _ then
-            where f.deletedVersionId is Nothing;
     }
 }
 route /files/#FileId {

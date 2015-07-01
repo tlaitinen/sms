@@ -80,7 +80,6 @@ getUsersR  = lift $ runDB $ do
     let defaultLimit = (maybe Nothing PP.fromPathPiece defaultLimitParam) :: Maybe Int64
     (filterParam_query) <- lookupGetParam "query"
     (filterParam_userGroupId) <- lookupGetParam "userGroupId"
-    (filterParam_hideDeleted :: Maybe Text) <- lookupGetParam "hideDeleted"
     let baseQuery limitOffsetOrder = from $ \(u ) -> do
         let uId' = u ^. UserId
         where_ (hasReadPerm (val authId) (u ^. UserId))
@@ -183,11 +182,6 @@ getUsersR  = lift $ runDB $ do
                 
                 where_ $ (ugi ^. UserGroupItemUserGroupId) ==. (val localParam)
             Nothing -> return ()
-        if FS.hasDefaultFilter filterParam_hideDeleted defaultFilterJson "hideDeleted" 
-            then do 
-                 
-                where_ $ (u ^. UserDeletedVersionId) `is` (nothing)
-            else return ()
         return (u ^. UserId, u ^. UserName, u ^. UserFirstName, u ^. UserLastName, u ^. UserOrganization, u ^. UserTimeZone, u ^. UserDefaultUserGroupId, u ^. UserEmail)
     count <- select $ do
         baseQuery False
@@ -368,6 +362,8 @@ postUsersR  = lift $ runDB $ do
                             userGroupContentUserContentId = (Just result_userId)
                     ,
                             userGroupContentClientContentId = Nothing
+                    ,
+                            userGroupContentTextMessageContentId = Nothing
                     ,
                             userGroupContentDeletedVersionId = Nothing
     

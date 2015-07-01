@@ -81,7 +81,6 @@ getFilesR  = lift $ runDB $ do
     (filterParam_query) <- lookupGetParam "query"
     (filterParam_contentType) <- lookupGetParam "contentType"
     (filterParam_contentTypeList) <- lookupGetParam "contentTypeList"
-    (filterParam_hideDeleted :: Maybe Text) <- lookupGetParam "hideDeleted"
     let baseQuery limitOffsetOrder = from $ \(f ) -> do
         let fId' = f ^. FileId
         where_ (hasReadPerm (val authId) (f ^. FileId))
@@ -177,11 +176,6 @@ getFilesR  = lift $ runDB $ do
                 
                 where_ $ (f ^. FileContentType) `in_` (valList localParam)
             Nothing -> return ()
-        if FS.hasDefaultFilter filterParam_hideDeleted defaultFilterJson "hideDeleted" 
-            then do 
-                 
-                where_ $ (f ^. FileDeletedVersionId) `is` (nothing)
-            else return ()
         return (f ^. FileId, f ^. FileContentType, f ^. FileSize, f ^. FilePreviewOfFileId, f ^. FileName, f ^. FileInsertionTime, f ^. FileInsertedByUserId)
     count <- select $ do
         baseQuery False

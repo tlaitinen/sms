@@ -48,6 +48,20 @@ Ext.define('SMS.view.main.Main', {
                 ]
             },
             {
+                name:'textmessages',
+                id:'maintab-textmessages',
+                reference: 'textmessagesTab',
+                title: __('maintab.textmessages'),
+                layout:{
+                    type:'vbox',
+                    align:'stretch'
+                },
+                items: [
+                    { xtype: 'textmessagesgrid', flex:3 }
+                ]
+            },
+
+            {
                 reference: 'usersTab',
                 hidden:true,
                 id:'maintab-users',

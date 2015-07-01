@@ -1,0 +1,68 @@
+import Handler.TextMessage (addTextMessageRecipients);
+entity TextMessage {
+    instance of Restricted, Deletable, Versioned, HasInsertInfo;
+    text Text;
+    sendertextMessageId Maybe ClientId;
+    queued Maybe UTCTime;
+    sent Maybe UTCTime;
+}
+entity TextMessageRecipient {
+    textMessageId TextMessageId;
+    clientId ClientId;
+    queued Maybe UTCTime;
+    accepted Maybe UTCTime;
+    sent Maybe UTCTime;
+}
+
+route /textmessages {
+    get {
+        select t.id, t.* from TextMessage as t
+            where hasReadPerm $auth.id t.id
+            order by t.insertionTime desc;
+        if param "query" = $$ then
+            where t.text ilike "%" || $$ || "%";    
+        default-filter-sort;    
+    }
+    post {
+        tId <- insert TextMessage from {
+            insertionTime = now(),
+            insertedByUserId = $auth.id,
+            text = $request.text
+        };
+        addTextMessageRecipients $auth.id tId;
+        insert UserGroupContent from {
+            userGroupId = $auth.defaultUserGroupId,
+            textMessageContentId = tId
+        };
+        return {
+            'id' = tId
+        };
+
+    }
+}
+
+route /textmessagerecipients {
+    get {
+        select tr.id, tr.*,
+               c.firstName, c.lastName, c.phone
+        from TextMessageRecipient as tr
+        inner join Client as c on c.id = tr.clientId
+        where hasReadPerm $auth.id tr.textMessageId
+            and hasReadPerm $auth.id c.id;
+        default-filter-sort;
+        if param "query" = $$ then
+            where c.firstName ilike "%" || $$ || "%"
+                or c.lastName ilike "%" || $$ || "%"
+                or c.phone ilike "%" || $$ || "%";
+    }
+}
+route /textmessagerecipients/#TextMessageRecipientId {
+    put {
+        require TextMessageRecipient as tr where tr.id = $1
+            and hasWritePerm $auth.id tr.textMessageId;
+        update TextMessageRecipient identified by $1 with {
+            accepted = $request.accepted,
+            sent     = $request.sent
+        };
+    }
+}

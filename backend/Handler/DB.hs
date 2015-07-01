@@ -27,6 +27,9 @@ import Handler.DB.RouteUsersUser
 import Handler.DB.RouteVersions
 import Handler.DB.RouteClients
 import Handler.DB.RouteClientsClient
+import Handler.DB.RouteTextmessages
+import Handler.DB.RouteTextmessagerecipients
+import Handler.DB.RouteTextmessagerecipientsTextMessageRecipient
 
 import Handler.DB.Routes
 import Yesod.Core

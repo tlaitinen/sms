@@ -59,8 +59,6 @@ route /usergroupcontents {
         select ugc.id, ug.name as userGroupName from UserGroupContent as ugc
             inner join UserGroup as ug on ugc.userGroupId = ug.id
             where hasReadPerm $auth.id ugc.userGroupId ;
-        if param "hideDeleted" = _ then
-            where ugc.deletedVersionId is Nothing;
         default-filter-sort;
     }
 }
@@ -78,8 +76,6 @@ route /usergroups {
                 (select ugi.userGroupId from UserGroupItem as ugi
                  where (ugi.userId in $$) and (ugi.deletedVersionId is Nothing));
 
-        if param "hideDeleted" = _ then
-            where ug.deletedVersionId is Nothing;
       }
     post {
         ugId <- insert UserGroup from {
@@ -213,8 +209,6 @@ route /users {
         if param "userGroupId" = $$ then
             inner join UserGroupItem as ugi on u.id = ugi.userId
             where ugi.userGroupId = $$;    
-        if param "hideDeleted" = _ then
-            where u.deletedVersionId is Nothing;
     }
     post {
         require User as u where u.admin = True and u.id = $auth.id;

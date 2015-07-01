@@ -15,8 +15,6 @@ route /clients {
             where hasReadPerm $auth.id c.id
             order by c.lastName asc, c.firstName asc;
         default-filter-sort;
-        if param "hideDeleted" = _ then
-            where c.deletedVersionId is Nothing;
         if param "query" = $$ then
             where c.firstName ilike "%" || $$ || "%"
                 or c.lastName ilike "%" || $$ || "%"

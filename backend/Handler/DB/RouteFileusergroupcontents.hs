@@ -179,6 +179,8 @@ postFileusergroupcontentsR  = lift $ runDB $ do
                                 ,
                                         userGroupContentClientContentId = Nothing
                                 ,
+                                        userGroupContentTextMessageContentId = Nothing
+                                ,
                                         userGroupContentDeletedVersionId = Nothing
                 
                             }

@@ -940,6 +940,181 @@
                     "public": false
                 }
             ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "textmessages",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "TextMessage",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "text",
+                            "type": "string"
+                        },
+                        {
+                            "references": "Client",
+                            "name": "sendertextMessageId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "queued",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "sent",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "insertionTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": "User",
+                            "name": "insertedByUserId",
+                            "type": "integer"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "references": null,
+                            "name": "text",
+                            "type": "string"
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "name": "id",
+                            "type": null
+                        }
+                    ],
+                    "type": "POST",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "textmessagerecipients",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "TextMessageRecipient",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "TextMessage",
+                            "name": "textMessageId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "Client",
+                            "name": "clientId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "queued",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "accepted",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "sent",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "firstName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "lastName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "phone",
+                            "type": "string"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "textmessagerecipients",
+                    "type": "string"
+                },
+                {
+                    "references": "TextMessageRecipient",
+                    "type": "integer"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [
+                        {
+                            "references": "TextMessage",
+                            "name": "textMessageId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "Client",
+                            "name": "clientId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "accepted",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "sent",
+                            "type": "utctime"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "PUT",
+                    "public": false
+                }
+            ]
         }
     ],
     "entities": [
@@ -1025,6 +1200,13 @@
                     "references": "Client",
                     "default": null,
                     "name": "clientContentId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": "TextMessage",
+                    "default": null,
+                    "name": "textMessageContentId",
                     "type": "integer",
                     "optional": true
                 }
@@ -1257,6 +1439,93 @@
                     "optional": true
                 }
             ]
+        },
+        {
+            "name": "TextMessage",
+            "fields": [
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "text",
+                    "type": "string",
+                    "optional": false
+                },
+                {
+                    "references": "Client",
+                    "default": null,
+                    "name": "sendertextMessageId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "queued",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "sent",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "insertionTime",
+                    "type": "utctime",
+                    "optional": false
+                },
+                {
+                    "references": "User",
+                    "default": null,
+                    "name": "insertedByUserId",
+                    "type": "integer",
+                    "optional": true
+                }
+            ]
+        },
+        {
+            "name": "TextMessageRecipient",
+            "fields": [
+                {
+                    "references": "TextMessage",
+                    "default": null,
+                    "name": "textMessageId",
+                    "type": "integer",
+                    "optional": false
+                },
+                {
+                    "references": "Client",
+                    "default": null,
+                    "name": "clientId",
+                    "type": "integer",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "queued",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "accepted",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "sent",
+                    "type": "utctime",
+                    "optional": true
+                }
+            ]
         }
     ],
     "name": "DB",
@@ -1291,7 +1560,8 @@
             "name": "HasInsertInfo",
             "instances": [
                 "File",
-                "Client"
+                "Client",
+                "TextMessage"
             ],
             "fields": [
                 {
@@ -1316,7 +1586,8 @@
                 "File",
                 "UserGroup",
                 "User",
-                "Client"
+                "Client",
+                "TextMessage"
             ],
             "fields": []
         },
@@ -1326,7 +1597,8 @@
                 "File",
                 "UserGroup",
                 "User",
-                "Client"
+                "Client",
+                "TextMessage"
             ],
             "fields": []
         },
@@ -1338,7 +1610,8 @@
                 "UserGroup",
                 "UserGroupItem",
                 "User",
-                "Client"
+                "Client",
+                "TextMessage"
             ],
             "fields": []
         }

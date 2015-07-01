@@ -70,7 +70,6 @@ getUsergroupcontentsR :: forall master. (
     => HandlerT DB (HandlerT master IO) A.Value
 getUsergroupcontentsR  = lift $ runDB $ do
     authId <- lift $ requireAuthId
-    (filterParam_hideDeleted :: Maybe Text) <- lookupGetParam "hideDeleted"
     defaultFilterParam <- lookupGetParam "filter"
     let defaultFilterJson = (maybe Nothing (decode . LBS.fromChunks . (:[]) . encodeUtf8) defaultFilterParam) :: Maybe [FS.Filter]
     defaultSortParam <- lookupGetParam "sort"
@@ -151,15 +150,16 @@ getUsergroupcontentsR  = lift $ runDB $ do
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentClientContentId) nothing
                            
+                "textMessageContentId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentTextMessageContentId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ugc  ^.  UserGroupContentTextMessageContentId) nothing
+                           
 
                 _ -> return ()
                 ) xs
             Nothing -> return ()  
-        if FS.hasDefaultFilter filterParam_hideDeleted defaultFilterJson "hideDeleted" 
-            then do 
-                 
-                where_ $ (ugc ^. UserGroupContentDeletedVersionId) `is` (nothing)
-            else return ()
         return (ugc ^. UserGroupContentId, ug ^. UserGroupName)
     count <- select $ do
         baseQuery False

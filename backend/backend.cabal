@@ -35,6 +35,7 @@ library
         Handler.Home
         Handler.Utils
         Handler.UploadFiles
+        Handler.TextMessage
         Handler.DB
         Handler.DB.Internal
         Handler.DB.Enums
@@ -56,6 +57,9 @@ library
         Handler.DB.RouteVersions
         Handler.DB.RouteClients
         Handler.DB.RouteClientsClient
+        Handler.DB.RouteTextmessages
+        Handler.DB.RouteTextmessagerecipients
+        Handler.DB.RouteTextmessagerecipientsTextMessageRecipient
     build-depends:
         unordered-containers -any,
         transformers -any,

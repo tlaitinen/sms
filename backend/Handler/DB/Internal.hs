@@ -80,6 +80,7 @@ UserGroupContent json
     userGroupContentId UserGroupId Maybe   default=NULL
     userContentId UserId Maybe   default=NULL
     clientContentId ClientId Maybe   default=NULL
+    textMessageContentId TextMessageId Maybe   default=NULL
     deletedVersionId VersionId Maybe   default=NULL
 UserGroup json
     createPeriods Int32  "default=1"
@@ -133,6 +134,23 @@ Client json
     activeEndTime UTCTime Maybe  
     insertionTime UTCTime  
     insertedByUserId UserId Maybe   default=NULL
+TextMessage json
+    text Text  
+    sendertextMessageId ClientId Maybe   default=NULL
+    queued UTCTime Maybe  
+    sent UTCTime Maybe  
+    deletedVersionId VersionId Maybe   default=NULL
+    activeId TextMessageId Maybe   default=NULL
+    activeStartTime UTCTime Maybe  
+    activeEndTime UTCTime Maybe  
+    insertionTime UTCTime  
+    insertedByUserId UserId Maybe   default=NULL
+TextMessageRecipient json
+    textMessageId TextMessageId  
+    clientId ClientId  
+    queued UTCTime Maybe  
+    accepted UTCTime Maybe  
+    sent UTCTime Maybe  
 |]
 newFile :: Text -> Int32 -> Text -> UTCTime -> File
 newFile contentType_ size_ name_ insertionTime_ = File {
@@ -154,6 +172,7 @@ newUserGroupContent userGroupId_ = UserGroupContent {
     userGroupContentUserGroupContentId = Nothing,
     userGroupContentUserContentId = Nothing,
     userGroupContentClientContentId = Nothing,
+    userGroupContentTextMessageContentId = Nothing,
     userGroupContentDeletedVersionId = Nothing
 }    
 newUserGroup :: Text -> UserGroup
@@ -214,6 +233,27 @@ newClient insertionTime_ = Client {
     clientActiveEndTime = Nothing,
     clientInsertionTime = insertionTime_,
     clientInsertedByUserId = Nothing
+}    
+newTextMessage :: Text -> UTCTime -> TextMessage
+newTextMessage text_ insertionTime_ = TextMessage {
+    textMessageText = text_,
+    textMessageSendertextMessageId = Nothing,
+    textMessageQueued = Nothing,
+    textMessageSent = Nothing,
+    textMessageDeletedVersionId = Nothing,
+    textMessageActiveId = Nothing,
+    textMessageActiveStartTime = Nothing,
+    textMessageActiveEndTime = Nothing,
+    textMessageInsertionTime = insertionTime_,
+    textMessageInsertedByUserId = Nothing
+}    
+newTextMessageRecipient :: TextMessageId -> ClientId -> TextMessageRecipient
+newTextMessageRecipient textMessageId_ clientId_ = TextMessageRecipient {
+    textMessageRecipientTextMessageId = textMessageId_,
+    textMessageRecipientClientId = clientId_,
+    textMessageRecipientQueued = Nothing,
+    textMessageRecipientAccepted = Nothing,
+    textMessageRecipientSent = Nothing
 }    
 class Named a where
     namedName :: a -> Text
@@ -339,22 +379,29 @@ instance HasInsertInfo File where
 instance HasInsertInfo Client where
     hasInsertInfoInsertionTime = clientInsertionTime
     hasInsertInfoInsertedByUserId = clientInsertedByUserId
+instance HasInsertInfo TextMessage where
+    hasInsertInfoInsertionTime = textMessageInsertionTime
+    hasInsertInfoInsertedByUserId = textMessageInsertedByUserId
 data HasInsertInfoInstance = HasInsertInfoInstanceFile (Entity File)
     | HasInsertInfoInstanceClient (Entity Client)
+    | HasInsertInfoInstanceTextMessage (Entity TextMessage)
 
 
 data HasInsertInfoInstanceId = HasInsertInfoInstanceFileId FileId
     | HasInsertInfoInstanceClientId ClientId
+    | HasInsertInfoInstanceTextMessageId TextMessageId
 
 
 instance HasInsertInfo HasInsertInfoInstance where
     hasInsertInfoInsertionTime x = case x of
         HasInsertInfoInstanceFile (Entity _ e) -> fileInsertionTime e
         HasInsertInfoInstanceClient (Entity _ e) -> clientInsertionTime e
+        HasInsertInfoInstanceTextMessage (Entity _ e) -> textMessageInsertionTime e
     
     hasInsertInfoInsertedByUserId x = case x of
         HasInsertInfoInstanceFile (Entity _ e) -> fileInsertedByUserId e
         HasInsertInfoInstanceClient (Entity _ e) -> clientInsertedByUserId e
+        HasInsertInfoInstanceTextMessage (Entity _ e) -> textMessageInsertedByUserId e
     
 data HasInsertInfoInstanceFilterType = HasInsertInfoInstanceInsertionTimeFilter (SqlExpr (Database.Esqueleto.Value (UTCTime)) -> SqlExpr (Database.Esqueleto.Value Bool))    | HasInsertInfoInstanceInsertedByUserIdFilter (SqlExpr (Database.Esqueleto.Value (Maybe UserId)) -> SqlExpr (Database.Esqueleto.Value Bool))
 selectHasInsertInfo :: forall (m :: * -> *). 
@@ -381,10 +428,21 @@ selectHasInsertInfo filters = do
             ) exprs
     
         return e
+    result_TextMessage <- select $ from $ \e -> do
+        let _ = e ^. TextMessageId
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                HasInsertInfoInstanceInsertionTimeFilter op -> op $ e ^. TextMessageInsertionTime
+                HasInsertInfoInstanceInsertedByUserIdFilter op -> op $ e ^. TextMessageInsertedByUserId
+    
+            ) exprs
+    
+        return e
 
     return $ concat [
         map HasInsertInfoInstanceFile result_File
         , map HasInsertInfoInstanceClient result_Client
+        , map HasInsertInfoInstanceTextMessage result_TextMessage
 
         ]
 data HasInsertInfoInstanceUpdateType = HasInsertInfoInstanceUpdateInsertionTime (SqlExpr (Database.Esqueleto.Value (UTCTime)))    | HasInsertInfoInstanceUpdateInsertedByUserId (SqlExpr (Database.Esqueleto.Value (Maybe UserId)))
@@ -424,6 +482,22 @@ updateHasInsertInfo filters updates = do
     
      
                 
+    update $ \e -> do
+        let _ = e ^. TextMessageId
+        set e $ map (\u -> case u of
+                    HasInsertInfoInstanceUpdateInsertionTime v -> TextMessageInsertionTime =. v
+                    HasInsertInfoInstanceUpdateInsertedByUserId v -> TextMessageInsertedByUserId =. v
+    
+            ) updates
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                HasInsertInfoInstanceInsertionTimeFilter op -> op $ e ^. TextMessageInsertionTime
+                HasInsertInfoInstanceInsertedByUserIdFilter op -> op $ e ^. TextMessageInsertedByUserId
+    
+            ) exprs
+    
+     
+                
 
     return ()
 
@@ -432,16 +506,19 @@ instance Restricted File where
 instance Restricted UserGroup where
 instance Restricted User where
 instance Restricted Client where
+instance Restricted TextMessage where
 data RestrictedInstance = RestrictedInstanceFile (Entity File)
     | RestrictedInstanceUserGroup (Entity UserGroup)
     | RestrictedInstanceUser (Entity User)
     | RestrictedInstanceClient (Entity Client)
+    | RestrictedInstanceTextMessage (Entity TextMessage)
 
 
 data RestrictedInstanceId = RestrictedInstanceFileId FileId
     | RestrictedInstanceUserGroupId UserGroupId
     | RestrictedInstanceUserId UserId
     | RestrictedInstanceClientId ClientId
+    | RestrictedInstanceTextMessageId TextMessageId
 
 
 instance Restricted RestrictedInstance where
@@ -465,12 +542,17 @@ selectRestricted  = do
         let _ = e ^. ClientId
     
         return e
+    result_TextMessage <- select $ from $ \e -> do
+        let _ = e ^. TextMessageId
+    
+        return e
 
     return $ concat [
         map RestrictedInstanceFile result_File
         , map RestrictedInstanceUserGroup result_UserGroup
         , map RestrictedInstanceUser result_User
         , map RestrictedInstanceClient result_Client
+        , map RestrictedInstanceTextMessage result_TextMessage
 
         ]
 class Versioned a where
@@ -494,16 +576,22 @@ instance Versioned Client where
     versionedActiveId = (fmap VersionedInstanceClientId) . clientActiveId
     versionedActiveStartTime = clientActiveStartTime
     versionedActiveEndTime = clientActiveEndTime
+instance Versioned TextMessage where
+    versionedActiveId = (fmap VersionedInstanceTextMessageId) . textMessageActiveId
+    versionedActiveStartTime = textMessageActiveStartTime
+    versionedActiveEndTime = textMessageActiveEndTime
 data VersionedInstance = VersionedInstanceFile (Entity File)
     | VersionedInstanceUserGroup (Entity UserGroup)
     | VersionedInstanceUser (Entity User)
     | VersionedInstanceClient (Entity Client)
+    | VersionedInstanceTextMessage (Entity TextMessage)
 
 
 data VersionedInstanceId = VersionedInstanceFileId FileId
     | VersionedInstanceUserGroupId UserGroupId
     | VersionedInstanceUserId UserId
     | VersionedInstanceClientId ClientId
+    | VersionedInstanceTextMessageId TextMessageId
 
 
 instance Versioned VersionedInstance where
@@ -512,18 +600,21 @@ instance Versioned VersionedInstance where
         VersionedInstanceUserGroup (Entity _ e) -> (fmap VersionedInstanceUserGroupId) $ userGroupActiveId e
         VersionedInstanceUser (Entity _ e) -> (fmap VersionedInstanceUserId) $ userActiveId e
         VersionedInstanceClient (Entity _ e) -> (fmap VersionedInstanceClientId) $ clientActiveId e
+        VersionedInstanceTextMessage (Entity _ e) -> (fmap VersionedInstanceTextMessageId) $ textMessageActiveId e
     
     versionedActiveStartTime x = case x of
         VersionedInstanceFile (Entity _ e) -> fileActiveStartTime e
         VersionedInstanceUserGroup (Entity _ e) -> userGroupActiveStartTime e
         VersionedInstanceUser (Entity _ e) -> userActiveStartTime e
         VersionedInstanceClient (Entity _ e) -> clientActiveStartTime e
+        VersionedInstanceTextMessage (Entity _ e) -> textMessageActiveStartTime e
     
     versionedActiveEndTime x = case x of
         VersionedInstanceFile (Entity _ e) -> fileActiveEndTime e
         VersionedInstanceUserGroup (Entity _ e) -> userGroupActiveEndTime e
         VersionedInstanceUser (Entity _ e) -> userActiveEndTime e
         VersionedInstanceClient (Entity _ e) -> clientActiveEndTime e
+        VersionedInstanceTextMessage (Entity _ e) -> textMessageActiveEndTime e
     
 data VersionedInstanceFilterType = VersionedInstanceActiveStartTimeFilter (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)) -> SqlExpr (Database.Esqueleto.Value Bool))    | VersionedInstanceActiveEndTimeFilter (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)) -> SqlExpr (Database.Esqueleto.Value Bool))
 selectVersioned :: forall (m :: * -> *). 
@@ -570,12 +661,23 @@ selectVersioned filters = do
             ) exprs
     
         return e
+    result_TextMessage <- select $ from $ \e -> do
+        let _ = e ^. TextMessageId
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                VersionedInstanceActiveStartTimeFilter op -> op $ e ^. TextMessageActiveStartTime
+                VersionedInstanceActiveEndTimeFilter op -> op $ e ^. TextMessageActiveEndTime
+    
+            ) exprs
+    
+        return e
 
     return $ concat [
         map VersionedInstanceFile result_File
         , map VersionedInstanceUserGroup result_UserGroup
         , map VersionedInstanceUser result_User
         , map VersionedInstanceClient result_Client
+        , map VersionedInstanceTextMessage result_TextMessage
 
         ]
 data VersionedInstanceUpdateType = VersionedInstanceUpdateActiveStartTime (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)))    | VersionedInstanceUpdateActiveEndTime (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)))
@@ -647,6 +749,22 @@ updateVersioned filters updates = do
     
      
                 
+    update $ \e -> do
+        let _ = e ^. TextMessageId
+        set e $ map (\u -> case u of
+                    VersionedInstanceUpdateActiveStartTime v -> TextMessageActiveStartTime =. v
+                    VersionedInstanceUpdateActiveEndTime v -> TextMessageActiveEndTime =. v
+    
+            ) updates
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                VersionedInstanceActiveStartTimeFilter op -> op $ e ^. TextMessageActiveStartTime
+                VersionedInstanceActiveEndTimeFilter op -> op $ e ^. TextMessageActiveEndTime
+    
+            ) exprs
+    
+     
+                
 
     return ()
 
@@ -665,12 +783,15 @@ instance Deletable User where
     deletableDeletedVersionId = userDeletedVersionId
 instance Deletable Client where
     deletableDeletedVersionId = clientDeletedVersionId
+instance Deletable TextMessage where
+    deletableDeletedVersionId = textMessageDeletedVersionId
 data DeletableInstance = DeletableInstanceFile (Entity File)
     | DeletableInstanceUserGroupContent (Entity UserGroupContent)
     | DeletableInstanceUserGroup (Entity UserGroup)
     | DeletableInstanceUserGroupItem (Entity UserGroupItem)
     | DeletableInstanceUser (Entity User)
     | DeletableInstanceClient (Entity Client)
+    | DeletableInstanceTextMessage (Entity TextMessage)
 
 
 data DeletableInstanceId = DeletableInstanceFileId FileId
@@ -679,6 +800,7 @@ data DeletableInstanceId = DeletableInstanceFileId FileId
     | DeletableInstanceUserGroupItemId UserGroupItemId
     | DeletableInstanceUserId UserId
     | DeletableInstanceClientId ClientId
+    | DeletableInstanceTextMessageId TextMessageId
 
 
 instance Deletable DeletableInstance where
@@ -689,6 +811,7 @@ instance Deletable DeletableInstance where
         DeletableInstanceUserGroupItem (Entity _ e) -> userGroupItemDeletedVersionId e
         DeletableInstanceUser (Entity _ e) -> userDeletedVersionId e
         DeletableInstanceClient (Entity _ e) -> clientDeletedVersionId e
+        DeletableInstanceTextMessage (Entity _ e) -> textMessageDeletedVersionId e
     
 data DeletableInstanceFilterType = DeletableInstanceDeletedVersionIdFilter (SqlExpr (Database.Esqueleto.Value (Maybe VersionId)) -> SqlExpr (Database.Esqueleto.Value Bool))
 selectDeletable :: forall (m :: * -> *). 
@@ -749,6 +872,15 @@ selectDeletable filters = do
             ) exprs
     
         return e
+    result_TextMessage <- select $ from $ \e -> do
+        let _ = e ^. TextMessageId
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                DeletableInstanceDeletedVersionIdFilter op -> op $ e ^. TextMessageDeletedVersionId
+    
+            ) exprs
+    
+        return e
 
     return $ concat [
         map DeletableInstanceFile result_File
@@ -757,6 +889,7 @@ selectDeletable filters = do
         , map DeletableInstanceUserGroupItem result_UserGroupItem
         , map DeletableInstanceUser result_User
         , map DeletableInstanceClient result_Client
+        , map DeletableInstanceTextMessage result_TextMessage
 
         ]
 data DeletableInstanceUpdateType = DeletableInstanceUpdateDeletedVersionId (SqlExpr (Database.Esqueleto.Value (Maybe VersionId)))
@@ -848,6 +981,20 @@ updateDeletable filters updates = do
     
      
                 
+    update $ \e -> do
+        let _ = e ^. TextMessageId
+        set e $ map (\u -> case u of
+                    DeletableInstanceUpdateDeletedVersionId v -> TextMessageDeletedVersionId =. v
+    
+            ) updates
+        forM_ filters $ \exprs -> 
+            when (not . null $ exprs) $ where_ $ foldl1 (||.) $ map (\expr -> case expr of 
+                DeletableInstanceDeletedVersionIdFilter op -> op $ e ^. TextMessageDeletedVersionId
+    
+            ) exprs
+    
+     
+                
 
     return ()
 
@@ -857,12 +1004,15 @@ userGroupContentContentId e = listToMaybe $ catMaybes [
         , userGroupContentUserGroupContentId e >>= (return . RestrictedInstanceUserGroupId)
         , userGroupContentUserContentId e >>= (return . RestrictedInstanceUserId)
         , userGroupContentClientContentId e >>= (return . RestrictedInstanceClientId)
+        , userGroupContentTextMessageContentId e >>= (return . RestrictedInstanceTextMessageId)
 
     ]
 
 class UserGroupContentContentIdField e where
     userGroupContentContentIdField :: SqlExpr (Database.Esqueleto.Value (Maybe (Key e))) -> EntityField UserGroupContent (Maybe (Key e)) 
 
+instance UserGroupContentContentIdField TextMessage where
+    userGroupContentContentIdField _ = UserGroupContentTextMessageContentId
 instance UserGroupContentContentIdField Client where
     userGroupContentContentIdField _ = UserGroupContentClientContentId
 instance UserGroupContentContentIdField User where
@@ -874,6 +1024,10 @@ instance UserGroupContentContentIdField File where
     
 
 userGroupContentContentIdExprFromString :: Text -> SqlExpr (Entity UserGroupContent) -> Text -> Maybe Text -> Maybe (SqlExpr (E.Value Bool))
+userGroupContentContentIdExprFromString "TextMessage" e op vt = case vt of 
+    Just vt' -> PP.fromPathPiece vt' >>= \v -> Just $ defaultFilterOp False op (e ^. UserGroupContentTextMessageContentId) (val v)
+    Nothing -> Just $ defaultFilterOp False op (e ^. UserGroupContentTextMessageContentId) nothing
+   
 userGroupContentContentIdExprFromString "Client" e op vt = case vt of 
     Just vt' -> PP.fromPathPiece vt' >>= \v -> Just $ defaultFilterOp False op (e ^. UserGroupContentClientContentId) (val v)
     Nothing -> Just $ defaultFilterOp False op (e ^. UserGroupContentClientContentId) nothing
@@ -894,6 +1048,7 @@ userGroupContentContentIdExprFromString "File" e op vt = case vt of
 userGroupContentContentIdExprFromString _ _ _ _ = Nothing
 
 userGroupContentContentIdExpr2FromString :: Text -> SqlExpr (Entity UserGroupContent) -> Text -> SqlExpr (Entity UserGroupContent) -> Maybe (SqlExpr (E.Value Bool))
+userGroupContentContentIdExpr2FromString "TextMessage" e op e2 = Just $ defaultFilterOp False op (e ^. UserGroupContentTextMessageContentId) (e2 ^. UserGroupContentTextMessageContentId)
 userGroupContentContentIdExpr2FromString "Client" e op e2 = Just $ defaultFilterOp False op (e ^. UserGroupContentClientContentId) (e2 ^. UserGroupContentClientContentId)
 userGroupContentContentIdExpr2FromString "User" e op e2 = Just $ defaultFilterOp False op (e ^. UserGroupContentUserContentId) (e2 ^. UserGroupContentUserContentId)
 userGroupContentContentIdExpr2FromString "UserGroup" e op e2 = Just $ defaultFilterOp False op (e ^. UserGroupContentUserGroupContentId) (e2 ^. UserGroupContentUserGroupContentId)

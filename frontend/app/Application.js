@@ -28,9 +28,16 @@ Ext.define('SMS.Application', {
                 return '<span class="glyphicon glyphicon-ok"></span>';
             return ' ';
         }
+        function notNullRenderer(value ,meta, record) {
+            return boolRenderer(value != null, meta, record);
+        }
         function dateRenderer(value,meta,record) {
             return Ext.Date.format(value, Ext.util.Format.dateFormat);
         }
+        function dateTimeRenderer(value,meta,record) {
+            return Ext.Date.format(value, Ext.util.Format.dateFormat + " H:i:s");
+        }
+     
         Ext.History.init();
         Ext.define('SMS.CustomReader', {
             extend: 'Ext.data.reader.Reader',
@@ -67,11 +74,84 @@ Ext.define('SMS.Application', {
                     urlBase: 'backend/db',
                     defaultStoreFilters: [
                         {
-                            field:'hideDeleted',
-                            value:"true"
+                            field:'deletedVersionId',
+                            value:null,
+                            comparison:'is not'
                         }
                     ],
                     routes: {
+                        textmessages: {
+                            grids: [
+                                {
+                                    widget: 'textmessagesgrid',
+                                    columns: [
+                                        {
+                                            field: 'insertionTime',
+                                            flex:1,
+                                            renderer:dateTimeRenderer
+                                        },
+                                        {
+                                            field:'text',
+                                            flex:5
+                                        },
+                                        {
+                                            field:'queued',
+                                            flex:1,
+                                            renderer:dateTimeRenderer
+                                        },
+                                        {
+                                            field:'sent',
+                                            flex:1,
+                                            renderer:dateTimeRenderer
+                                        }
+                                    ],
+                                    bottomToolbar: [
+                                        { name:'new', action:'new'},
+                                        { name:'remove', action:'remove'}
+                                    ],
+                                    form: 'textmessageform',
+                                    formHeight:480
+                                }
+    
+                            ],
+                            forms: [
+                                {
+                                    widget: 'textmessageform',
+                                    filters: [ 'textMessageId' ],
+                                    items: [
+                                        {
+                                            xtype:'textareafield',
+                                            name:'text'
+                                        },
+                                        {
+                                            xtype:'textmessagerecipientsgrid',
+                                            height:300,
+                                        },
+                                        {
+                                            xtype:'panel',
+                                            layout: {
+                                                type:'hbox',
+                                                align:'stretch'
+                                            },
+                                            items: [
+                                                {
+                                                    xtype:'button',
+                                                    name:'send',
+                                                    flex:1
+                                                },
+                                                {
+                                                    xtype:'button',
+                                                    name:'abort',
+                                                    disabled:true,
+                                                    flex:1
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+
                         clients: {
                             autoSync:true,
 
@@ -112,6 +192,19 @@ Ext.define('SMS.Application', {
                                     bottomToolbar: [
                                         { name: 'add', action:'add' },
                                         { name: 'remove', action:'remove' }
+                                    ]
+                                }
+                            ]
+                        },
+                        textmessagerecipients: {
+                            grids: [
+                                {
+                                    widget:'textmessagerecipientsgrid',
+                                    columns: [ 'firstName', 'lastName', 'phone',
+                                        {
+                                            field:'sent',
+                                            renderer:notNullRenderer
+                                        }
                                     ]
                                 }
                             ]

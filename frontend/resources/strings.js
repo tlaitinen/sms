@@ -1,5 +1,18 @@
 function __(k,d) {
     var strings = {
+        'textmessageform.title' : 'Tekstiviestin muokkaus',
+        'text' : 'Teksti',
+        'textmessageform.abort' : 'Keskeytä tekstiviestin lähetys',
+        'textmessageform.send' : 'Lähetä tekstiviesti vastaanottajille',
+        'textmessagesgrid.title' : 'Tekstiviestit',
+        'textmessagesgrid.new' : 'Uusi tekstiviesti',
+        'textmessagesgrid.remove' : 'Poista valitut tekstiviestit',
+        'textmessagesgrid.emptyPaging' : 'Ei tekstiviestejä',
+        'textmessagerecipientsgrid.emptyPaging' : 'Ei vastaanottajia',
+        'textmessagerecipientsgrid.title' : 'Viestin vastaanottajat',
+        'queued' : 'Lisätty jonoon',
+        'sent' : 'Lähetetty',
+        'textmessages' : 'Tekstiviestit',
         'rowedit.save' : 'Tallenna',
         'rowedit.cancel' : 'Peruuta',
         'phone' : 'Puhelinnumero',

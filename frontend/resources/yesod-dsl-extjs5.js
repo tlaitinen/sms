@@ -116,6 +116,38 @@ var yesodDsl = function(defs, __, config) {
                 });
         });
     }
+    function findGrid(widgetName) {
+        var res = undefined;
+        _.each(config.routes, function (r) {
+            r.grids.forEach(function (g) {
+                if (g.widget == widgetName)
+                    res = g;
+            });
+        });
+        return res;
+    }
+    function initFormFilters(ffs, form) {
+        return _.map(ffs, function (fInfo) {
+            if (typeof fInfo == 'string') {
+                fInfo = {
+                    name: fInfo,
+                    field: 'id'
+                };
+            }
+            var record = form.getForm().getRecord();
+
+            var value = ('value' in fInfo) ? fInfo.value : record.get(fInfo.field)  ;
+            var f = {
+                id: fInfo.name,
+                property: fInfo.name,
+                value: (value == null) ? null : (''+ ((value != "") ? value : 0))
+            };
+            if (fInfo.op)
+                f.comparison = fInfo.op;
+            return new Ext.util.Filter(f);
+        });
+    }
+
     function initFormItem(h, formCfg, widgetName) {
         return function (i) {             
             var itemCfg = {};
@@ -148,6 +180,10 @@ var yesodDsl = function(defs, __, config) {
             if ('inputType' in itemCfg) {
                 res.inputType = itemCfg.inputType;
             }
+            if ('disabled' in itemCfg)
+                res.disabled = itemCfg.disabled;
+            if ('layout' in itemCfg)
+                res.layout = itemCfg.layout;
             if ('minLength' in itemCfg) {
                 res.minLength = itemCfg.minLength;
                 if (itemCfg.minLengthText)
@@ -156,7 +192,20 @@ var yesodDsl = function(defs, __, config) {
 
             if ('height' in itemCfg)
                 res.height = itemCfg.height;
-
+            var filters = (formCfg.filters || []).concat(itemCfg.filters || []);
+            if (filters.length) {
+                if (findGrid(itemCfg.xtype)) {
+                    res.listeners = {
+                        render: function(grid) {
+                            initFormFilters(filters, grid.up('form')).forEach(function (f) {
+                                grid.store.filters.removeAtKey(f.id);
+                                grid.store.addFilter(f, false);
+                            });
+                            grid.store.reload();
+                        }
+                    };
+                }
+            }
             if (field.type == "boolean")
                 res.inputValue = true;
             if (itemCfg.items) {
@@ -278,8 +327,8 @@ var yesodDsl = function(defs, __, config) {
                 title: __(formName + ".title"),
                 items: [ { xtype: formName } ]
             });
-            win.show();
             win.down(formName).loadRecord(record);
+            win.show();
             win.query('combobox').forEach(function (cb) { 
                 if ('configStore' in cb) {
                     cb.configStore();

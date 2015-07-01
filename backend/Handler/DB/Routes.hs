@@ -31,6 +31,9 @@ import Handler.DB.RouteUsersUser
 import Handler.DB.RouteVersions
 import Handler.DB.RouteClients
 import Handler.DB.RouteClientsClient
+import Handler.DB.RouteTextmessages
+import Handler.DB.RouteTextmessagerecipients
+import Handler.DB.RouteTextmessagerecipientsTextMessageRecipient
 
 import Yesod.Auth (requireAuth, requireAuthId, YesodAuth, AuthId, YesodAuthPersist)
 import Yesod.Core
@@ -54,5 +57,8 @@ mkYesodSubData "DB" [parseRoutes|
 /versions        VersionsR      GET
 /clients        ClientsR      GET POST
 /clients/#ClientId        ClientsClientIdR      DELETE PUT
+/textmessages        TextmessagesR      GET POST
+/textmessagerecipients        TextmessagerecipientsR      GET
+/textmessagerecipients/#TextMessageRecipientId        TextmessagerecipientsTextMessageRecipientIdR      PUT
 |]
 
