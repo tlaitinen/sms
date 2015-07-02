@@ -58,6 +58,9 @@ library
         Handler.DB.RouteClients
         Handler.DB.RouteClientsClient
         Handler.DB.RouteTextmessages
+        Handler.DB.RouteTextmessagesTextMessage
+        Handler.DB.RouteTextmessagesTextMessageQueue
+        Handler.DB.RouteTextmessagesTextMessageAbort
         Handler.DB.RouteTextmessagerecipients
         Handler.DB.RouteTextmessagerecipientsTextMessageRecipient
     build-depends:

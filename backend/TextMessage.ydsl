@@ -2,9 +2,11 @@ import Handler.TextMessage (addTextMessageRecipients);
 entity TextMessage {
     instance of Restricted, Deletable, Versioned, HasInsertInfo;
     text Text;
-    sendertextMessageId Maybe ClientId;
+    senderClientId Maybe ClientId;
+    replyToTextMessageId Maybe TextMessageId;
     queued Maybe UTCTime;
     sent Maybe UTCTime;
+    aborted Maybe UTCTime;
 }
 entity TextMessageRecipient {
     textMessageId TextMessageId;
@@ -38,6 +40,49 @@ route /textmessages {
             'id' = tId
         };
 
+    }
+}
+route /textmessages/#TextMessageId {
+    put {
+        require TextMessage as t where t.id = $1
+            and hasWritePerm $auth.id t.id
+            and t.queued is Nothing
+            and t.senderClientId is Nothing;
+        versionId <- insert Version from {
+            time = now(),
+            userId = $auth.id
+        };
+        t <- get TextMessage identified by $1;
+        insert TextMessage from t {
+            activeId = $1,
+            activeEndTime = now(),
+            deletedVersionId = versionId
+        };
+        update TextMessage identified by $1 with {
+            text = $request.text
+        };
+    }
+}
+route /textmessages/#TextMessageId/queue {
+    post {
+        require TextMessage as t where t.id = $1
+            and hasWritePerm $auth.id t.id
+            and t.queued is Nothing;
+        update TextMessage identified by $1 with {
+            queued = now()
+        };
+    }
+}
+
+route /textmessages/#TextMessageId/abort {
+    post {
+        require TextMessage as t where t.id = $1
+            and hasWritePerm $auth.id t.id
+            and not (t.queued is Nothing)
+            and t.aborted is Nothing;
+        update TextMessage identified by $1 with {
+            aborted = now()
+        };
     }
 }
 

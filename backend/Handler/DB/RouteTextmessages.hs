@@ -94,9 +94,13 @@ getTextmessagesR  = lift $ runDB $ do
                                 "ASC"  -> orderBy [ asc (t  ^.  TextMessageText) ] 
                                 "DESC" -> orderBy [ desc (t  ^.  TextMessageText) ] 
                                 _      -> return ()
-                            "sendertextMessageId" -> case (FS.s_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (t  ^.  TextMessageSendertextMessageId) ] 
-                                "DESC" -> orderBy [ desc (t  ^.  TextMessageSendertextMessageId) ] 
+                            "senderClientId" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (t  ^.  TextMessageSenderClientId) ] 
+                                "DESC" -> orderBy [ desc (t  ^.  TextMessageSenderClientId) ] 
+                                _      -> return ()
+                            "replyToTextMessageId" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (t  ^.  TextMessageReplyToTextMessageId) ] 
+                                "DESC" -> orderBy [ desc (t  ^.  TextMessageReplyToTextMessageId) ] 
                                 _      -> return ()
                             "queued" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (t  ^.  TextMessageQueued) ] 
@@ -105,6 +109,10 @@ getTextmessagesR  = lift $ runDB $ do
                             "sent" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (t  ^.  TextMessageSent) ] 
                                 "DESC" -> orderBy [ desc (t  ^.  TextMessageSent) ] 
+                                _      -> return ()
+                            "aborted" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (t  ^.  TextMessageAborted) ] 
+                                "DESC" -> orderBy [ desc (t  ^.  TextMessageAborted) ] 
                                 _      -> return ()
                             "insertionTime" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (t  ^.  TextMessageInsertionTime) ] 
@@ -135,11 +143,17 @@ getTextmessagesR  = lift $ runDB $ do
                 "text" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageText) ((val v'))
                     _        -> return ()
-                "sendertextMessageId" -> case FS.f_value fjm of
+                "senderClientId" -> case FS.f_value fjm of
                     Just value -> case PP.fromPathPiece value of 
-                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageSendertextMessageId) (just ((val v')))
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageSenderClientId) (just ((val v')))
                             _        -> return ()
-                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageSendertextMessageId) nothing
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageSenderClientId) nothing
+                           
+                "replyToTextMessageId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageReplyToTextMessageId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageReplyToTextMessageId) nothing
                            
                 "queued" -> case FS.f_value fjm of
                     Just value -> case PP.fromPathPiece value of 
@@ -152,6 +166,12 @@ getTextmessagesR  = lift $ runDB $ do
                             (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageSent) (just ((val v')))
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageSent) nothing
+                           
+                "aborted" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageAborted) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageAborted) nothing
                            
                 "insertionTime" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageInsertionTime) ((val v'))
@@ -171,7 +191,7 @@ getTextmessagesR  = lift $ runDB $ do
                 
                 where_ $ (t ^. TextMessageText) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))
             Nothing -> return ()
-        return (t ^. TextMessageId, t ^. TextMessageText, t ^. TextMessageSendertextMessageId, t ^. TextMessageQueued, t ^. TextMessageSent, t ^. TextMessageInsertionTime, t ^. TextMessageInsertedByUserId)
+        return (t ^. TextMessageId, t ^. TextMessageText, t ^. TextMessageSenderClientId, t ^. TextMessageReplyToTextMessageId, t ^. TextMessageQueued, t ^. TextMessageSent, t ^. TextMessageAborted, t ^. TextMessageInsertionTime, t ^. TextMessageInsertedByUserId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -181,14 +201,16 @@ getTextmessagesR  = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9)) -> A.object [
                     "id" .= toJSON f1,
                     "text" .= toJSON f2,
-                    "sendertextMessageId" .= toJSON f3,
-                    "queued" .= toJSON f4,
-                    "sent" .= toJSON f5,
-                    "insertionTime" .= toJSON f6,
-                    "insertedByUserId" .= toJSON f7                                    
+                    "senderClientId" .= toJSON f3,
+                    "replyToTextMessageId" .= toJSON f4,
+                    "queued" .= toJSON f5,
+                    "sent" .= toJSON f6,
+                    "aborted" .= toJSON f7,
+                    "insertionTime" .= toJSON f8,
+                    "insertedByUserId" .= toJSON f9                                    
                     ]
                 _ -> A.object []
             ) results)
@@ -226,11 +248,15 @@ postTextmessagesR  = lift $ runDB $ do
             return $ TextMessage {
                             textMessageText = attr_text
                     ,
-                            textMessageSendertextMessageId = Nothing
+                            textMessageSenderClientId = Nothing
+                    ,
+                            textMessageReplyToTextMessageId = Nothing
                     ,
                             textMessageQueued = Nothing
                     ,
                             textMessageSent = Nothing
+                    ,
+                            textMessageAborted = Nothing
                     ,
                             textMessageDeletedVersionId = Nothing
                     ,

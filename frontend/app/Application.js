@@ -35,6 +35,7 @@ Ext.define('SMS.Application', {
             return Ext.Date.format(value, Ext.util.Format.dateFormat);
         }
         function dateTimeRenderer(value,meta,record) {
+            console.log(value);
             return Ext.Date.format(value, Ext.util.Format.dateFormat + " H:i:s");
         }
      
@@ -95,14 +96,9 @@ Ext.define('SMS.Application', {
                                             flex:5
                                         },
                                         {
-                                            field:'queued',
+                                            field:'status'
                                             flex:1,
-                                            renderer:dateTimeRenderer
-                                        },
-                                        {
-                                            field:'sent',
-                                            flex:1,
-                                            renderer:dateTimeRenderer
+                                            renderer:textMessageStatusRenderer
                                         }
                                     ],
                                     bottomToolbar: [

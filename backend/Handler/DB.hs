@@ -28,6 +28,9 @@ import Handler.DB.RouteVersions
 import Handler.DB.RouteClients
 import Handler.DB.RouteClientsClient
 import Handler.DB.RouteTextmessages
+import Handler.DB.RouteTextmessagesTextMessage
+import Handler.DB.RouteTextmessagesTextMessageQueue
+import Handler.DB.RouteTextmessagesTextMessageAbort
 import Handler.DB.RouteTextmessagerecipients
 import Handler.DB.RouteTextmessagerecipientsTextMessageRecipient
 
