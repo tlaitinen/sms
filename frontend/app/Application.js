@@ -16,7 +16,8 @@ Ext.define('SMS.Application', {
         'Ext.grid.plugin.RowEditing'
     ],
     controllers: [
-        'Login@SMS.controller'
+        'Login@SMS.controller',
+        'TextMessageForm@SMS.controller'
     ],
 
     stores: [
@@ -39,6 +40,7 @@ Ext.define('SMS.Application', {
             return Ext.Date.format(value, Ext.util.Format.dateFormat + " H:i:s");
         }
      
+
         Ext.History.init();
         Ext.define('SMS.CustomReader', {
             extend: 'Ext.data.reader.Reader',
@@ -96,9 +98,14 @@ Ext.define('SMS.Application', {
                                             flex:5
                                         },
                                         {
-                                            field:'status'
                                             flex:1,
-                                            renderer:textMessageStatusRenderer
+                                            field:'queued',
+                                            renderer:dateTimeRenderer
+                                        },
+                                        {
+                                            flex:1,
+                                            field:'sent',
+                                            renderer:dateTimeRenderer
                                         }
                                     ],
                                     bottomToolbar: [
@@ -121,7 +128,7 @@ Ext.define('SMS.Application', {
                                         },
                                         {
                                             xtype:'textmessagerecipientsgrid',
-                                            height:300,
+                                            height:300
                                         },
                                         {
                                             xtype:'panel',
@@ -133,7 +140,8 @@ Ext.define('SMS.Application', {
                                                 {
                                                     xtype:'button',
                                                     name:'send',
-                                                    flex:1
+                                                    flex:1,
+                                                    disabled:true
                                                 },
                                                 {
                                                     xtype:'button',
