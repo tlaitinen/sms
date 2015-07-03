@@ -11,7 +11,6 @@ entity TextMessage {
 entity TextMessageRecipient {
     textMessageId TextMessageId;
     clientId ClientId;
-    queued Maybe UTCTime;
     accepted Maybe UTCTime;
     sent Maybe UTCTime;
 }
@@ -85,7 +84,6 @@ route /textmessages/#TextMessageId/abort {
         };
     }
 }
-
 route /textmessagerecipients {
     get {
         select tr.id, tr.*,
@@ -101,13 +99,39 @@ route /textmessagerecipients {
                 or c.phone ilike "%" || $$ || "%";
     }
 }
-route /textmessagerecipients/#TextMessageRecipientId {
-    put {
+route /textmessagerecipientsqueue {
+    get {
+        select tr.id, c.phone, tm.text
+            from TextMessageRecipient as tr
+            inner join Client as c on c.id = tr.clientId
+            inner join TextMessage as tm on tm.id = tr.textMessageId
+            where hasReadPerm $auth.id tm.id
+                and hasReadPerm $auth.id c.id
+                and tr.accepted is Nothing
+                and not (tm.queued is Nothing)
+                and tm.aborted is Nothing
+                order by c.lastName asc, c.firstName asc
+                limit 10;
+    }
+}
+route /textmessagerecipients/#TextMessageRecipientId/accept {
+    post {
         require TextMessageRecipient as tr where tr.id = $1
-            and hasWritePerm $auth.id tr.textMessageId;
+            and hasWritePerm $auth.id tr.textMessageId
+            and tr.accepted is Nothing;
         update TextMessageRecipient identified by $1 with {
-            accepted = $request.accepted,
-            sent     = $request.sent
+            accepted = now()
+        };
+    }
+}
+route /textmessagerecipients/#TextMessageRecipientId/sent {
+    post {
+        require TextMessageRecipient as tr where tr.id = $1
+            and hasWritePerm $auth.id tr.textMessageId
+            and tr.sent is Nothing
+            and not (tr.accepted is Nothing);
+        update TextMessageRecipient identified by $1 with {
+            sent = now()
         };
     }
 }
