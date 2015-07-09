@@ -15,7 +15,7 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
-module Handler.DB.RouteFilesFile where
+module Handler.DB.RouteTextmessagesTextMessage where
 import Handler.DB.Enums
 import Handler.DB.Esqueleto
 import Handler.DB.Internal
@@ -62,59 +62,13 @@ import qualified Data.HashMap.Strict as HMS
 import Handler.Utils (nonEmpty)
 import Handler.Utils (prepareNewUser,hasWritePerm,hasReadPermMaybe,hasReadPerm)
 
-getFilesFileIdR :: forall master. (
+putTextmessagesTextMessageIdR :: forall master. (
     YesodAuthPersist master,
     AuthEntity master ~ User,
     AuthId master ~ Key User,
     YesodPersistBackend master ~ SqlBackend)
-    => FileId -> HandlerT DB (HandlerT master IO) A.Value
-getFilesFileIdR p1 = lift $ runDB $ do
-    authId <- lift $ requireAuthId
-    let baseQuery limitOffsetOrder = from $ \(f ) -> do
-        let fId' = f ^. FileId
-        where_ (((f ^. FileId) ==. (val p1)) &&. (hasReadPerm (val authId) (f ^. FileId)))
-
-        _ <- if limitOffsetOrder
-            then do 
-                offset 0
-                limit 10000
-                orderBy [  ]
-
-                 
-            else return ()
-        return (f ^. FileId, f ^. FileContentType, f ^. FileSize, f ^. FilePreviewOfFileId, f ^. FileName, f ^. FileActiveId, f ^. FileActiveStartTime, f ^. FileActiveEndTime, f ^. FileDeletedVersionId, f ^. FileInsertionTime, f ^. FileInsertedByUserId)
-    count <- select $ do
-        baseQuery False
-        let countRows' = countRows
-        orderBy []
-        return $ (countRows' :: SqlExpr (Database.Esqueleto.Value Int))
-    results <- select $ baseQuery True
-    return $ A.object [
-        "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
-        "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9), (Database.Esqueleto.Value f10), (Database.Esqueleto.Value f11)) -> A.object [
-                    "id" .= toJSON f1,
-                    "contentType" .= toJSON f2,
-                    "size" .= toJSON f3,
-                    "previewOfFileId" .= toJSON f4,
-                    "name" .= toJSON f5,
-                    "activeId" .= toJSON f6,
-                    "activeStartTime" .= toJSON f7,
-                    "activeEndTime" .= toJSON f8,
-                    "deletedVersionId" .= toJSON f9,
-                    "insertionTime" .= toJSON f10,
-                    "insertedByUserId" .= toJSON f11                                    
-                    ]
-                _ -> A.object []
-            ) results)
-       ]
-putFilesFileIdR :: forall master. (
-    YesodAuthPersist master,
-    AuthEntity master ~ User,
-    AuthId master ~ Key User,
-    YesodPersistBackend master ~ SqlBackend)
-    => FileId -> HandlerT DB (HandlerT master IO) A.Value
-putFilesFileIdR p1 = lift $ runDB $ do
+    => TextMessageId -> HandlerT DB (HandlerT master IO) A.Value
+putTextmessagesTextMessageIdR p1 = lift $ runDB $ do
     authId <- lift $ requireAuthId
     jsonResult <- parseJsonBody
     jsonBody <- case jsonResult of
@@ -123,24 +77,24 @@ putFilesFileIdR p1 = lift $ runDB $ do
     jsonBodyObj <- case jsonBody of
         A.Object o -> return o
         v -> sendResponseStatus status400 $ A.object [ "message" .= ("Expected JSON object in the request body, got: " ++ show v) ]
-    attr_name <- case HML.lookup "name" jsonBodyObj of 
+    attr_text <- case HML.lookup "text" jsonBodyObj of 
         Just v -> case A.fromJSON v of
             A.Success v' -> return v'
             A.Error err -> sendResponseStatus status400 $ A.object [
-                    "message" .= ("Could not parse value from attribute name in the JSON object in request body" :: Text),
+                    "message" .= ("Could not parse value from attribute text in the JSON object in request body" :: Text),
                     "error" .= err
                 ]
         Nothing -> sendResponseStatus status400 $ A.object [
-                "message" .= ("Expected attribute name in the JSON object in request body" :: Text)
+                "message" .= ("Expected attribute text in the JSON object in request body" :: Text)
             ]
     __currentTime <- liftIO $ getCurrentTime
     _ <- do
-        result <- select $ from $ \(f ) -> do
-            let fId' = f ^. FileId
-            where_ (((f ^. FileId) ==. (val p1)) &&. (hasWritePerm (val authId) (f ^. FileId)))
+        result <- select $ from $ \(t ) -> do
+            let tId' = t ^. TextMessageId
+            where_ (((t ^. TextMessageId) ==. (val p1)) &&. ((hasWritePerm (val authId) (t ^. TextMessageId)) &&. (((t ^. TextMessageQueued) `is` (nothing)) &&. ((t ^. TextMessageSenderClientId) `is` (nothing)))))
 
             limit 1
-            return f
+            return t
         case result of
             ((Entity _ _):_) -> return ()
             _ -> sendResponseStatus status403 (A.object [
@@ -163,22 +117,22 @@ putFilesFileIdR p1 = lift $ runDB $ do
                     ])
             _ -> return ()
         result_versionId <- P.insert (e2 :: Version)
-        result_f <- do
-            r <- get $ ((p1) :: FileId)
+        result_t <- do
+            r <- get $ ((p1) :: TextMessageId)
             case r of
                 Just e -> return e
                 _ -> sendResponseStatus status400 $ A.object [  
-                    "message" .= ("Could not get entity File" :: Text) 
+                    "message" .= ("Could not get entity TextMessage" :: Text) 
                    ] 
         e4 <- do
-            let e = result_f
+            let e = result_t
     
             return $ e {
-                            fileActiveId = (Just p1)
+                            textMessageDeletedVersionId = (Just result_versionId)
                     ,
-                            fileActiveEndTime = (Just __currentTime)
+                            textMessageActiveId = (Just p1)
                     ,
-                            fileDeletedVersionId = (Just result_versionId)
+                            textMessageActiveEndTime = (Just __currentTime)
     
                 }
         vErrors <- lift $ validate e4
@@ -188,22 +142,20 @@ putFilesFileIdR p1 = lift $ runDB $ do
                         "errors" .= toJSON xs 
                     ])
             _ -> return ()
-        P.insert (e4 :: File)
+        P.insert (e4 :: TextMessage)
         e5 <- do
             es <- select $ from $ \o -> do
-                where_ (o ^. FileId ==. (val p1))
+                where_ (o ^. TextMessageId ==. (val p1))
                 limit 1
                 return o
             e <- case es of
                 [(Entity _ e')] -> return e'    
                 _ -> sendResponseStatus status404 $ A.object [ 
-                        "message" .= ("Could not update a non-existing File" :: Text)
+                        "message" .= ("Could not update a non-existing TextMessage" :: Text)
                     ]
     
             return $ e {
-                            fileName = attr_name
-                    ,
-                            fileActiveStartTime = (Just __currentTime)
+                            textMessageText = attr_text
     
                 }
         vErrors <- lift $ validate e5
@@ -212,25 +164,25 @@ putFilesFileIdR p1 = lift $ runDB $ do
                          "message" .= ("Entity validation failed" :: Text),
                          "errors" .= toJSON xs 
                      ])
-             _ -> P.repsert p1 (e5 :: File)
+             _ -> P.repsert p1 (e5 :: TextMessage)
         return AT.emptyObject
     return $ runDB_result
-deleteFilesFileIdR :: forall master. (
+deleteTextmessagesTextMessageIdR :: forall master. (
     YesodAuthPersist master,
     AuthEntity master ~ User,
     AuthId master ~ Key User,
     YesodPersistBackend master ~ SqlBackend)
-    => FileId -> HandlerT DB (HandlerT master IO) A.Value
-deleteFilesFileIdR p1 = lift $ runDB $ do
+    => TextMessageId -> HandlerT DB (HandlerT master IO) A.Value
+deleteTextmessagesTextMessageIdR p1 = lift $ runDB $ do
     authId <- lift $ requireAuthId
     __currentTime <- liftIO $ getCurrentTime
     _ <- do
-        result <- select $ from $ \(f ) -> do
-            let fId' = f ^. FileId
-            where_ (((f ^. FileId) ==. (val p1)) &&. (hasWritePerm (val authId) (f ^. FileId)))
+        result <- select $ from $ \(t ) -> do
+            let tId' = t ^. TextMessageId
+            where_ (((t ^. TextMessageId) ==. (val p1)) &&. ((hasWritePerm (val authId) (t ^. TextMessageId)) &&. ((((t ^. TextMessageQueued) `is` (nothing)) ||. (not_ ((t ^. TextMessageAborted) `is` (nothing)))) &&. ((t ^. TextMessageDeletedVersionId) `is` (nothing)))))
 
             limit 1
-            return f
+            return t
         case result of
             ((Entity _ _):_) -> return ()
             _ -> sendResponseStatus status403 (A.object [
@@ -255,19 +207,17 @@ deleteFilesFileIdR p1 = lift $ runDB $ do
         result_versionId <- P.insert (e2 :: Version)
         e3 <- do
             es <- select $ from $ \o -> do
-                where_ (o ^. FileId ==. (val p1))
+                where_ (o ^. TextMessageId ==. (val p1))
                 limit 1
                 return o
             e <- case es of
                 [(Entity _ e')] -> return e'    
                 _ -> sendResponseStatus status404 $ A.object [ 
-                        "message" .= ("Could not update a non-existing File" :: Text)
+                        "message" .= ("Could not update a non-existing TextMessage" :: Text)
                     ]
     
             return $ e {
-                            fileActiveEndTime = (Just __currentTime)
-                    ,
-                            fileDeletedVersionId = (Just result_versionId)
+                            textMessageDeletedVersionId = (Just result_versionId)
     
                 }
         vErrors <- lift $ validate e3
@@ -276,6 +226,6 @@ deleteFilesFileIdR p1 = lift $ runDB $ do
                          "message" .= ("Entity validation failed" :: Text),
                          "errors" .= toJSON xs 
                      ])
-             _ -> P.repsert p1 (e3 :: File)
+             _ -> P.repsert p1 (e3 :: TextMessage)
         return AT.emptyObject
     return $ runDB_result

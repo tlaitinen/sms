@@ -38,6 +38,26 @@
                             "type": "string"
                         },
                         {
+                            "references": "File",
+                            "name": "activeId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeEndTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": "Version",
+                            "name": "deletedVersionId",
+                            "type": "integer"
+                        },
+                        {
                             "references": null,
                             "name": "insertionTime",
                             "type": "utctime"
@@ -93,6 +113,26 @@
                             "references": null,
                             "name": "name",
                             "type": "string"
+                        },
+                        {
+                            "references": "File",
+                            "name": "activeId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeEndTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": "Version",
+                            "name": "deletedVersionId",
+                            "type": "integer"
                         },
                         {
                             "references": null,
@@ -273,6 +313,26 @@
                             "references": null,
                             "name": "name",
                             "type": "string"
+                        },
+                        {
+                            "references": "UserGroup",
+                            "name": "activeId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeEndTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": "Version",
+                            "name": "deletedVersionId",
+                            "type": "integer"
                         }
                     ],
                     "type": "GET",
@@ -638,6 +698,26 @@
                             "references": null,
                             "name": "name",
                             "type": "string"
+                        },
+                        {
+                            "references": "User",
+                            "name": "activeId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeEndTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": "Version",
+                            "name": "deletedVersionId",
+                            "type": "integer"
                         }
                     ],
                     "type": "GET",
@@ -795,6 +875,26 @@
                             "type": "boolean"
                         },
                         {
+                            "references": "Version",
+                            "name": "deletedVersionId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "Client",
+                            "name": "activeId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeEndTime",
+                            "type": "utctime"
+                        },
+                        {
                             "references": null,
                             "name": "insertionTime",
                             "type": "utctime"
@@ -945,6 +1045,39 @@
             "path": [
                 {
                     "references": "null",
+                    "value": "incomingtextmessages",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [
+                        {
+                            "references": null,
+                            "name": "text",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "phone",
+                            "type": "string"
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "name": "id",
+                            "type": null
+                        }
+                    ],
+                    "type": "POST",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
                     "value": "textmessages",
                     "type": "string"
                 }
@@ -961,6 +1094,11 @@
                         {
                             "references": null,
                             "name": "text",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "phone",
                             "type": "string"
                         },
                         {
@@ -986,6 +1124,26 @@
                         {
                             "references": null,
                             "name": "aborted",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": "Version",
+                            "name": "deletedVersionId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "TextMessage",
+                            "name": "activeId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeEndTime",
                             "type": "utctime"
                         },
                         {
@@ -1049,6 +1207,23 @@
                     ],
                     "outputs": [],
                     "type": "PUT",
+                    "public": false
+                },
+                {
+                    "inputs": [
+                        {
+                            "references": null,
+                            "name": "text",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "insertionTime",
+                            "type": "utctime"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "DELETE",
                     "public": false
                 }
             ]
@@ -1156,11 +1331,6 @@
                         },
                         {
                             "references": null,
-                            "name": "queued",
-                            "type": "utctime"
-                        },
-                        {
-                            "references": null,
                             "name": "accepted",
                             "type": "utctime"
                         },
@@ -1194,12 +1364,50 @@
             "path": [
                 {
                     "references": "null",
+                    "value": "textmessagerecipientsqueue",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "TextMessageRecipient",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "phone",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "text",
+                            "type": "string"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
                     "value": "textmessagerecipients",
                     "type": "string"
                 },
                 {
                     "references": "TextMessageRecipient",
                     "type": "integer"
+                },
+                {
+                    "references": "null",
+                    "value": "accept",
+                    "type": "string"
                 }
             ],
             "handlers": [
@@ -1214,20 +1422,84 @@
                             "references": "Client",
                             "name": "clientId",
                             "type": "integer"
-                        },
-                        {
-                            "references": null,
-                            "name": "accepted",
-                            "type": "utctime"
-                        },
-                        {
-                            "references": null,
-                            "name": "sent",
-                            "type": "utctime"
                         }
                     ],
                     "outputs": [],
-                    "type": "PUT",
+                    "type": "POST",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "textmessagerecipients",
+                    "type": "string"
+                },
+                {
+                    "references": "TextMessageRecipient",
+                    "type": "integer"
+                },
+                {
+                    "references": "null",
+                    "value": "sent",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [
+                        {
+                            "references": "TextMessage",
+                            "name": "textMessageId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "Client",
+                            "name": "clientId",
+                            "type": "integer"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "POST",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "textmessagerecipients",
+                    "type": "string"
+                },
+                {
+                    "references": "TextMessageRecipient",
+                    "type": "integer"
+                },
+                {
+                    "references": "null",
+                    "value": "fail",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [
+                        {
+                            "references": "TextMessage",
+                            "name": "textMessageId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "Client",
+                            "name": "clientId",
+                            "type": "integer"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "POST",
                     "public": false
                 }
             ]
@@ -1264,6 +1536,34 @@
                     "name": "name",
                     "type": "string",
                     "optional": false
+                },
+                {
+                    "references": "File",
+                    "default": null,
+                    "name": "activeId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "activeStartTime",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "activeEndTime",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": "Version",
+                    "default": null,
+                    "name": "deletedVersionId",
+                    "type": "integer",
+                    "optional": true
                 },
                 {
                     "references": null,
@@ -1325,6 +1625,13 @@
                     "name": "textMessageContentId",
                     "type": "integer",
                     "optional": true
+                },
+                {
+                    "references": "Version",
+                    "default": null,
+                    "name": "deletedVersionId",
+                    "type": "integer",
+                    "optional": true
                 }
             ]
         },
@@ -1358,6 +1665,34 @@
                     "name": "name",
                     "type": "string",
                     "optional": false
+                },
+                {
+                    "references": "UserGroup",
+                    "default": null,
+                    "name": "activeId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "activeStartTime",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "activeEndTime",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": "Version",
+                    "default": null,
+                    "name": "deletedVersionId",
+                    "type": "integer",
+                    "optional": true
                 }
             ]
         },
@@ -1384,6 +1719,13 @@
                     "name": "mode",
                     "type": "string",
                     "optional": false
+                },
+                {
+                    "references": "Version",
+                    "default": null,
+                    "name": "deletedVersionId",
+                    "type": "integer",
+                    "optional": true
                 }
             ]
         },
@@ -1459,6 +1801,34 @@
                     "name": "name",
                     "type": "string",
                     "optional": false
+                },
+                {
+                    "references": "User",
+                    "default": null,
+                    "name": "activeId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "activeStartTime",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "activeEndTime",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": "Version",
+                    "default": null,
+                    "name": "deletedVersionId",
+                    "type": "integer",
+                    "optional": true
                 }
             ]
         },
@@ -1541,6 +1911,34 @@
                     "optional": false
                 },
                 {
+                    "references": "Version",
+                    "default": null,
+                    "name": "deletedVersionId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": "Client",
+                    "default": null,
+                    "name": "activeId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "activeStartTime",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "activeEndTime",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
                     "references": null,
                     "default": null,
                     "name": "insertionTime",
@@ -1565,6 +1963,13 @@
                     "name": "text",
                     "type": "string",
                     "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "phone",
+                    "type": "string",
+                    "optional": true
                 },
                 {
                     "references": "Client",
@@ -1602,6 +2007,34 @@
                     "optional": true
                 },
                 {
+                    "references": "Version",
+                    "default": null,
+                    "name": "deletedVersionId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": "TextMessage",
+                    "default": null,
+                    "name": "activeId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "activeStartTime",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "activeEndTime",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
                     "references": null,
                     "default": null,
                     "name": "insertionTime",
@@ -1633,13 +2066,6 @@
                     "name": "clientId",
                     "type": "integer",
                     "optional": false
-                },
-                {
-                    "references": null,
-                    "default": null,
-                    "name": "queued",
-                    "type": "utctime",
-                    "optional": true
                 },
                 {
                     "references": null,
@@ -1730,7 +2156,29 @@
                 "Client",
                 "TextMessage"
             ],
-            "fields": []
+            "fields": [
+                {
+                    "references": "ClassInstance",
+                    "default": null,
+                    "name": "activeId",
+                    "type": "integer",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "activeStartTime",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "activeEndTime",
+                    "type": "utctime",
+                    "optional": true
+                }
+            ]
         },
         {
             "name": "Deletable",
@@ -1743,7 +2191,15 @@
                 "Client",
                 "TextMessage"
             ],
-            "fields": []
+            "fields": [
+                {
+                    "references": "Version",
+                    "default": null,
+                    "name": "deletedVersionId",
+                    "type": "integer",
+                    "optional": true
+                }
+            ]
         }
     ]
 }

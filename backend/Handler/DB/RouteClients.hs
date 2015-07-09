@@ -121,6 +121,22 @@ getClientsR  = lift $ runDB $ do
                                 "ASC"  -> orderBy [ asc (c  ^.  ClientAllowEmail) ] 
                                 "DESC" -> orderBy [ desc (c  ^.  ClientAllowEmail) ] 
                                 _      -> return ()
+                            "deletedVersionId" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (c  ^.  ClientDeletedVersionId) ] 
+                                "DESC" -> orderBy [ desc (c  ^.  ClientDeletedVersionId) ] 
+                                _      -> return ()
+                            "activeId" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (c  ^.  ClientActiveId) ] 
+                                "DESC" -> orderBy [ desc (c  ^.  ClientActiveId) ] 
+                                _      -> return ()
+                            "activeStartTime" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (c  ^.  ClientActiveStartTime) ] 
+                                "DESC" -> orderBy [ desc (c  ^.  ClientActiveStartTime) ] 
+                                _      -> return ()
+                            "activeEndTime" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (c  ^.  ClientActiveEndTime) ] 
+                                "DESC" -> orderBy [ desc (c  ^.  ClientActiveEndTime) ] 
+                                _      -> return ()
                             "insertionTime" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (c  ^.  ClientInsertionTime) ] 
                                 "DESC" -> orderBy [ desc (c  ^.  ClientInsertionTime) ] 
@@ -183,6 +199,30 @@ getClientsR  = lift $ runDB $ do
                 "allowEmail" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientAllowEmail) ((val v'))
                     _        -> return ()
+                "deletedVersionId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientDeletedVersionId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientDeletedVersionId) nothing
+                           
+                "activeId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientActiveId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientActiveId) nothing
+                           
+                "activeStartTime" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientActiveStartTime) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientActiveStartTime) nothing
+                           
+                "activeEndTime" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientActiveEndTime) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientActiveEndTime) nothing
+                           
                 "insertionTime" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientInsertionTime) ((val v'))
                     _        -> return ()
@@ -201,7 +241,7 @@ getClientsR  = lift $ runDB $ do
                 
                 where_ $ ((c ^. ClientFirstName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))) ||. (((c ^. ClientLastName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))) ||. (((c ^. ClientEmail) `ilike` (just (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%")))))) ||. (((c ^. ClientPhone) `ilike` (just (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%")))))) ||. ((c ^. ClientCard) `ilike` (just (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%")))))))))
             Nothing -> return ()
-        return (c ^. ClientId, c ^. ClientFirstName, c ^. ClientLastName, c ^. ClientEmail, c ^. ClientPhone, c ^. ClientDateOfBirth, c ^. ClientCard, c ^. ClientAllowSms, c ^. ClientAllowEmail, c ^. ClientInsertionTime, c ^. ClientInsertedByUserId)
+        return (c ^. ClientId, c ^. ClientFirstName, c ^. ClientLastName, c ^. ClientEmail, c ^. ClientPhone, c ^. ClientDateOfBirth, c ^. ClientCard, c ^. ClientAllowSms, c ^. ClientAllowEmail, c ^. ClientDeletedVersionId, c ^. ClientActiveId, c ^. ClientActiveStartTime, c ^. ClientActiveEndTime, c ^. ClientInsertionTime, c ^. ClientInsertedByUserId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -211,7 +251,7 @@ getClientsR  = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9), (Database.Esqueleto.Value f10), (Database.Esqueleto.Value f11)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9), (Database.Esqueleto.Value f10), (Database.Esqueleto.Value f11), (Database.Esqueleto.Value f12), (Database.Esqueleto.Value f13), (Database.Esqueleto.Value f14), (Database.Esqueleto.Value f15)) -> A.object [
                     "id" .= toJSON f1,
                     "firstName" .= toJSON f2,
                     "lastName" .= toJSON f3,
@@ -221,8 +261,12 @@ getClientsR  = lift $ runDB $ do
                     "card" .= toJSON f7,
                     "allowSms" .= toJSON f8,
                     "allowEmail" .= toJSON f9,
-                    "insertionTime" .= toJSON f10,
-                    "insertedByUserId" .= toJSON f11                                    
+                    "deletedVersionId" .= toJSON f10,
+                    "activeId" .= toJSON f11,
+                    "activeStartTime" .= toJSON f12,
+                    "activeEndTime" .= toJSON f13,
+                    "insertionTime" .= toJSON f14,
+                    "insertedByUserId" .= toJSON f15                                    
                     ]
                 _ -> A.object []
             ) results)

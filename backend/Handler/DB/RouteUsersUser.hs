@@ -82,7 +82,7 @@ getUsersUserIdR p1 = lift $ runDB $ do
 
                  
             else return ()
-        return (u ^. UserId, u ^. UserFirstName, u ^. UserLastName, u ^. UserOrganization, u ^. UserAdmin, u ^. UserEmail, u ^. UserDefaultUserGroupId, u ^. UserTimeZone, u ^. UserCurrent, u ^. UserConfig, u ^. UserName)
+        return (u ^. UserId, u ^. UserFirstName, u ^. UserLastName, u ^. UserOrganization, u ^. UserAdmin, u ^. UserEmail, u ^. UserDefaultUserGroupId, u ^. UserTimeZone, u ^. UserCurrent, u ^. UserConfig, u ^. UserName, u ^. UserActiveId, u ^. UserActiveStartTime, u ^. UserActiveEndTime, u ^. UserDeletedVersionId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -92,7 +92,7 @@ getUsersUserIdR p1 = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9), (Database.Esqueleto.Value f10), (Database.Esqueleto.Value f11)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9), (Database.Esqueleto.Value f10), (Database.Esqueleto.Value f11), (Database.Esqueleto.Value f12), (Database.Esqueleto.Value f13), (Database.Esqueleto.Value f14), (Database.Esqueleto.Value f15)) -> A.object [
                     "id" .= toJSON f1,
                     "firstName" .= toJSON f2,
                     "lastName" .= toJSON f3,
@@ -103,7 +103,11 @@ getUsersUserIdR p1 = lift $ runDB $ do
                     "timeZone" .= toJSON f8,
                     "current" .= toJSON f9,
                     "config" .= toJSON f10,
-                    "name" .= toJSON f11                                    
+                    "name" .= toJSON f11,
+                    "activeId" .= toJSON f12,
+                    "activeStartTime" .= toJSON f13,
+                    "activeEndTime" .= toJSON f14,
+                    "deletedVersionId" .= toJSON f15                                    
                     ]
                 _ -> A.object []
             ) results)

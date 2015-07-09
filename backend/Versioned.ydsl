@@ -1,13 +1,13 @@
 import "UserGroup.ydsl";
 
 class Versioned {
-    activeId        Maybe ClassInstanceId internal;
-    activeStartTime Maybe UTCTime internal;
-    activeEndTime   Maybe UTCTime internal;
+    activeId        Maybe ClassInstanceId;
+    activeStartTime Maybe UTCTime;
+    activeEndTime   Maybe UTCTime;
 
 }
 class Deletable {
-    deletedVersionId Maybe VersionId internal;
+    deletedVersionId Maybe VersionId;
 }
 
 entity Version {

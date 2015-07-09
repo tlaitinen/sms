@@ -106,6 +106,22 @@ getUsergroupsR  = lift $ runDB $ do
                                 "ASC"  -> orderBy [ asc (ug  ^.  UserGroupName) ] 
                                 "DESC" -> orderBy [ desc (ug  ^.  UserGroupName) ] 
                                 _      -> return ()
+                            "activeId" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupActiveId) ] 
+                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupActiveId) ] 
+                                _      -> return ()
+                            "activeStartTime" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupActiveStartTime) ] 
+                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupActiveStartTime) ] 
+                                _      -> return ()
+                            "activeEndTime" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupActiveEndTime) ] 
+                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupActiveEndTime) ] 
+                                _      -> return ()
+                            "deletedVersionId" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupDeletedVersionId) ] 
+                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupDeletedVersionId) ] 
+                                _      -> return ()
                 
                             _ -> return ()
                         ) xs
@@ -136,6 +152,30 @@ getUsergroupsR  = lift $ runDB $ do
                 "name" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupName) ((val v'))
                     _        -> return ()
+                "activeId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveId) nothing
+                           
+                "activeStartTime" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveStartTime) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveStartTime) nothing
+                           
+                "activeEndTime" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveEndTime) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveEndTime) nothing
+                           
+                "deletedVersionId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupDeletedVersionId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupDeletedVersionId) nothing
+                           
 
                 _ -> return ()
                 ) xs
@@ -150,7 +190,7 @@ getUsergroupsR  = lift $ runDB $ do
                 
                 where_ $ (ug ^. UserGroupId) `in_` (subList_select $ from $ \(ugi) -> do {  ; where_ (((ugi ^. UserGroupItemUserId) `in_` (valList localParam)) &&. ((ugi ^. UserGroupItemDeletedVersionId) `is` (nothing))) ; return (ugi ^. UserGroupItemUserGroupId) ; })
             Nothing -> return ()
-        return (ug ^. UserGroupId, ug ^. UserGroupCreatePeriods, ug ^. UserGroupEmail, ug ^. UserGroupCurrent, ug ^. UserGroupName)
+        return (ug ^. UserGroupId, ug ^. UserGroupCreatePeriods, ug ^. UserGroupEmail, ug ^. UserGroupCurrent, ug ^. UserGroupName, ug ^. UserGroupActiveId, ug ^. UserGroupActiveStartTime, ug ^. UserGroupActiveEndTime, ug ^. UserGroupDeletedVersionId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -160,12 +200,16 @@ getUsergroupsR  = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9)) -> A.object [
                     "id" .= toJSON f1,
                     "createPeriods" .= toJSON f2,
                     "email" .= toJSON f3,
                     "current" .= toJSON f4,
-                    "name" .= toJSON f5                                    
+                    "name" .= toJSON f5,
+                    "activeId" .= toJSON f6,
+                    "activeStartTime" .= toJSON f7,
+                    "activeEndTime" .= toJSON f8,
+                    "deletedVersionId" .= toJSON f9                                    
                     ]
                 _ -> A.object []
             ) results)

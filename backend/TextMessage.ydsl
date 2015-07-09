@@ -2,6 +2,7 @@ import Handler.TextMessage (addTextMessageRecipients);
 entity TextMessage {
     instance of Restricted, Deletable, Versioned, HasInsertInfo;
     text Text;
+    phone Maybe Text;
     senderClientId Maybe ClientId;
     replyToTextMessageId Maybe TextMessageId;
     queued Maybe UTCTime;
@@ -13,6 +14,24 @@ entity TextMessageRecipient {
     clientId ClientId;
     accepted Maybe UTCTime;
     sent Maybe UTCTime;
+}
+route /incomingtextmessages {
+    post {
+        tId <- insert TextMessage from {
+            insertionTime = now(),
+            insertedByUserId = $auth.id,
+            phone = $request.phone,
+            text = $request.text
+        };
+        addTextMessageRecipients $auth.id tId;
+        insert UserGroupContent from {
+            userGroupId = $auth.defaultUserGroupId,
+            textMessageContentId = tId
+        };
+        return {
+            'id' = tId
+        };
+    }
 }
 
 route /textmessages {
@@ -40,6 +59,7 @@ route /textmessages {
         };
 
     }
+
 }
 route /textmessages/#TextMessageId {
     put {
@@ -61,6 +81,20 @@ route /textmessages/#TextMessageId {
             text = $request.text
         };
     }
+    delete {
+        require TextMessage as t where t.id = $1
+            and hasWritePerm $auth.id t.id
+            and (t.queued is Nothing or not t.aborted is Nothing)
+            and t.deletedVersionId is Nothing;
+        versionId <- insert Version from {
+            time = now(),
+            userId = $auth.id
+        };
+        update TextMessage identified by $1 with {
+            deletedVersionId = versionId
+        };
+    }
+
 }
 route /textmessages/#TextMessageId/queue {
     post {
@@ -110,14 +144,23 @@ route /textmessagerecipientsqueue {
                 and tr.accepted is Nothing
                 and not (tm.queued is Nothing)
                 and tm.aborted is Nothing
+                and tm.deletedVersionId is Nothing
+                and c.deletedVersionId is Nothing
+                and c.allowSms = True
                 order by c.lastName asc, c.firstName asc
                 limit 10;
     }
 }
 route /textmessagerecipients/#TextMessageRecipientId/accept {
     post {
-        require TextMessageRecipient as tr where tr.id = $1
+        require TextMessageRecipient as tr 
+            inner join TextMessage as tm on tm.id = tr.textMessageId 
+            inner join Client as c on c.id = tr.clientId
+            where tr.id = $1
+            and not (tm.queued is Nothing)
+            and tm.aborted is Nothing
             and hasWritePerm $auth.id tr.textMessageId
+            and c.allowSms = True
             and tr.accepted is Nothing;
         update TextMessageRecipient identified by $1 with {
             accepted = now()
@@ -132,6 +175,17 @@ route /textmessagerecipients/#TextMessageRecipientId/sent {
             and not (tr.accepted is Nothing);
         update TextMessageRecipient identified by $1 with {
             sent = now()
+        };
+    }
+}
+route /textmessagerecipients/#TextMessageRecipientId/fail {
+    post {
+        require TextMessageRecipient as tr where tr.id = $1
+            and hasWritePerm $auth.id tr.textMessageId
+            and tr.sent is Nothing
+            and not (tr.accepted is Nothing);
+        update TextMessageRecipient identified by $1 with {
+            accepted = Nothing
         };
     }
 }

@@ -98,10 +98,6 @@ getTextmessagerecipientsR  = lift $ runDB $ do
                                 "ASC"  -> orderBy [ asc (tr  ^.  TextMessageRecipientClientId) ] 
                                 "DESC" -> orderBy [ desc (tr  ^.  TextMessageRecipientClientId) ] 
                                 _      -> return ()
-                            "queued" -> case (FS.s_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (tr  ^.  TextMessageRecipientQueued) ] 
-                                "DESC" -> orderBy [ desc (tr  ^.  TextMessageRecipientQueued) ] 
-                                _      -> return ()
                             "accepted" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (tr  ^.  TextMessageRecipientAccepted) ] 
                                 "DESC" -> orderBy [ desc (tr  ^.  TextMessageRecipientAccepted) ] 
@@ -176,6 +172,30 @@ getTextmessagerecipientsR  = lift $ runDB $ do
                 "allowEmail" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientAllowEmail) ((val v'))
                     _        -> return ()
+                "deletedVersionId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientDeletedVersionId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientDeletedVersionId) nothing
+                           
+                "activeId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientActiveId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientActiveId) nothing
+                           
+                "activeStartTime" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientActiveStartTime) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientActiveStartTime) nothing
+                           
+                "activeEndTime" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientActiveEndTime) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientActiveEndTime) nothing
+                           
                 "insertionTime" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ^.  ClientInsertionTime) ((val v'))
                     _        -> return ()
@@ -191,12 +211,6 @@ getTextmessagerecipientsR  = lift $ runDB $ do
                 "clientId" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (tr  ^.  TextMessageRecipientClientId) ((val v'))
                     _        -> return ()
-                "queued" -> case FS.f_value fjm of
-                    Just value -> case PP.fromPathPiece value of 
-                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (tr  ^.  TextMessageRecipientQueued) (just ((val v')))
-                            _        -> return ()
-                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (tr  ^.  TextMessageRecipientQueued) nothing
-                           
                 "accepted" -> case FS.f_value fjm of
                     Just value -> case PP.fromPathPiece value of 
                             (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (tr  ^.  TextMessageRecipientAccepted) (just ((val v')))
@@ -218,7 +232,7 @@ getTextmessagerecipientsR  = lift $ runDB $ do
                 
                 where_ $ ((c ^. ClientFirstName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))) ||. (((c ^. ClientLastName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))) ||. ((c ^. ClientPhone) `ilike` (just (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%")))))))
             Nothing -> return ()
-        return (tr ^. TextMessageRecipientId, tr ^. TextMessageRecipientTextMessageId, tr ^. TextMessageRecipientClientId, tr ^. TextMessageRecipientQueued, tr ^. TextMessageRecipientAccepted, tr ^. TextMessageRecipientSent, c ^. ClientFirstName, c ^. ClientLastName, c ^. ClientPhone)
+        return (tr ^. TextMessageRecipientId, tr ^. TextMessageRecipientTextMessageId, tr ^. TextMessageRecipientClientId, tr ^. TextMessageRecipientAccepted, tr ^. TextMessageRecipientSent, c ^. ClientFirstName, c ^. ClientLastName, c ^. ClientPhone)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -228,16 +242,15 @@ getTextmessagerecipientsR  = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8)) -> A.object [
                     "id" .= toJSON f1,
                     "textMessageId" .= toJSON f2,
                     "clientId" .= toJSON f3,
-                    "queued" .= toJSON f4,
-                    "accepted" .= toJSON f5,
-                    "sent" .= toJSON f6,
-                    "firstName" .= toJSON f7,
-                    "lastName" .= toJSON f8,
-                    "phone" .= toJSON f9                                    
+                    "accepted" .= toJSON f4,
+                    "sent" .= toJSON f5,
+                    "firstName" .= toJSON f6,
+                    "lastName" .= toJSON f7,
+                    "phone" .= toJSON f8                                    
                     ]
                 _ -> A.object []
             ) results)

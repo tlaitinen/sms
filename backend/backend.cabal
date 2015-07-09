@@ -57,12 +57,16 @@ library
         Handler.DB.RouteVersions
         Handler.DB.RouteClients
         Handler.DB.RouteClientsClient
+        Handler.DB.RouteIncomingtextmessages
         Handler.DB.RouteTextmessages
         Handler.DB.RouteTextmessagesTextMessage
         Handler.DB.RouteTextmessagesTextMessageQueue
         Handler.DB.RouteTextmessagesTextMessageAbort
         Handler.DB.RouteTextmessagerecipients
-        Handler.DB.RouteTextmessagerecipientsTextMessageRecipient
+        Handler.DB.RouteTextmessagerecipientsqueue
+        Handler.DB.RouteTextmessagerecipientsTextMessageRecipientAccept
+        Handler.DB.RouteTextmessagerecipientsTextMessageRecipientSent
+        Handler.DB.RouteTextmessagerecipientsTextMessageRecipientFail
     build-depends:
         unordered-containers -any,
         transformers -any,

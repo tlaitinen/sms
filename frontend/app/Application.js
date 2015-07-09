@@ -79,7 +79,7 @@ Ext.define('SMS.Application', {
                         {
                             field:'deletedVersionId',
                             value:null,
-                            comparison:'is not'
+                            comparison:'is'
                         }
                     ],
                     routes: {

@@ -136,6 +136,7 @@ Client json
     insertedByUserId UserId Maybe   default=NULL
 TextMessage json
     text Text  
+    phone Text Maybe  
     senderClientId ClientId Maybe   default=NULL
     replyToTextMessageId TextMessageId Maybe   default=NULL
     queued UTCTime Maybe  
@@ -150,7 +151,6 @@ TextMessage json
 TextMessageRecipient json
     textMessageId TextMessageId  
     clientId ClientId  
-    queued UTCTime Maybe  
     accepted UTCTime Maybe  
     sent UTCTime Maybe  
 |]
@@ -239,6 +239,7 @@ newClient insertionTime_ = Client {
 newTextMessage :: Text -> UTCTime -> TextMessage
 newTextMessage text_ insertionTime_ = TextMessage {
     textMessageText = text_,
+    textMessagePhone = Nothing,
     textMessageSenderClientId = Nothing,
     textMessageReplyToTextMessageId = Nothing,
     textMessageQueued = Nothing,
@@ -255,7 +256,6 @@ newTextMessageRecipient :: TextMessageId -> ClientId -> TextMessageRecipient
 newTextMessageRecipient textMessageId_ clientId_ = TextMessageRecipient {
     textMessageRecipientTextMessageId = textMessageId_,
     textMessageRecipientClientId = clientId_,
-    textMessageRecipientQueued = Nothing,
     textMessageRecipientAccepted = Nothing,
     textMessageRecipientSent = Nothing
 }    

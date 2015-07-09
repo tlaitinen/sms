@@ -107,6 +107,22 @@ getFilesR  = lift $ runDB $ do
                                 "ASC"  -> orderBy [ asc (f  ^.  FileName) ] 
                                 "DESC" -> orderBy [ desc (f  ^.  FileName) ] 
                                 _      -> return ()
+                            "activeId" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (f  ^.  FileActiveId) ] 
+                                "DESC" -> orderBy [ desc (f  ^.  FileActiveId) ] 
+                                _      -> return ()
+                            "activeStartTime" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (f  ^.  FileActiveStartTime) ] 
+                                "DESC" -> orderBy [ desc (f  ^.  FileActiveStartTime) ] 
+                                _      -> return ()
+                            "activeEndTime" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (f  ^.  FileActiveEndTime) ] 
+                                "DESC" -> orderBy [ desc (f  ^.  FileActiveEndTime) ] 
+                                _      -> return ()
+                            "deletedVersionId" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (f  ^.  FileDeletedVersionId) ] 
+                                "DESC" -> orderBy [ desc (f  ^.  FileDeletedVersionId) ] 
+                                _      -> return ()
                             "insertionTime" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (f  ^.  FileInsertionTime) ] 
                                 "DESC" -> orderBy [ desc (f  ^.  FileInsertionTime) ] 
@@ -148,6 +164,30 @@ getFilesR  = lift $ runDB $ do
                 "name" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileName) ((val v'))
                     _        -> return ()
+                "activeId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileActiveId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileActiveId) nothing
+                           
+                "activeStartTime" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileActiveStartTime) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileActiveStartTime) nothing
+                           
+                "activeEndTime" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileActiveEndTime) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileActiveEndTime) nothing
+                           
+                "deletedVersionId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileDeletedVersionId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileDeletedVersionId) nothing
+                           
                 "insertionTime" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileInsertionTime) ((val v'))
                     _        -> return ()
@@ -176,7 +216,7 @@ getFilesR  = lift $ runDB $ do
                 
                 where_ $ (f ^. FileContentType) `in_` (valList localParam)
             Nothing -> return ()
-        return (f ^. FileId, f ^. FileContentType, f ^. FileSize, f ^. FilePreviewOfFileId, f ^. FileName, f ^. FileInsertionTime, f ^. FileInsertedByUserId)
+        return (f ^. FileId, f ^. FileContentType, f ^. FileSize, f ^. FilePreviewOfFileId, f ^. FileName, f ^. FileActiveId, f ^. FileActiveStartTime, f ^. FileActiveEndTime, f ^. FileDeletedVersionId, f ^. FileInsertionTime, f ^. FileInsertedByUserId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -186,14 +226,18 @@ getFilesR  = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9), (Database.Esqueleto.Value f10), (Database.Esqueleto.Value f11)) -> A.object [
                     "id" .= toJSON f1,
                     "contentType" .= toJSON f2,
                     "size" .= toJSON f3,
                     "previewOfFileId" .= toJSON f4,
                     "name" .= toJSON f5,
-                    "insertionTime" .= toJSON f6,
-                    "insertedByUserId" .= toJSON f7                                    
+                    "activeId" .= toJSON f6,
+                    "activeStartTime" .= toJSON f7,
+                    "activeEndTime" .= toJSON f8,
+                    "deletedVersionId" .= toJSON f9,
+                    "insertionTime" .= toJSON f10,
+                    "insertedByUserId" .= toJSON f11                                    
                     ]
                 _ -> A.object []
             ) results)

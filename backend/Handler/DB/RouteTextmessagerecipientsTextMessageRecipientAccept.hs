@@ -15,7 +15,7 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
-module Handler.DB.RouteTextmessagerecipientsTextMessageRecipient where
+module Handler.DB.RouteTextmessagerecipientsTextMessageRecipientAccept where
 import Handler.DB.Enums
 import Handler.DB.Esqueleto
 import Handler.DB.Internal
@@ -62,45 +62,21 @@ import qualified Data.HashMap.Strict as HMS
 import Handler.Utils (nonEmpty)
 import Handler.Utils (prepareNewUser,hasWritePerm,hasReadPermMaybe,hasReadPerm)
 
-putTextmessagerecipientsTextMessageRecipientIdR :: forall master. (
+postTextmessagerecipientsTextMessageRecipientIdAcceptR :: forall master. (
     YesodAuthPersist master,
     AuthEntity master ~ User,
     AuthId master ~ Key User,
     YesodPersistBackend master ~ SqlBackend)
     => TextMessageRecipientId -> HandlerT DB (HandlerT master IO) A.Value
-putTextmessagerecipientsTextMessageRecipientIdR p1 = lift $ runDB $ do
+postTextmessagerecipientsTextMessageRecipientIdAcceptR p1 = lift $ runDB $ do
     authId <- lift $ requireAuthId
-    jsonResult <- parseJsonBody
-    jsonBody <- case jsonResult of
-         A.Error err -> sendResponseStatus status400 $ A.object [ "message" .= ( "Could not decode JSON object from request body : " ++ err) ]
-         A.Success o -> return o
-    jsonBodyObj <- case jsonBody of
-        A.Object o -> return o
-        v -> sendResponseStatus status400 $ A.object [ "message" .= ("Expected JSON object in the request body, got: " ++ show v) ]
-    attr_sent <- case HML.lookup "sent" jsonBodyObj of 
-        Just v -> case A.fromJSON v of
-            A.Success v' -> return v'
-            A.Error err -> sendResponseStatus status400 $ A.object [
-                    "message" .= ("Could not parse value from attribute sent in the JSON object in request body" :: Text),
-                    "error" .= err
-                ]
-        Nothing -> sendResponseStatus status400 $ A.object [
-                "message" .= ("Expected attribute sent in the JSON object in request body" :: Text)
-            ]
-    attr_accepted <- case HML.lookup "accepted" jsonBodyObj of 
-        Just v -> case A.fromJSON v of
-            A.Success v' -> return v'
-            A.Error err -> sendResponseStatus status400 $ A.object [
-                    "message" .= ("Could not parse value from attribute accepted in the JSON object in request body" :: Text),
-                    "error" .= err
-                ]
-        Nothing -> sendResponseStatus status400 $ A.object [
-                "message" .= ("Expected attribute accepted in the JSON object in request body" :: Text)
-            ]
+    __currentTime <- liftIO $ getCurrentTime
     _ <- do
-        result <- select $ from $ \(tr ) -> do
+        result <- select $ from $ \(tr `InnerJoin` tm`InnerJoin` c) -> do
+            on ((c ^. ClientId) ==. (tr ^. TextMessageRecipientClientId))
+            on ((tm ^. TextMessageId) ==. (tr ^. TextMessageRecipientTextMessageId))
             let trId' = tr ^. TextMessageRecipientId
-            where_ (((tr ^. TextMessageRecipientId) ==. (val p1)) &&. (hasWritePerm (val authId) (tr ^. TextMessageRecipientTextMessageId)))
+            where_ (((tr ^. TextMessageRecipientId) ==. (val p1)) &&. (not_ (((tm ^. TextMessageQueued) `is` (nothing)) &&. (((tm ^. TextMessageAborted) `is` (nothing)) &&. ((hasWritePerm (val authId) (tr ^. TextMessageRecipientTextMessageId)) &&. (((c ^. ClientAllowSms) ==. ((val True))) &&. ((tr ^. TextMessageRecipientAccepted) `is` (nothing))))))))
 
             limit 1
             return tr
@@ -122,9 +98,7 @@ putTextmessagerecipientsTextMessageRecipientIdR p1 = lift $ runDB $ do
                     ]
     
             return $ e {
-                            textMessageRecipientAccepted = attr_accepted
-                    ,
-                            textMessageRecipientSent = attr_sent
+                            textMessageRecipientAccepted = (Just __currentTime)
     
                 }
         vErrors <- lift $ validate e2
