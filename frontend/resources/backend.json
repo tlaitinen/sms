@@ -1155,6 +1155,16 @@
                             "references": "User",
                             "name": "insertedByUserId",
                             "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "firstName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "lastName",
+                            "type": "string"
                         }
                     ],
                     "type": "GET",

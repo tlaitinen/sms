@@ -24,6 +24,12 @@ Ext.define('SMS.Application', {
     ],
     
     init:function() {
+        function senderRenderer(value, meta, record) {
+            if (record.get('firstName')) {
+                return record.get('firstName') + " " + record.get('lastName');
+            } else 
+                return record.get('phone');
+        }
         function boolRenderer(value,meta, record) {
             if (value == true)
                 return '<span class="glyphicon glyphicon-ok"></span>';
@@ -98,6 +104,10 @@ Ext.define('SMS.Application', {
                                             flex:5
                                         },
                                         {
+                                            header:'sender',
+                                            renderer:senderRenderer
+                                        },
+                                        {
                                             flex:1,
                                             field:'queued',
                                             renderer:dateTimeRenderer
@@ -125,6 +135,10 @@ Ext.define('SMS.Application', {
                                         {
                                             xtype:'textareafield',
                                             name:'text'
+                                        },
+                                        {
+                                            xtype:'panel',
+                                            name:'length',
                                         },
                                         {
                                             xtype:'textmessagerecipientsgrid',

@@ -40,24 +40,20 @@ mkMessage "App" "messages" "fi"
 
 minuteRun :: AppSettings -> SqlPersistT (LoggingT IO) ()
 minuteRun settings = do
+
+    rows <- select $ from $ \(tm `CrossJoin` c) -> do
+        where_  $ (tm ^. TextMessagePhone) `ilike` ((%) ++. (c ^. ClientPhone) ++. (%)) 
+        where_ $ not_ $ isNothing $ tm ^. TextMessagePhone
+        where_ $ isNothing $ tm ^. TextMessageDeletedVersionId
+        where_ $ isNothing $ c ^. ClientDeletedVersionId
+        where_ $ isNothing $ tm ^. TextMessageSenderClientId
+        return (tm, c)
+    forM_ rows $ \(Entity tmId tm, Entity cId _)  -> do
+        update $ \t -> do
+            set t [ TextMessageSenderClientId =. val (Just cId) ]
+            where_ $ t ^. TextMessageId ==. val tmId
     return ()
 
-monthName :: [Text] -> Day -> Text
-monthName langs d = renderMessage (error "" :: App) langs $ case month of
-    1 -> MsgJanuary
-    2 -> MsgFebruary
-    3 -> MsgMarch
-    4 -> MsgApril
-    5 -> MsgMay
-    6 -> MsgJune
-    7 -> MsgJuly
-    8 -> MsgAugust
-    9 -> MsgSeptember
-    10 -> MsgOctober
-    11 -> MsgNovember
-    12 -> MsgDecember
-    where
-        (_, month, _) = toGregorian d 
              
 main :: IO ()
 main = do

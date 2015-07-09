@@ -59,7 +59,6 @@ import Blaze.ByteString.Builder.ByteString (fromByteString)
 import Control.Applicative ((<$>), (<*>))  
 import qualified Data.HashMap.Lazy as HML
 import qualified Data.HashMap.Strict as HMS
-import Handler.TextMessage (addTextMessageRecipients)
 
 postIncomingtextmessagesR :: forall master. (
     YesodAuthPersist master,
@@ -137,8 +136,7 @@ postIncomingtextmessagesR  = lift $ runDB $ do
                     ])
             _ -> return ()
         result_tId <- P.insert (e1 :: TextMessage)
-        addTextMessageRecipients (authId) (result_tId)
-        e3 <- do
+        e2 <- do
     
             return $ UserGroupContent {
                             userGroupContentUserGroupId = userDefaultUserGroupId __auth
@@ -156,13 +154,13 @@ postIncomingtextmessagesR  = lift $ runDB $ do
                             userGroupContentDeletedVersionId = Nothing
     
                 }
-        vErrors <- lift $ validate e3
+        vErrors <- lift $ validate e2
         case vErrors of
             xs@(_:_) -> sendResponseStatus status400 (A.object [ 
                         "message" .= ("Entity validation failed" :: Text),
                         "errors" .= toJSON xs 
                     ])
             _ -> return ()
-        P.insert (e3 :: UserGroupContent)
+        P.insert (e2 :: UserGroupContent)
         return $ A.object [ "id" .= (toJSON result_tId) ]
     return $ runDB_result

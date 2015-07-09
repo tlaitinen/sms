@@ -27,17 +27,32 @@ Ext.define('SMS.controller.TextMessageForm', {
         var c = this;
         
         this.control({
+           'textmessageform textareafield[name=text]' : {
+                change: function (textarea) {
+                    textarea.up('form').down('panel[name=length]').setHtml("Viestin pituus: " + textarea.getValue().length);
+
+                }
+           },
            'textmessageform' : {
                render: function(form) {
                    var record = form.getRecord();
-                   if (record.get('queued') == null) {
-                       form.down('button[name=send]').enable();
-                   } else {
-                       form.down('button[name=save]').disable();
-                       form.down('button[name=saveandclose]').disable();
-                       if (record.get('aborted') == null) {
-                           form.down('button[name=abort]').enable();
+                   if (record.get('phone') == '') {
+                       if (record.get('queued') == null) {
+                           form.down('button[name=send]').enable();
+                       } else {
+                           form.down('button[name=save]').disable();
+                           form.down('button[name=saveandclose]').disable();
+                           if (record.get('aborted') == null) {
+                               form.down('button[name=abort]').enable();
+                           }
                        }
+                   } else {
+                       form.down('button[name=save]').hide();
+                       form.down('button[name=saveandclose]').hide();
+                       form.down('button[name=send]').hide();
+                       form.down('button[name=abort]').hide();
+                       form.down('grid').hide();
+                       form.down('textareafield[name=text]').setReadOnly(true);
                    }
                }
            },
