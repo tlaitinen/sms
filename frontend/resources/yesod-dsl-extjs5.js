@@ -628,12 +628,18 @@ Ext.define(proxyName, {
                                                                 var record = Ext.create(modelName, entityDefaults(entityName));
                                                                 record.setId(0);
 
-                                                                openFormWindow(gridCfg.form, 
-                                                                               gridCfg.formWidth || config.formWidth || 610,
-                                                                               gridCfg.formHeight || config.formHeight || 630,
-                                                                               record);
+                                                                var form = gridCfg.form, formWidth = gridCfg.formWidth || 610, formHeight = gridCfg.formHeight || 630;
+                                                                if (typeof form == "function")
+                                                                    form = form(record);
+                                                                if (typeof formWidth == "function")
+                                                                    formWidth = formWidth(record);
+                                                                if (typeof formHeight == "function")
+                                                                    formHeight = formHeight(record);
 
-                                                            } else if (tb.action == 'add') {
+
+
+                                                                openFormWindow(form, formWidth, formHeight, record);
+                                                                                                                           } else if (tb.action == 'add') {
                                                                 var record = Ext.create(modelName, entityDefaults(entityName));
                                                                 record.setId(0);
                                                                 record.save({
@@ -812,7 +818,7 @@ Ext.define(proxyName, {
                                                                                          __(validationMessage));
                                                                        }
                                                                    }
-                                                                   if (canClose && (btn.action == 'saveandclose' || btn.action == 'closewithoutsaving')) {
+                                                                   if (canClose && (btn.action == 'saveandclose' || btn.action == 'closewithoutsaving' || btn.action == 'close')) {
                                                                        button.up('window').close();
                                                                    } 
 
