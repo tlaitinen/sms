@@ -4,6 +4,7 @@ function __(k,d) {
         'text' : 'Teksti',
         'textmessageform.abort' : 'Keskeytä tekstiviestin lähetys',
         'textmessageform.send' : 'Lähetä tekstiviesti vastaanottajille',
+        'textmessageform.replyToText' : 'Vastaus viestiin',
         'receivedtextmessageform.title' : 'Vastaanotettu tekstiviesti',
         'receivedtextmessageform.reply' : 'Vastaa tekstiviestiin',
         'textmessageform.length' : 'Tekstiviestin pituus',

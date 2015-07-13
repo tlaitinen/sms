@@ -1289,6 +1289,11 @@
                             "references": null,
                             "name": "lastName",
                             "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "replyToText",
+                            "type": "string"
                         }
                     ],
                     "type": "GET",

@@ -10,7 +10,7 @@ Ext.define('SMS.controller.ReceivedTextMessageForm', {
             success: function(request) {
                 button.enable();
                 var r = JSON.parse(request.responseText);
-                success(r);
+                success(r.id);
             },
             failure: function(request) {
                 button.enable();
@@ -30,18 +30,26 @@ Ext.define('SMS.controller.ReceivedTextMessageForm', {
                     if (w)
                         w.close();
 
-                    function success(record) {
-                        Ext.getStore('textmessages').reload();
-                        var win = new Ext.Window({
-                            id: formName + 'reply',
-                            title: __(formName + '.title'),
-                            width:610,
-                            height:500,
-                            resizable:false,
-                            items : [{xtype: formName}]
+                    function success(rId) {
+                        SMS.model.TextMessage.load(rId, {
+                            success: function(record) {
+                                button.up('window').close();
+                                Ext.getStore('textmessages').reload();
+                                var win = new Ext.Window({
+                                    id: formName + 'reply',
+                                    title: __(formName + '.title'),
+                                    width:610,
+                                    height:500,
+                                    resizable:false,
+                                    items : [{xtype: formName}]
+                                });
+                                win.down('form').loadRecord(record);
+                                win.show();
+                            },
+                            failure: function() {
+                                Ext.Msg.alert(__('saveError.title'), __('saveError.message') + ":" + request.responseText);
+                            }
                         });
-                        win.down('form').loadRecord(record);
-                        win.show();
                     }
                     c.createReplyMessage(button, success);
                }

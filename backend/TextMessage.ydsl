@@ -67,8 +67,10 @@ route /textmessages {
 }
 route /textmessages/#TextMessageId {
     get {
-        select t.id, t.*, c.firstName, c.lastName from TextMessage as t
+         select t.id, t.*, c.firstName, c.lastName, rt.text as replyToText
+            from TextMessage as t
             left outer join Client as c on c.id = t.senderClientId
+            left outer join TextMessage as rt on rt.id = t.replyToTextMessageId
             where hasReadPerm $auth.id t.id
             and t.id = $1;
     }

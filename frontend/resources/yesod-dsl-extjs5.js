@@ -403,7 +403,7 @@ var yesodDsl = function(defs, __, config) {
                 url: routeInfo(defaultRoute(e.name)).url,
                 reader: {
                     type: 'json',
-                    root: 'result',
+                    rootProperty: 'result',
                     totalProperty: 'totalCount'
                 },
                 listeners: {

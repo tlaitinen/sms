@@ -32,19 +32,21 @@ Ext.define('SMS.controller.TextMessageForm', {
                     var form = textarea.up('form'),
                         record = form.getRecord();
 
-                    if (record.get('phone') == '') {
-                        var count = SmsCounter.count(textarea.getValue());
+                    var count = SmsCounter.count(textarea.getValue());
 
 
 
-                        form.down('textfield[name=length]').setValue(__('textmessageform.lengthMessage').replace("{0}", ''+count.length).replace("{1}", ''+count.messages).replace("{2}", ''+count.per_message).replace("{3}", ''+count.remainig));
-                    }
+                    form.down('textfield[name=length]').setValue(__('textmessageform.lengthMessage').replace("{0}", ''+count.length).replace("{1}", ''+count.messages).replace("{2}", ''+count.per_message).replace("{3}", ''+count.remaining));
 
                 }
            },
            'textmessageform' : {
                render: function(form) {
                    var record = form.getRecord();
+                   if (record.get('replyToTextMessageId')) {
+                       form.down('textareafield[name=replyToText]').show();
+                       form.up('window').setHeight(570);
+                   }
                    if (record.get('queued') == null) {
                        form.down('button[name=send]').enable();
                    } else {
@@ -58,7 +60,14 @@ Ext.define('SMS.controller.TextMessageForm', {
            },
            'textmessageform button[name=send]' :{
                click: function(button) {
-                   c.textMessageAction(button, 'queue');
+                   var form = button.up('form'),
+                       record = form.getRecord();
+                   form.updateRecord(record);
+                   record.save({
+                       success: function() {
+                           c.textMessageAction(button, 'queue');
+                       }
+                   });
                }
            },
            'textmessageform button[name=abort]' : {

@@ -139,30 +139,18 @@ Ext.define('SMS.Application', {
                                     items: [
                                         {
                                             xtype:'textareafield',
+                                            name:'replyToText',
+                                            hidden:true,
+                                            readOnly:true
+                                        },
+                                        {
+                                            xtype:'textareafield',
                                             name:'text'
                                         },
                                         {
                                             xtype:'textfield',
                                             name:'length',
                                             readOnly:true
-                                        },
-                                        {
-                                            xtype:'textfield',
-                                            name:'firstName',
-                                            readOnly:true,
-                                            hidden:true
-                                        },
-                                        {
-                                            xtype:'textfield',
-                                            name:'lastName',
-                                            readOnly:true,
-                                            hidden:true
-                                        },
-                                        {
-                                            xtype:'textfield',
-                                            name:'phone',
-                                            readOnly:true,
-                                            hidden:true
                                         },
                                         {
                                             xtype:'textmessagerecipientsgrid',
@@ -188,12 +176,6 @@ Ext.define('SMS.Application', {
                                                     flex:1
                                                 }
                                             ]
-                                        },
-                                        {
-                                            xtype:'button',
-                                            name:'reply',
-                                            hidden:true,
-                                            flex:1
                                         }
                                     ]
                                 },
