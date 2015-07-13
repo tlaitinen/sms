@@ -81,8 +81,10 @@ minuteRun settings = do
     return ()
     where
         matchesClient phone (Entity _ c) 
-            | T.null (clientPhone c) = False
-            | otherwise = T.tail (clientPhone c) `T.isInfixOf` phone
+            | T.null cp = False
+            | otherwise = T.tail cp `T.isInfixOf` phone
+            where 
+                cp = fromMaybe "" $ clientPhone c
 
              
 main :: IO ()
