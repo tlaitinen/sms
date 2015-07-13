@@ -50,11 +50,13 @@ Ext.define('SMS.controller.TextMessageForm', {
                    if (record.get('queued') == null) {
                        form.down('button[name=send]').enable();
                    } else {
+
                        form.down('button[name=save]').disable();
                        form.down('button[name=saveandclose]').disable();
-                       if (record.get('aborted') == null) {
+                       if (record.get('aborted') == null && record.get('sent') == null) {
                            form.down('button[name=abort]').enable();
                        }
+
                    }
                }
            },

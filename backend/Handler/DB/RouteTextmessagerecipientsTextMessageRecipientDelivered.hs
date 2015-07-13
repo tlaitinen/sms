@@ -74,7 +74,7 @@ postTextmessagerecipientsTextMessageRecipientIdDeliveredR p1 = lift $ runDB $ do
     _ <- do
         result <- select $ from $ \(tr ) -> do
             let trId' = tr ^. TextMessageRecipientId
-            where_ (((tr ^. TextMessageRecipientId) ==. (val p1)) &&. ((hasWritePerm (val authId) (tr ^. TextMessageRecipientTextMessageId)) &&. (not_ (((tr ^. TextMessageRecipientSent) `is` (nothing)) &&. (not_ (((tr ^. TextMessageRecipientAccepted) `is` (nothing)) &&. ((tr ^. TextMessageRecipientDelivered) `is` (nothing))))))))
+            where_ (((tr ^. TextMessageRecipientId) ==. (val p1)) &&. ((hasWritePerm (val authId) (tr ^. TextMessageRecipientTextMessageId)) &&. ((not_ ((tr ^. TextMessageRecipientSent) `is` (nothing))) &&. ((not_ ((tr ^. TextMessageRecipientAccepted) `is` (nothing))) &&. ((tr ^. TextMessageRecipientDelivered) `is` (nothing))))))
 
             limit 1
             return tr

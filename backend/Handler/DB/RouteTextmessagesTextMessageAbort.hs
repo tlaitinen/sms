@@ -74,7 +74,7 @@ postTextmessagesTextMessageIdAbortR p1 = lift $ runDB $ do
     _ <- do
         result <- select $ from $ \(t ) -> do
             let tId' = t ^. TextMessageId
-            where_ (((t ^. TextMessageId) ==. (val p1)) &&. ((hasWritePerm (val authId) (t ^. TextMessageId)) &&. (not_ (((t ^. TextMessageQueued) `is` (nothing)) &&. ((t ^. TextMessageAborted) `is` (nothing))))))
+            where_ (((t ^. TextMessageId) ==. (val p1)) &&. ((hasWritePerm (val authId) (t ^. TextMessageId)) &&. ((not_ ((t ^. TextMessageQueued) `is` (nothing))) &&. ((t ^. TextMessageAborted) `is` (nothing)))))
 
             limit 1
             return t

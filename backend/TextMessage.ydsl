@@ -96,7 +96,7 @@ route /textmessages/#TextMessageId {
     delete {
         require TextMessage as t where t.id = $1
             and hasWritePerm $auth.id t.id
-            and (t.queued is Nothing or not t.aborted is Nothing)
+            and (t.queued is Nothing or (not t.aborted is Nothing))
             and t.deletedVersionId is Nothing;
         versionId <- insert Version from {
             time = now(),
@@ -112,7 +112,7 @@ route /textmessages/#TextMessageId/reply {
     post {
         require TextMessage as t where t.id = $1
             and hasWritePerm $auth.id t.id
-            and not (t.phone is Nothing);
+            and (not (t.phone is Nothing));
         tId <- insert TextMessage from {
                 insertionTime = now(),
                 insertedByUserId = $auth.id,
@@ -148,7 +148,7 @@ route /textmessages/#TextMessageId/abort {
     post {
         require TextMessage as t where t.id = $1
             and hasWritePerm $auth.id t.id
-            and not (t.queued is Nothing)
+            and (not (t.queued is Nothing))
             and t.aborted is Nothing;
         update TextMessage identified by $1 with {
             aborted = now()
@@ -179,7 +179,7 @@ route /textmessagerecipientsqueue {
             where hasReadPerm $auth.id tm.id
                 and hasReadPerm $auth.id c.id
                 and tr.accepted is Nothing
-                and not (tm.queued is Nothing)
+                and (not (tm.queued is Nothing))
                 and tm.aborted is Nothing
                 and tm.deletedVersionId is Nothing
                 and c.deletedVersionId is Nothing
@@ -194,7 +194,7 @@ route /textmessagerecipients/#TextMessageRecipientId/accept {
             inner join TextMessage as tm on tm.id = tr.textMessageId 
             inner join Client as c on c.id = tr.clientId
             where tr.id = $1
-            and not (tm.queued is Nothing)
+            and (not (tm.queued is Nothing))
             and tm.aborted is Nothing
             and hasWritePerm $auth.id tr.textMessageId
             and c.allowSms = True
@@ -209,7 +209,7 @@ route /textmessagerecipients/#TextMessageRecipientId/sent {
         require TextMessageRecipient as tr where tr.id = $1
             and hasWritePerm $auth.id tr.textMessageId
             and tr.sent is Nothing
-            and not (tr.accepted is Nothing);
+            and (not (tr.accepted is Nothing));
         update TextMessageRecipient identified by $1 with {
             sent = now()
         };
@@ -220,7 +220,7 @@ route /textmessagerecipients/#TextMessageRecipientId/fail {
         require TextMessageRecipient as tr where tr.id = $1
             and hasWritePerm $auth.id tr.textMessageId
             and tr.sent is Nothing
-            and not (tr.accepted is Nothing);
+            and (not (tr.accepted is Nothing));
         update TextMessageRecipient identified by $1 with {
             accepted = Nothing
         };
@@ -230,8 +230,8 @@ route /textmessagerecipients/#TextMessageRecipientId/delivered {
     post {
         require TextMessageRecipient as tr where tr.id = $1
             and hasWritePerm $auth.id tr.textMessageId
-            and not (tr.sent is Nothing)
-            and not (tr.accepted is Nothing)
+            and (not (tr.sent is Nothing))
+            and (not (tr.accepted is Nothing))
             and tr.delivered is Nothing;
         update TextMessageRecipient identified by $1 with {
             delivered = now()
