@@ -15,7 +15,7 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
-module Handler.DB.RouteTextmessagesTextMessageQueue where
+module Handler.DB.RouteTextmessagerecipientsTextMessageRecipientDelivered where
 import Handler.DB.Enums
 import Handler.DB.Esqueleto
 import Handler.DB.Internal
@@ -62,22 +62,22 @@ import qualified Data.HashMap.Strict as HMS
 import Handler.Utils (nonEmpty)
 import Handler.Utils (prepareNewUser,hasWritePerm,hasReadPermMaybe,hasReadPerm)
 
-postTextmessagesTextMessageIdQueueR :: forall master. (
+postTextmessagerecipientsTextMessageRecipientIdDeliveredR :: forall master. (
     YesodAuthPersist master,
     AuthEntity master ~ User,
     AuthId master ~ Key User,
     YesodPersistBackend master ~ SqlBackend)
-    => TextMessageId -> HandlerT DB (HandlerT master IO) A.Value
-postTextmessagesTextMessageIdQueueR p1 = lift $ runDB $ do
+    => TextMessageRecipientId -> HandlerT DB (HandlerT master IO) A.Value
+postTextmessagerecipientsTextMessageRecipientIdDeliveredR p1 = lift $ runDB $ do
     authId <- lift $ requireAuthId
     __currentTime <- liftIO $ getCurrentTime
     _ <- do
-        result <- select $ from $ \(t ) -> do
-            let tId' = t ^. TextMessageId
-            where_ (((t ^. TextMessageId) ==. (val p1)) &&. ((hasWritePerm (val authId) (t ^. TextMessageId)) &&. (((t ^. TextMessageQueued) `is` (nothing)) &&. ((t ^. TextMessagePhone) `is` (nothing)))))
+        result <- select $ from $ \(tr ) -> do
+            let trId' = tr ^. TextMessageRecipientId
+            where_ (((tr ^. TextMessageRecipientId) ==. (val p1)) &&. ((hasWritePerm (val authId) (tr ^. TextMessageRecipientTextMessageId)) &&. (not_ (((tr ^. TextMessageRecipientSent) `is` (nothing)) &&. (not_ (((tr ^. TextMessageRecipientAccepted) `is` (nothing)) &&. ((tr ^. TextMessageRecipientDelivered) `is` (nothing))))))))
 
             limit 1
-            return t
+            return tr
         case result of
             ((Entity _ _):_) -> return ()
             _ -> sendResponseStatus status403 (A.object [
@@ -86,17 +86,17 @@ postTextmessagesTextMessageIdQueueR p1 = lift $ runDB $ do
     runDB_result <- do
         e2 <- do
             es <- select $ from $ \o -> do
-                where_ (o ^. TextMessageId ==. (val p1))
+                where_ (o ^. TextMessageRecipientId ==. (val p1))
                 limit 1
                 return o
             e <- case es of
                 [(Entity _ e')] -> return e'    
                 _ -> sendResponseStatus status404 $ A.object [ 
-                        "message" .= ("Could not update a non-existing TextMessage" :: Text)
+                        "message" .= ("Could not update a non-existing TextMessageRecipient" :: Text)
                     ]
     
             return $ e {
-                            textMessageQueued = (Just __currentTime)
+                            textMessageRecipientDelivered = (Just __currentTime)
     
                 }
         vErrors <- lift $ validate e2
@@ -105,6 +105,6 @@ postTextmessagesTextMessageIdQueueR p1 = lift $ runDB $ do
                          "message" .= ("Entity validation failed" :: Text),
                          "errors" .= toJSON xs 
                      ])
-             _ -> P.repsert p1 (e2 :: TextMessage)
+             _ -> P.repsert p1 (e2 :: TextMessageRecipient)
         return AT.emptyObject
     return $ runDB_result

@@ -58,7 +58,7 @@ import qualified Data.HashMap.Strict as HMS
 import qualified Data.Text.Lazy.Builder as TLB
 import Handler.Utils (nonEmpty)
 import Handler.Utils (prepareNewUser,hasWritePerm,hasReadPermMaybe,hasReadPerm)
-import Handler.TextMessage (addTextMessageRecipients)
+import Handler.TextMessage (addReplyTextMessageRecipient,addTextMessageRecipients)
 
 
 checkResult :: forall (m :: * -> *). (Monad m) => Text -> m Bool -> m (Maybe Text)

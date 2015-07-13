@@ -17,7 +17,8 @@ Ext.define('SMS.Application', {
     ],
     controllers: [
         'Login@SMS.controller',
-        'TextMessageForm@SMS.controller'
+        'TextMessageForm@SMS.controller',
+        'ReceivedTextMessageForm@SMS.controller'
     ],
 
     stores: [
@@ -42,7 +43,6 @@ Ext.define('SMS.Application', {
             return Ext.Date.format(value, Ext.util.Format.dateFormat);
         }
         function dateTimeRenderer(value,meta,record) {
-            console.log(value);
             return Ext.Date.format(value, Ext.util.Format.dateFormat + " H:i:s");
         }
      
@@ -109,11 +109,6 @@ Ext.define('SMS.Application', {
                                         },
                                         {
                                             flex:1,
-                                            field:'queued',
-                                            renderer:dateTimeRenderer
-                                        },
-                                        {
-                                            flex:1,
                                             field:'sent',
                                             renderer:dateTimeRenderer
                                         }
@@ -122,8 +117,18 @@ Ext.define('SMS.Application', {
                                         { name:'new', action:'new'},
                                         { name:'remove', action:'remove'}
                                     ],
-                                    form: 'textmessageform',
-                                    formHeight:480
+                                    form: function(record) { 
+                                        if (record.get('phone'))
+                                            return 'receivedtextmessageform';
+                                        else
+                                            return 'textmessageform';
+                                    },
+                                    formHeight: function(record) {
+                                        if (record.get('phone'))
+                                            return 260;
+                                        else
+                                            return 500;
+                                    }
                                 }
     
                             ],
@@ -137,8 +142,27 @@ Ext.define('SMS.Application', {
                                             name:'text'
                                         },
                                         {
-                                            xtype:'panel',
+                                            xtype:'textfield',
                                             name:'length',
+                                            readOnly:true
+                                        },
+                                        {
+                                            xtype:'textfield',
+                                            name:'firstName',
+                                            readOnly:true,
+                                            hidden:true
+                                        },
+                                        {
+                                            xtype:'textfield',
+                                            name:'lastName',
+                                            readOnly:true,
+                                            hidden:true
+                                        },
+                                        {
+                                            xtype:'textfield',
+                                            name:'phone',
+                                            readOnly:true,
+                                            hidden:true
                                         },
                                         {
                                             xtype:'textmessagerecipientsgrid',
@@ -164,6 +188,42 @@ Ext.define('SMS.Application', {
                                                     flex:1
                                                 }
                                             ]
+                                        },
+                                        {
+                                            xtype:'button',
+                                            name:'reply',
+                                            hidden:true,
+                                            flex:1
+                                        }
+                                    ]
+                                },
+                                {
+                                    widget: 'receivedtextmessageform',
+                                    buttons: ['close'],
+                                    items: [
+                                        {
+                                            xtype:'textareafield',
+                                            name:'text',
+                                            readOnly:true
+                                        },
+                                        {
+                                            xtype:'textfield',
+                                            name:'firstName',
+                                            readOnly:true
+                                        },
+                                        {
+                                            xtype:'textfield',
+                                            name:'lastName',
+                                            readOnly:true
+                                        },
+                                        {
+                                            xtype:'textfield',
+                                            name:'phone',
+                                            readOnly:true
+                                        },
+                                        {
+                                            xtype:'button',
+                                            name:'reply'
                                         }
                                     ]
                                 }
@@ -221,6 +281,10 @@ Ext.define('SMS.Application', {
                                     columns: [ 'firstName', 'lastName', 'phone',
                                         {
                                             field:'sent',
+                                            renderer:notNullRenderer
+                                        },
+                                        {
+                                            field:'delivered',
                                             renderer:notNullRenderer
                                         }
                                     ]

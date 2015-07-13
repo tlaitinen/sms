@@ -11,6 +11,11 @@ import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Maybe
 import qualified  Database.Persist as P
 import Handler.Utils
+addReplyTextMessageRecipient :: forall m. (MonadIO m) => TextMessageId -> TextMessageId -> ReaderT SqlBackend m ()
+addReplyTextMessageRecipient dstId srcId = do
+    msrc <- P.get srcId
+    maybe (return ()) (insert_ . (newTextMessageRecipient dstId)) $  
+         msrc >>= textMessageSenderClientId
 
 addTextMessageRecipients :: forall m. (MonadIO m) => UserId -> TextMessageId -> ReaderT SqlBackend m ()
 addTextMessageRecipients authId tId = do

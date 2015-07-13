@@ -62,6 +62,58 @@ import qualified Data.HashMap.Strict as HMS
 import Handler.Utils (nonEmpty)
 import Handler.Utils (prepareNewUser,hasWritePerm,hasReadPermMaybe,hasReadPerm)
 
+getTextmessagesTextMessageIdR :: forall master. (
+    YesodAuthPersist master,
+    AuthEntity master ~ User,
+    AuthId master ~ Key User,
+    YesodPersistBackend master ~ SqlBackend)
+    => TextMessageId -> HandlerT DB (HandlerT master IO) A.Value
+getTextmessagesTextMessageIdR p1 = lift $ runDB $ do
+    authId <- lift $ requireAuthId
+    let baseQuery limitOffsetOrder = from $ \(t `LeftOuterJoin` c) -> do
+        on ((c ?. ClientId) ==. (t ^. TextMessageSenderClientId))
+        let tId' = t ^. TextMessageId
+        where_ ((hasReadPerm (val authId) (t ^. TextMessageId)) &&. ((t ^. TextMessageId) ==. (val p1)))
+
+        _ <- if limitOffsetOrder
+            then do 
+                offset 0
+                limit 10000
+                orderBy [  ]
+
+                 
+            else return ()
+        return (t ^. TextMessageId, t ^. TextMessageText, t ^. TextMessagePhone, t ^. TextMessageSenderClientId, t ^. TextMessageReplyToTextMessageId, t ^. TextMessageQueued, t ^. TextMessageSent, t ^. TextMessageAborted, t ^. TextMessageDeletedVersionId, t ^. TextMessageActiveId, t ^. TextMessageActiveStartTime, t ^. TextMessageActiveEndTime, t ^. TextMessageInsertionTime, t ^. TextMessageInsertedByUserId, c ?. ClientFirstName, c ?. ClientLastName)
+    count <- select $ do
+        baseQuery False
+        let countRows' = countRows
+        orderBy []
+        return $ (countRows' :: SqlExpr (Database.Esqueleto.Value Int))
+    results <- select $ baseQuery True
+    return $ A.object [
+        "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
+        "result" .= (toJSON $ map (\row -> case row of
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9), (Database.Esqueleto.Value f10), (Database.Esqueleto.Value f11), (Database.Esqueleto.Value f12), (Database.Esqueleto.Value f13), (Database.Esqueleto.Value f14), (Database.Esqueleto.Value f15), (Database.Esqueleto.Value f16)) -> A.object [
+                    "id" .= toJSON f1,
+                    "text" .= toJSON f2,
+                    "phone" .= toJSON f3,
+                    "senderClientId" .= toJSON f4,
+                    "replyToTextMessageId" .= toJSON f5,
+                    "queued" .= toJSON f6,
+                    "sent" .= toJSON f7,
+                    "aborted" .= toJSON f8,
+                    "deletedVersionId" .= toJSON f9,
+                    "activeId" .= toJSON f10,
+                    "activeStartTime" .= toJSON f11,
+                    "activeEndTime" .= toJSON f12,
+                    "insertionTime" .= toJSON f13,
+                    "insertedByUserId" .= toJSON f14,
+                    "firstName" .= toJSON f15,
+                    "lastName" .= toJSON f16                                    
+                    ]
+                _ -> A.object []
+            ) results)
+       ]
 putTextmessagesTextMessageIdR :: forall master. (
     YesodAuthPersist master,
     AuthEntity master ~ User,

@@ -106,6 +106,10 @@ getTextmessagerecipientsR  = lift $ runDB $ do
                                 "ASC"  -> orderBy [ asc (tr  ^.  TextMessageRecipientSent) ] 
                                 "DESC" -> orderBy [ desc (tr  ^.  TextMessageRecipientSent) ] 
                                 _      -> return ()
+                            "delivered" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (tr  ^.  TextMessageRecipientDelivered) ] 
+                                "DESC" -> orderBy [ desc (tr  ^.  TextMessageRecipientDelivered) ] 
+                                _      -> return ()
                             "firstName" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (c  ^.  ClientFirstName) ] 
                                 "DESC" -> orderBy [ desc (c  ^.  ClientFirstName) ] 
@@ -223,6 +227,12 @@ getTextmessagerecipientsR  = lift $ runDB $ do
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (tr  ^.  TextMessageRecipientSent) nothing
                            
+                "delivered" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (tr  ^.  TextMessageRecipientDelivered) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (tr  ^.  TextMessageRecipientDelivered) nothing
+                           
 
                 _ -> return ()
                 ) xs
@@ -232,7 +242,7 @@ getTextmessagerecipientsR  = lift $ runDB $ do
                 
                 where_ $ ((c ^. ClientFirstName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))) ||. (((c ^. ClientLastName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))) ||. ((c ^. ClientPhone) `ilike` (just (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%")))))))
             Nothing -> return ()
-        return (tr ^. TextMessageRecipientId, tr ^. TextMessageRecipientTextMessageId, tr ^. TextMessageRecipientClientId, tr ^. TextMessageRecipientAccepted, tr ^. TextMessageRecipientSent, c ^. ClientFirstName, c ^. ClientLastName, c ^. ClientPhone)
+        return (tr ^. TextMessageRecipientId, tr ^. TextMessageRecipientTextMessageId, tr ^. TextMessageRecipientClientId, tr ^. TextMessageRecipientAccepted, tr ^. TextMessageRecipientSent, tr ^. TextMessageRecipientDelivered, c ^. ClientFirstName, c ^. ClientLastName, c ^. ClientPhone)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -242,15 +252,16 @@ getTextmessagerecipientsR  = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9)) -> A.object [
                     "id" .= toJSON f1,
                     "textMessageId" .= toJSON f2,
                     "clientId" .= toJSON f3,
                     "accepted" .= toJSON f4,
                     "sent" .= toJSON f5,
-                    "firstName" .= toJSON f6,
-                    "lastName" .= toJSON f7,
-                    "phone" .= toJSON f8                                    
+                    "delivered" .= toJSON f6,
+                    "firstName" .= toJSON f7,
+                    "lastName" .= toJSON f8,
+                    "phone" .= toJSON f9                                    
                     ]
                 _ -> A.object []
             ) results)

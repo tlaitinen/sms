@@ -1,4 +1,4 @@
-import Handler.TextMessage (addTextMessageRecipients);
+import Handler.TextMessage (addTextMessageRecipients, addReplyTextMessageRecipient);
 entity TextMessage {
     instance of Restricted, Deletable, Versioned, HasInsertInfo;
     text Text;
@@ -14,6 +14,7 @@ entity TextMessageRecipient {
     clientId ClientId;
     accepted Maybe UTCTime;
     sent Maybe UTCTime;
+    delivered Maybe UTCTime;
 }
 route /incomingtextmessages {
     post {
@@ -35,8 +36,10 @@ route /incomingtextmessages {
 
 route /textmessages {
     get {
-        select t.id, t.*, c.firstName, c.lastName from TextMessage as t
+        select t.id, t.*, c.firstName, c.lastName, rt.text as replyToText
+            from TextMessage as t
             left outer join Client as c on c.id = t.senderClientId
+            left outer join TextMessage as rt on rt.id = t.replyToTextMessageId
 
             where hasReadPerm $auth.id t.id
             order by t.insertionTime desc;
@@ -63,6 +66,12 @@ route /textmessages {
 
 }
 route /textmessages/#TextMessageId {
+    get {
+        select t.id, t.*, c.firstName, c.lastName from TextMessage as t
+            left outer join Client as c on c.id = t.senderClientId
+            where hasReadPerm $auth.id t.id
+            and t.id = $1;
+    }
     put {
         require TextMessage as t where t.id = $1
             and hasWritePerm $auth.id t.id
@@ -97,11 +106,36 @@ route /textmessages/#TextMessageId {
     }
 
 }
+route /textmessages/#TextMessageId/reply {
+    post {
+        require TextMessage as t where t.id = $1
+            and hasWritePerm $auth.id t.id
+            and not (t.phone is Nothing);
+        tId <- insert TextMessage from {
+                insertionTime = now(),
+                insertedByUserId = $auth.id,
+                text = "",
+                replyToTextMessageId = $1
+            };
+        addReplyTextMessageRecipient tId $1;    
+        insert UserGroupContent from {
+            userGroupId = $auth.defaultUserGroupId,
+            textMessageContentId = tId
+        };
+        return {
+            'id' = tId
+        };
+
+
+    }
+}
+
 route /textmessages/#TextMessageId/queue {
     post {
         require TextMessage as t where t.id = $1
             and hasWritePerm $auth.id t.id
-            and t.queued is Nothing;
+            and t.queued is Nothing
+            and t.phone is Nothing;
         update TextMessage identified by $1 with {
             queued = now()
         };
@@ -190,3 +224,16 @@ route /textmessagerecipients/#TextMessageRecipientId/fail {
         };
     }
 }
+route /textmessagerecipients/#TextMessageRecipientId/delivered {
+    post {
+        require TextMessageRecipient as tr where tr.id = $1
+            and hasWritePerm $auth.id tr.textMessageId
+            and not (tr.sent is Nothing)
+            and not (tr.accepted is Nothing)
+            and tr.delivered is Nothing;
+        update TextMessageRecipient identified by $1 with {
+            delivered = now()
+        };
+    }
+}
+

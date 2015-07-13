@@ -60,6 +60,7 @@ library
         Handler.DB.RouteIncomingtextmessages
         Handler.DB.RouteTextmessages
         Handler.DB.RouteTextmessagesTextMessage
+        Handler.DB.RouteTextmessagesTextMessageReply
         Handler.DB.RouteTextmessagesTextMessageQueue
         Handler.DB.RouteTextmessagesTextMessageAbort
         Handler.DB.RouteTextmessagerecipients
@@ -67,6 +68,7 @@ library
         Handler.DB.RouteTextmessagerecipientsTextMessageRecipientAccept
         Handler.DB.RouteTextmessagerecipientsTextMessageRecipientSent
         Handler.DB.RouteTextmessagerecipientsTextMessageRecipientFail
+        Handler.DB.RouteTextmessagerecipientsTextMessageRecipientDelivered
     build-depends:
         unordered-containers -any,
         transformers -any,

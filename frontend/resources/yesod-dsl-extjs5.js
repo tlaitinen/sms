@@ -183,6 +183,10 @@ var yesodDsl = function(defs, __, config) {
             }
             if ('disabled' in itemCfg)
                 res.disabled = itemCfg.disabled;
+            if ('hidden' in itemCfg)
+                res.hidden = itemCfg.hidden;
+            if ('readOnly' in itemCfg)
+                res.readOnly = itemCfg.readOnly;
             if ('layout' in itemCfg)
                 res.layout = itemCfg.layout;
             if ('minLength' in itemCfg) {
@@ -228,10 +232,16 @@ var yesodDsl = function(defs, __, config) {
                     click: function(button) {
                         if (itemCfg.form) {
                             var record = button.up('form').getForm().getRecord();
-                            openFormWindow(itemCfg.form, 
-                                itemCfg.formWidth || config.subFormWidth || 510,
-                                itemCfg.formHeight || config.subFormHeight || 530,
-                                record);
+                            var form = itemCfg.form, formWidth = itemCfg.formWidth || config.subFormWidth || 510, formHeight = itemCfg.formHeight || config.subFormHeight || 530;
+                            if (typeof form == "function")
+                                form = form(record);
+                            if (typeof formWidth == "function")
+                                formWidth = formWidth(record);
+                            if (typeof formHeight == "function")
+                                formHeight = formHeight(record);
+
+
+                            openFormWindow(form, formWidth, formHeight, record);
                         }
                     }
                 };
@@ -554,11 +564,17 @@ Ext.define(proxyName, {
                                             celldblclick: function(grid, td, cellIndex, record, tr, rowIndex, e, eOpts) {
                                                 if (gridCfg.form) {
 
-                                                    openFormWindow(gridCfg.form, 
-                                                                   gridCfg.formWidth || config.formWidth || 610,
-                                                                   gridCfg.formHeight || config.formHeight || 630,
-                                                                   record);
+                                                    var form = gridCfg.form, formWidth = gridCfg.formWidth || 610, formHeight = gridCfg.formHeight || 630;
+                                                    if (typeof form == "function")
+                                                        form = form(record);
+                                                    if (typeof formWidth == "function")
+                                                        formWidth = formWidth(record);
+                                                    if (typeof formHeight == "function")
+                                                        formHeight = formHeight(record);
 
+
+                                                    openFormWindow(form, formWidth, formHeight, record);
+                        
                                                 }
                                             }
                                         }

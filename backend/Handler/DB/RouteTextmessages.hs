@@ -61,7 +61,7 @@ import qualified Data.HashMap.Lazy as HML
 import qualified Data.HashMap.Strict as HMS
 import Handler.Utils (nonEmpty)
 import Handler.Utils (prepareNewUser,hasWritePerm,hasReadPermMaybe,hasReadPerm)
-import Handler.TextMessage (addTextMessageRecipients)
+import Handler.TextMessage (addReplyTextMessageRecipient,addTextMessageRecipients)
 
 getTextmessagesR :: forall master. (
     YesodAuthPersist master,
@@ -80,7 +80,8 @@ getTextmessagesR  = lift $ runDB $ do
     defaultLimitParam <- lookupGetParam "limit"
     let defaultOffset = (maybe Nothing PP.fromPathPiece defaultOffsetParam) :: Maybe Int64
     let defaultLimit = (maybe Nothing PP.fromPathPiece defaultLimitParam) :: Maybe Int64
-    let baseQuery limitOffsetOrder = from $ \(t `LeftOuterJoin` c) -> do
+    let baseQuery limitOffsetOrder = from $ \(t `LeftOuterJoin` c`LeftOuterJoin` rt) -> do
+        on ((rt ?. TextMessageId) ==. (t ^. TextMessageReplyToTextMessageId))
         on ((c ?. ClientId) ==. (t ^. TextMessageSenderClientId))
         let tId' = t ^. TextMessageId
         where_ (hasReadPerm (val authId) (t ^. TextMessageId))
@@ -150,6 +151,10 @@ getTextmessagesR  = lift $ runDB $ do
                             "lastName" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (c  ?.  ClientLastName) ] 
                                 "DESC" -> orderBy [ desc (c  ?.  ClientLastName) ] 
+                                _      -> return ()
+                            "replyToText" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (rt  ?.  TextMessageText) ] 
+                                "DESC" -> orderBy [ desc (rt  ?.  TextMessageText) ] 
                                 _      -> return ()
                 
                             _ -> return ()
@@ -253,6 +258,84 @@ getTextmessagesR  = lift $ runDB $ do
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ?.  ClientInsertedByUserId) nothing
                            
+                "rt.text" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageText) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageText) nothing
+                           
+                "rt.phone" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessagePhone) (just (just ((val v'))))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessagePhone) nothing
+                           
+                "rt.senderClientId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageSenderClientId) (just (just ((val v'))))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageSenderClientId) nothing
+                           
+                "rt.replyToTextMessageId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageReplyToTextMessageId) (just (just ((val v'))))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageReplyToTextMessageId) nothing
+                           
+                "rt.queued" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageQueued) (just (just ((val v'))))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageQueued) nothing
+                           
+                "rt.sent" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageSent) (just (just ((val v'))))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageSent) nothing
+                           
+                "rt.aborted" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageAborted) (just (just ((val v'))))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageAborted) nothing
+                           
+                "rt.deletedVersionId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageDeletedVersionId) (just (just ((val v'))))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageDeletedVersionId) nothing
+                           
+                "rt.activeId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageActiveId) (just (just ((val v'))))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageActiveId) nothing
+                           
+                "rt.activeStartTime" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageActiveStartTime) (just (just ((val v'))))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageActiveStartTime) nothing
+                           
+                "rt.activeEndTime" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageActiveEndTime) (just (just ((val v'))))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageActiveEndTime) nothing
+                           
+                "rt.insertionTime" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageInsertionTime) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageInsertionTime) nothing
+                           
+                "rt.insertedByUserId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageInsertedByUserId) (just (just ((val v'))))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageInsertedByUserId) nothing
+                           
                 "text" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageText) ((val v'))
                     _        -> return ()
@@ -334,7 +417,7 @@ getTextmessagesR  = lift $ runDB $ do
                 
                 where_ $ (t ^. TextMessageText) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))
             Nothing -> return ()
-        return (t ^. TextMessageId, t ^. TextMessageText, t ^. TextMessagePhone, t ^. TextMessageSenderClientId, t ^. TextMessageReplyToTextMessageId, t ^. TextMessageQueued, t ^. TextMessageSent, t ^. TextMessageAborted, t ^. TextMessageDeletedVersionId, t ^. TextMessageActiveId, t ^. TextMessageActiveStartTime, t ^. TextMessageActiveEndTime, t ^. TextMessageInsertionTime, t ^. TextMessageInsertedByUserId, c ?. ClientFirstName, c ?. ClientLastName)
+        return (t ^. TextMessageId, t ^. TextMessageText, t ^. TextMessagePhone, t ^. TextMessageSenderClientId, t ^. TextMessageReplyToTextMessageId, t ^. TextMessageQueued, t ^. TextMessageSent, t ^. TextMessageAborted, t ^. TextMessageDeletedVersionId, t ^. TextMessageActiveId, t ^. TextMessageActiveStartTime, t ^. TextMessageActiveEndTime, t ^. TextMessageInsertionTime, t ^. TextMessageInsertedByUserId, c ?. ClientFirstName, c ?. ClientLastName, rt ?. TextMessageText)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -344,7 +427,7 @@ getTextmessagesR  = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9), (Database.Esqueleto.Value f10), (Database.Esqueleto.Value f11), (Database.Esqueleto.Value f12), (Database.Esqueleto.Value f13), (Database.Esqueleto.Value f14), (Database.Esqueleto.Value f15), (Database.Esqueleto.Value f16)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9), (Database.Esqueleto.Value f10), (Database.Esqueleto.Value f11), (Database.Esqueleto.Value f12), (Database.Esqueleto.Value f13), (Database.Esqueleto.Value f14), (Database.Esqueleto.Value f15), (Database.Esqueleto.Value f16), (Database.Esqueleto.Value f17)) -> A.object [
                     "id" .= toJSON f1,
                     "text" .= toJSON f2,
                     "phone" .= toJSON f3,
@@ -360,7 +443,8 @@ getTextmessagesR  = lift $ runDB $ do
                     "insertionTime" .= toJSON f13,
                     "insertedByUserId" .= toJSON f14,
                     "firstName" .= toJSON f15,
-                    "lastName" .= toJSON f16                                    
+                    "lastName" .= toJSON f16,
+                    "replyToText" .= toJSON f17                                    
                     ]
                 _ -> A.object []
             ) results)

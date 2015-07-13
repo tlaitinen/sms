@@ -153,6 +153,7 @@ TextMessageRecipient json
     clientId ClientId  
     accepted UTCTime Maybe  
     sent UTCTime Maybe  
+    delivered UTCTime Maybe  
 |]
 newFile :: Text -> Int32 -> Text -> UTCTime -> File
 newFile contentType_ size_ name_ insertionTime_ = File {
@@ -257,7 +258,8 @@ newTextMessageRecipient textMessageId_ clientId_ = TextMessageRecipient {
     textMessageRecipientTextMessageId = textMessageId_,
     textMessageRecipientClientId = clientId_,
     textMessageRecipientAccepted = Nothing,
-    textMessageRecipientSent = Nothing
+    textMessageRecipientSent = Nothing,
+    textMessageRecipientDelivered = Nothing
 }    
 class Named a where
     namedName :: a -> Text

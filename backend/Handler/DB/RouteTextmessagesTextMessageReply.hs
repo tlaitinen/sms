@@ -15,7 +15,7 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
-module Handler.DB.RouteTextmessagesTextMessageQueue where
+module Handler.DB.RouteTextmessagesTextMessageReply where
 import Handler.DB.Enums
 import Handler.DB.Esqueleto
 import Handler.DB.Internal
@@ -61,20 +61,22 @@ import qualified Data.HashMap.Lazy as HML
 import qualified Data.HashMap.Strict as HMS
 import Handler.Utils (nonEmpty)
 import Handler.Utils (prepareNewUser,hasWritePerm,hasReadPermMaybe,hasReadPerm)
+import Handler.TextMessage (addReplyTextMessageRecipient,addTextMessageRecipients)
 
-postTextmessagesTextMessageIdQueueR :: forall master. (
+postTextmessagesTextMessageIdReplyR :: forall master. (
     YesodAuthPersist master,
     AuthEntity master ~ User,
     AuthId master ~ Key User,
     YesodPersistBackend master ~ SqlBackend)
     => TextMessageId -> HandlerT DB (HandlerT master IO) A.Value
-postTextmessagesTextMessageIdQueueR p1 = lift $ runDB $ do
+postTextmessagesTextMessageIdReplyR p1 = lift $ runDB $ do
     authId <- lift $ requireAuthId
     __currentTime <- liftIO $ getCurrentTime
+    (Entity _ __auth) <- lift $ requireAuth
     _ <- do
         result <- select $ from $ \(t ) -> do
             let tId' = t ^. TextMessageId
-            where_ (((t ^. TextMessageId) ==. (val p1)) &&. ((hasWritePerm (val authId) (t ^. TextMessageId)) &&. (((t ^. TextMessageQueued) `is` (nothing)) &&. ((t ^. TextMessagePhone) `is` (nothing)))))
+            where_ (((t ^. TextMessageId) ==. (val p1)) &&. ((hasWritePerm (val authId) (t ^. TextMessageId)) &&. (not_ ((t ^. TextMessagePhone) `is` (nothing)))))
 
             limit 1
             return t
@@ -85,26 +87,69 @@ postTextmessagesTextMessageIdQueueR p1 = lift $ runDB $ do
                     ])
     runDB_result <- do
         e2 <- do
-            es <- select $ from $ \o -> do
-                where_ (o ^. TextMessageId ==. (val p1))
-                limit 1
-                return o
-            e <- case es of
-                [(Entity _ e')] -> return e'    
-                _ -> sendResponseStatus status404 $ A.object [ 
-                        "message" .= ("Could not update a non-existing TextMessage" :: Text)
-                    ]
     
-            return $ e {
-                            textMessageQueued = (Just __currentTime)
+            return $ TextMessage {
+                            textMessageText = ""
+                    ,
+                            textMessagePhone = Nothing
+                    ,
+                            textMessageSenderClientId = Nothing
+                    ,
+                            textMessageReplyToTextMessageId = (Just p1)
+                    ,
+                            textMessageQueued = Nothing
+                    ,
+                            textMessageSent = Nothing
+                    ,
+                            textMessageAborted = Nothing
+                    ,
+                            textMessageDeletedVersionId = Nothing
+                    ,
+                            textMessageActiveId = Nothing
+                    ,
+                            textMessageActiveStartTime = Nothing
+                    ,
+                            textMessageActiveEndTime = Nothing
+                    ,
+                            textMessageInsertionTime = __currentTime
+                    ,
+                            textMessageInsertedByUserId = (Just authId)
     
                 }
         vErrors <- lift $ validate e2
         case vErrors of
-             xs@(_:_) -> sendResponseStatus status400 (A.object [ 
-                         "message" .= ("Entity validation failed" :: Text),
-                         "errors" .= toJSON xs 
-                     ])
-             _ -> P.repsert p1 (e2 :: TextMessage)
-        return AT.emptyObject
+            xs@(_:_) -> sendResponseStatus status400 (A.object [ 
+                        "message" .= ("Entity validation failed" :: Text),
+                        "errors" .= toJSON xs 
+                    ])
+            _ -> return ()
+        result_tId <- P.insert (e2 :: TextMessage)
+        addReplyTextMessageRecipient (result_tId) (p1)
+        e4 <- do
+    
+            return $ UserGroupContent {
+                            userGroupContentUserGroupId = userDefaultUserGroupId __auth
+                    ,
+                            userGroupContentFileContentId = Nothing
+                    ,
+                            userGroupContentUserGroupContentId = Nothing
+                    ,
+                            userGroupContentUserContentId = Nothing
+                    ,
+                            userGroupContentClientContentId = Nothing
+                    ,
+                            userGroupContentTextMessageContentId = (Just result_tId)
+                    ,
+                            userGroupContentDeletedVersionId = Nothing
+    
+                }
+        vErrors <- lift $ validate e4
+        case vErrors of
+            xs@(_:_) -> sendResponseStatus status400 (A.object [ 
+                        "message" .= ("Entity validation failed" :: Text),
+                        "errors" .= toJSON xs 
+                    ])
+            _ -> return ()
+        P.insert (e4 :: UserGroupContent)
+        return $ A.object [ "id" .= (toJSON result_tId) ]
     return $ runDB_result

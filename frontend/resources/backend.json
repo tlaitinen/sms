@@ -1165,6 +1165,11 @@
                             "references": null,
                             "name": "lastName",
                             "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "replyToText",
+                            "type": "string"
                         }
                     ],
                     "type": "GET",
@@ -1203,6 +1208,93 @@
             ],
             "handlers": [
                 {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "references": "TextMessage",
+                            "name": "id",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "text",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "phone",
+                            "type": "string"
+                        },
+                        {
+                            "references": "Client",
+                            "name": "senderClientId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "TextMessage",
+                            "name": "replyToTextMessageId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "queued",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "sent",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "aborted",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": "Version",
+                            "name": "deletedVersionId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "TextMessage",
+                            "name": "activeId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeEndTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "insertionTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": "User",
+                            "name": "insertedByUserId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "firstName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "lastName",
+                            "type": "string"
+                        }
+                    ],
+                    "type": "GET",
+                    "public": false
+                },
+                {
                     "inputs": [
                         {
                             "references": null,
@@ -1234,6 +1326,37 @@
                     ],
                     "outputs": [],
                     "type": "DELETE",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "textmessages",
+                    "type": "string"
+                },
+                {
+                    "references": "TextMessage",
+                    "type": "integer"
+                },
+                {
+                    "references": "null",
+                    "value": "reply",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "name": "id",
+                            "type": null
+                        }
+                    ],
+                    "type": "POST",
                     "public": false
                 }
             ]
@@ -1347,6 +1470,11 @@
                         {
                             "references": null,
                             "name": "sent",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "delivered",
                             "type": "utctime"
                         },
                         {
@@ -1491,6 +1619,43 @@
                 {
                     "references": "null",
                     "value": "fail",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [
+                        {
+                            "references": "TextMessage",
+                            "name": "textMessageId",
+                            "type": "integer"
+                        },
+                        {
+                            "references": "Client",
+                            "name": "clientId",
+                            "type": "integer"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "POST",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "textmessagerecipients",
+                    "type": "string"
+                },
+                {
+                    "references": "TextMessageRecipient",
+                    "type": "integer"
+                },
+                {
+                    "references": "null",
+                    "value": "delivered",
                     "type": "string"
                 }
             ],
@@ -2088,6 +2253,13 @@
                     "references": null,
                     "default": null,
                     "name": "sent",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "delivered",
                     "type": "utctime",
                     "optional": true
                 }

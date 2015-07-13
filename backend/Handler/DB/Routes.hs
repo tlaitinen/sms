@@ -34,6 +34,7 @@ import Handler.DB.RouteClientsClient
 import Handler.DB.RouteIncomingtextmessages
 import Handler.DB.RouteTextmessages
 import Handler.DB.RouteTextmessagesTextMessage
+import Handler.DB.RouteTextmessagesTextMessageReply
 import Handler.DB.RouteTextmessagesTextMessageQueue
 import Handler.DB.RouteTextmessagesTextMessageAbort
 import Handler.DB.RouteTextmessagerecipients
@@ -41,6 +42,7 @@ import Handler.DB.RouteTextmessagerecipientsqueue
 import Handler.DB.RouteTextmessagerecipientsTextMessageRecipientAccept
 import Handler.DB.RouteTextmessagerecipientsTextMessageRecipientSent
 import Handler.DB.RouteTextmessagerecipientsTextMessageRecipientFail
+import Handler.DB.RouteTextmessagerecipientsTextMessageRecipientDelivered
 
 import Yesod.Auth (requireAuth, requireAuthId, YesodAuth, AuthId, YesodAuthPersist)
 import Yesod.Core
@@ -66,7 +68,8 @@ mkYesodSubData "DB" [parseRoutes|
 /clients/#ClientId        ClientsClientIdR      DELETE PUT
 /incomingtextmessages        IncomingtextmessagesR      POST
 /textmessages        TextmessagesR      GET POST
-/textmessages/#TextMessageId        TextmessagesTextMessageIdR      PUT DELETE
+/textmessages/#TextMessageId        TextmessagesTextMessageIdR      GET PUT DELETE
+/textmessages/#TextMessageId/reply        TextmessagesTextMessageIdReplyR      POST
 /textmessages/#TextMessageId/queue        TextmessagesTextMessageIdQueueR      POST
 /textmessages/#TextMessageId/abort        TextmessagesTextMessageIdAbortR      POST
 /textmessagerecipients        TextmessagerecipientsR      GET
@@ -74,5 +77,6 @@ mkYesodSubData "DB" [parseRoutes|
 /textmessagerecipients/#TextMessageRecipientId/accept        TextmessagerecipientsTextMessageRecipientIdAcceptR      POST
 /textmessagerecipients/#TextMessageRecipientId/sent        TextmessagerecipientsTextMessageRecipientIdSentR      POST
 /textmessagerecipients/#TextMessageRecipientId/fail        TextmessagerecipientsTextMessageRecipientIdFailR      POST
+/textmessagerecipients/#TextMessageRecipientId/delivered        TextmessagerecipientsTextMessageRecipientIdDeliveredR      POST
 |]
 

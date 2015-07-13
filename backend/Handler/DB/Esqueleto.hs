@@ -107,3 +107,14 @@ unsafe_ilike = unsafeSqlBinOp " ILIKE "
 
 extractSubField :: UnsafeSqlFunctionArgument a => TLB.Builder -> a -> SqlExpr (Value Double)
 extractSubField = unsafeSqlExtractSubField
+instance ( SqlSelect i1 o1, SqlSelect i2 o2, SqlSelect i3 o3, SqlSelect i4 o4, SqlSelect i5 o5, SqlSelect i6 o6, SqlSelect i7 o7, SqlSelect i8 o8, SqlSelect i9 o9, SqlSelect i10 o10, SqlSelect i11 o11, SqlSelect i12 o12, SqlSelect i13 o13, SqlSelect i14 o14, SqlSelect i15 o15, SqlSelect i16 o16, SqlSelect i17 o17 ) => SqlSelect (i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14, i15, i16, i17) (o1, o2, o3, o4, o5, o6, o7, o8, o9, o10, o11, o12, o13, o14, o15, o16, o17) where
+  sqlSelectCols esc (i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14, i15, i16, i17) =
+    uncommas' [ sqlSelectCols esc i1, sqlSelectCols esc i2, sqlSelectCols esc i3, sqlSelectCols esc i4, sqlSelectCols esc i5, sqlSelectCols esc i6, sqlSelectCols esc i7, sqlSelectCols esc i8, sqlSelectCols esc i9, sqlSelectCols esc i10, sqlSelectCols esc i11, sqlSelectCols esc i12, sqlSelectCols esc i13, sqlSelectCols esc i14, sqlSelectCols esc i15, sqlSelectCols esc i16, sqlSelectCols esc i17 ]
+  sqlSelectColCount   = sqlSelectColCount . from17P
+  sqlSelectProcessRow = fmap to17 . sqlSelectProcessRow
+
+from17P :: Proxy (i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14, i15, i16, i17) -> Proxy ((i1,i2), (i3,i4), (i5,i6), (i7,i8), (i9,i10), (i11,i12), (i13,i14), (i15,i16), i17)
+from17P = const Proxy
+
+to17 :: ((i1,i2), (i3,i4), (i5,i6), (i7,i8), (i9,i10), (i11,i12), (i13,i14), (i15,i16), i17) -> (i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14, i15, i16, i17)
+to17 ((i1,i2), (i3,i4), (i5,i6), (i7,i8), (i9,i10), (i11,i12), (i13,i14), (i15,i16), i17) = (i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14, i15, i16, i17)
