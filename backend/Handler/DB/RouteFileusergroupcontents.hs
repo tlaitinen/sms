@@ -10,6 +10,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -fno-warn-overlapping-patterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
@@ -103,7 +104,7 @@ deleteFileusergroupcontentsR  = lift $ runDB $ do
                     ])
             _ -> return ()
         result_versionId <- P.insert (e1 :: Version)
-        forM_ (attr_userGroupContentIdList) $ \result_ugcId -> do
+        forM_ (attr_userGroupContentIdList :: [_]) $ \result_ugcId -> do
                     e1 <- do
                         es <- select $ from $ \o -> do
                             where_ (o ^. UserGroupContentId ==. (val result_ugcId))
@@ -165,7 +166,7 @@ postFileusergroupcontentsR  = lift $ runDB $ do
                 "message" .= ("Expected attribute fileId in the JSON object in request body" :: Text)
             ]
     runDB_result <- do
-        forM_ (attr_userGroupIdList) $ \result_userGroupId -> do
+        forM_ (attr_userGroupIdList :: [_]) $ \result_userGroupId -> do
                     e1 <- do
                 
                         return $ UserGroupContent {

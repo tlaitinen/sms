@@ -27,7 +27,6 @@ import qualified Control.Exception as E
 import System.Exit
 import qualified Data.Map as Map
 import Data.Time
-import Codec.Archive.Zip
 import Network.Mail.SMTP
 import Network.Mail.Mime
 import System.FilePath

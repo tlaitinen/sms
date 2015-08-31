@@ -278,7 +278,7 @@ data NamedInstance = NamedInstanceFile (Entity File)
 data NamedInstanceId = NamedInstanceFileId FileId
     | NamedInstanceUserGroupId UserGroupId
     | NamedInstanceUserId UserId
-
+    deriving (Eq, Ord)
 
 instance Named NamedInstance where
     namedName x = case x of
@@ -396,7 +396,7 @@ data HasInsertInfoInstance = HasInsertInfoInstanceFile (Entity File)
 data HasInsertInfoInstanceId = HasInsertInfoInstanceFileId FileId
     | HasInsertInfoInstanceClientId ClientId
     | HasInsertInfoInstanceTextMessageId TextMessageId
-
+    deriving (Eq, Ord)
 
 instance HasInsertInfo HasInsertInfoInstance where
     hasInsertInfoInsertionTime x = case x of
@@ -525,7 +525,7 @@ data RestrictedInstanceId = RestrictedInstanceFileId FileId
     | RestrictedInstanceUserId UserId
     | RestrictedInstanceClientId ClientId
     | RestrictedInstanceTextMessageId TextMessageId
-
+    deriving (Eq, Ord)
 
 instance Restricted RestrictedInstance where
 selectRestricted :: forall (m :: * -> *). 
@@ -598,7 +598,7 @@ data VersionedInstanceId = VersionedInstanceFileId FileId
     | VersionedInstanceUserId UserId
     | VersionedInstanceClientId ClientId
     | VersionedInstanceTextMessageId TextMessageId
-
+    deriving (Eq, Ord)
 
 instance Versioned VersionedInstance where
     versionedActiveId x = case x of
@@ -807,7 +807,7 @@ data DeletableInstanceId = DeletableInstanceFileId FileId
     | DeletableInstanceUserId UserId
     | DeletableInstanceClientId ClientId
     | DeletableInstanceTextMessageId TextMessageId
-
+    deriving (Eq, Ord)
 
 instance Deletable DeletableInstance where
     deletableDeletedVersionId x = case x of
