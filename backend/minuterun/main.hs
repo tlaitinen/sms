@@ -10,7 +10,7 @@ import qualified Data.ByteString.Lazy as LB
 import Text.Printf
 import Data.Maybe (fromMaybe)
 import qualified Database.Persist
-import Import hiding (Option, (==.), (>=.), isNothing, update, (=.), on, joinPath, fileSize) 
+import Import hiding (Option, (==.), (>=.), isNothing, update, (=.), on, joinPath, fileSize, (<.)) 
 import System.Console.GetOpt
 import Control.Monad.Trans.Resource (runResourceT, ResourceT)
 import Database.Persist.Postgresql          (createPostgresqlPool, pgConnStr,
@@ -54,6 +54,25 @@ minuteRun settings = do
             set t [ TextMessageSenderClientId =. val (Just cId) ]
             where_ $ t ^. TextMessageId ==. val tmId
     -}
+
+    now <- liftIO getCurrentTime        
+    update $ \tr -> do
+        set tr [ 
+                TextMessageRecipientFailCount =. tr ^. TextMessageRecipientFailCount +. val 1,
+                TextMessageRecipientFailed =. val Nothing,
+                TextMessageRecipientAccepted =. val Nothing
+            ]
+        where_ $ tr ^. TextMessageRecipientFailed <. val (Just $ addUTCTime (-600) now)
+        where_ $ tr ^. TextMessageRecipientFailCount <. val 5
+    update $ \tr -> do
+        set tr [
+                TextMessageRecipientAccepted =. val Nothing
+            ]
+        where_ $ tr ^. TextMessageRecipientAccepted <. val (Just $ addUTCTime (-120) now)
+        where_ $ isNothing $ tr ^. TextMessageRecipientSent
+        where_ $ isNothing $ tr ^. TextMessageRecipientDelivered
+        where_ $ isNothing $ tr ^. TextMessageRecipientFailed
+
     textMessages <- select $ from $ \tm  -> do
         where_ $ not_ $ isNothing $ tm ^. TextMessagePhone
         where_ $ isNothing $ tm ^. TextMessageDeletedVersionId
@@ -69,7 +88,6 @@ minuteRun settings = do
                     set t [ TextMessageSenderClientId =. val (Just cId) ]
                     where_ $ t ^. TextMessageId ==. val tmId
             Nothing -> return ()        
-    now <- liftIO getCurrentTime        
     update $ \tm -> do
         set tm [ TextMessageSent =. val (Just now) ]
         where_ $ isNothing $ tm ^. TextMessagePhone

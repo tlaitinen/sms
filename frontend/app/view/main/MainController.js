@@ -116,14 +116,19 @@ Ext.define('SMS.view.main.MainController', {
                         })
                     }).done(function(data) {
                          controller.redirectTo('maintab:maintab-textmessages');
-                         Ext.getStore('textmessages').reload();
-                         var record = Ext.create('SMS.model.TextMessage', window.yesodDsl.entityDefaults('TextMessage'));
-                         record.setId(data.id);
-                         setTimeout(function() {
-                             window.yesodDsl.openFormWindow('textmessageform', 610, 630, record);
-                         }, 1000);
-  
-                    });
+                         Ext.getStore('textmessages').load(
+                            {
+                                callback: function() {
+                                    setTimeout(function() {
+
+                                        var record = Ext.getStore('textmessages').getById(data.id);
+                                         
+                                        window.yesodDsl.openFormWindow('textmessageform', 610, 630, record);
+                                    }, 500);
+                                }
+                            }
+                         );
+                     });
                 }
             }
         });

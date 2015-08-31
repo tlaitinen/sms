@@ -1522,6 +1522,16 @@
                         },
                         {
                             "references": null,
+                            "name": "failed",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
+                            "name": "failCount",
+                            "type": "integer"
+                        },
+                        {
+                            "references": null,
                             "name": "firstName",
                             "type": "string"
                         },
@@ -2305,6 +2315,20 @@
                     "name": "delivered",
                     "type": "utctime",
                     "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "failed",
+                    "type": "utctime",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": 0,
+                    "name": "failCount",
+                    "type": "integer",
+                    "optional": false
                 }
             ]
         }

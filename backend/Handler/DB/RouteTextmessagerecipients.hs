@@ -111,6 +111,14 @@ getTextmessagerecipientsR  = lift $ runDB $ do
                                 "ASC"  -> orderBy [ asc (tr  ^.  TextMessageRecipientDelivered) ] 
                                 "DESC" -> orderBy [ desc (tr  ^.  TextMessageRecipientDelivered) ] 
                                 _      -> return ()
+                            "failed" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (tr  ^.  TextMessageRecipientFailed) ] 
+                                "DESC" -> orderBy [ desc (tr  ^.  TextMessageRecipientFailed) ] 
+                                _      -> return ()
+                            "failCount" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (tr  ^.  TextMessageRecipientFailCount) ] 
+                                "DESC" -> orderBy [ desc (tr  ^.  TextMessageRecipientFailCount) ] 
+                                _      -> return ()
                             "firstName" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (c  ^.  ClientFirstName) ] 
                                 "DESC" -> orderBy [ desc (c  ^.  ClientFirstName) ] 
@@ -234,6 +242,15 @@ getTextmessagerecipientsR  = lift $ runDB $ do
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (tr  ^.  TextMessageRecipientDelivered) nothing
                            
+                "failed" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (tr  ^.  TextMessageRecipientFailed) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (tr  ^.  TextMessageRecipientFailed) nothing
+                           
+                "failCount" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (tr  ^.  TextMessageRecipientFailCount) ((val v'))
+                    _        -> return ()
 
                 _ -> return ()
                 ) xs
@@ -243,7 +260,7 @@ getTextmessagerecipientsR  = lift $ runDB $ do
                 
                 where_ $ ((c ^. ClientFirstName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))) ||. (((c ^. ClientLastName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))) ||. ((c ^. ClientPhone) `ilike` (just (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%")))))))
             Nothing -> return ()
-        return (tr ^. TextMessageRecipientId, tr ^. TextMessageRecipientTextMessageId, tr ^. TextMessageRecipientClientId, tr ^. TextMessageRecipientAccepted, tr ^. TextMessageRecipientSent, tr ^. TextMessageRecipientDelivered, c ^. ClientFirstName, c ^. ClientLastName, c ^. ClientPhone)
+        return (tr ^. TextMessageRecipientId, tr ^. TextMessageRecipientTextMessageId, tr ^. TextMessageRecipientClientId, tr ^. TextMessageRecipientAccepted, tr ^. TextMessageRecipientSent, tr ^. TextMessageRecipientDelivered, tr ^. TextMessageRecipientFailed, tr ^. TextMessageRecipientFailCount, c ^. ClientFirstName, c ^. ClientLastName, c ^. ClientPhone)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -253,16 +270,18 @@ getTextmessagerecipientsR  = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9), (Database.Esqueleto.Value f10), (Database.Esqueleto.Value f11)) -> A.object [
                     "id" .= toJSON f1,
                     "textMessageId" .= toJSON f2,
                     "clientId" .= toJSON f3,
                     "accepted" .= toJSON f4,
                     "sent" .= toJSON f5,
                     "delivered" .= toJSON f6,
-                    "firstName" .= toJSON f7,
-                    "lastName" .= toJSON f8,
-                    "phone" .= toJSON f9                                    
+                    "failed" .= toJSON f7,
+                    "failCount" .= toJSON f8,
+                    "firstName" .= toJSON f9,
+                    "lastName" .= toJSON f10,
+                    "phone" .= toJSON f11                                    
                     ]
                 _ -> A.object []
             ) results)

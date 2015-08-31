@@ -15,6 +15,8 @@ entity TextMessageRecipient {
     accepted Maybe UTCTime;
     sent Maybe UTCTime;
     delivered Maybe UTCTime;
+    failed Maybe UTCTime;
+    failCount Int default 0;
 }
 route /incomingtextmessages {
     post {
@@ -202,6 +204,7 @@ route /textmessagerecipientsqueue {
                 and tm.deletedVersionId is Nothing
                 and c.deletedVersionId is Nothing
                 and c.allowSms = True
+                and tr.failCount < 5
                 order by c.lastName asc, c.firstName asc
                 limit 10;
     }
@@ -238,9 +241,10 @@ route /textmessagerecipients/#TextMessageRecipientId/fail {
         require TextMessageRecipient as tr where tr.id = $1
             and hasWritePerm $auth.id tr.textMessageId
             and tr.sent is Nothing
+            and tr.failed is Nothing
             and (not (tr.accepted is Nothing));
         update TextMessageRecipient identified by $1 with {
-            accepted = Nothing
+            failed = now()
         };
     }
 }

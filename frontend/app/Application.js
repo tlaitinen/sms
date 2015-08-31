@@ -93,6 +93,7 @@ Ext.define('SMS.Application', {
                             grids: [
                                 {
                                     widget: 'textmessagesgrid',
+                                    globalStore:true,
                                     columns: [
                                         {
                                             field: 'insertionTime',

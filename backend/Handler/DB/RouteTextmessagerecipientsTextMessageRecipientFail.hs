@@ -71,10 +71,11 @@ postTextmessagerecipientsTextMessageRecipientIdFailR :: forall master. (
     => TextMessageRecipientId -> HandlerT DB (HandlerT master IO) A.Value
 postTextmessagerecipientsTextMessageRecipientIdFailR p1 = lift $ runDB $ do
     authId <- lift $ requireAuthId
+    __currentTime <- liftIO $ getCurrentTime
     _ <- do
         result <- select $ from $ \(tr ) -> do
             let trId' = tr ^. TextMessageRecipientId
-            where_ (((tr ^. TextMessageRecipientId) ==. (val p1)) &&. ((hasWritePerm (val authId) (tr ^. TextMessageRecipientTextMessageId)) &&. (((tr ^. TextMessageRecipientSent) `is` (nothing)) &&. (not_ ((tr ^. TextMessageRecipientAccepted) `is` (nothing))))))
+            where_ (((tr ^. TextMessageRecipientId) ==. (val p1)) &&. ((hasWritePerm (val authId) (tr ^. TextMessageRecipientTextMessageId)) &&. (((tr ^. TextMessageRecipientSent) `is` (nothing)) &&. (((tr ^. TextMessageRecipientFailed) `is` (nothing)) &&. (not_ ((tr ^. TextMessageRecipientAccepted) `is` (nothing)))))))
 
             limit 1
             return tr
@@ -96,7 +97,7 @@ postTextmessagerecipientsTextMessageRecipientIdFailR p1 = lift $ runDB $ do
                     ]
     
             return $ e {
-                            textMessageRecipientAccepted = Nothing
+                            textMessageRecipientFailed = (Just __currentTime)
     
                 }
         vErrors <- lift $ validate e2

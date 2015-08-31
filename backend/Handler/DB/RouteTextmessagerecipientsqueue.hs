@@ -75,7 +75,7 @@ getTextmessagerecipientsqueueR  = lift $ runDB $ do
         on ((tm ^. TextMessageId) ==. (tr ^. TextMessageRecipientTextMessageId))
         on ((c ^. ClientId) ==. (tr ^. TextMessageRecipientClientId))
         let trId' = tr ^. TextMessageRecipientId
-        where_ ((hasReadPerm (val authId) (tm ^. TextMessageId)) &&. ((hasReadPerm (val authId) (c ^. ClientId)) &&. (((tr ^. TextMessageRecipientAccepted) `is` (nothing)) &&. ((not_ ((tm ^. TextMessageQueued) `is` (nothing))) &&. (((tm ^. TextMessageAborted) `is` (nothing)) &&. (((tm ^. TextMessageDeletedVersionId) `is` (nothing)) &&. (((c ^. ClientDeletedVersionId) `is` (nothing)) &&. ((c ^. ClientAllowSms) ==. ((val True))))))))))
+        where_ ((hasReadPerm (val authId) (tm ^. TextMessageId)) &&. ((hasReadPerm (val authId) (c ^. ClientId)) &&. (((tr ^. TextMessageRecipientAccepted) `is` (nothing)) &&. ((not_ ((tm ^. TextMessageQueued) `is` (nothing))) &&. (((tm ^. TextMessageAborted) `is` (nothing)) &&. (((tm ^. TextMessageDeletedVersionId) `is` (nothing)) &&. (((c ^. ClientDeletedVersionId) `is` (nothing)) &&. (((c ^. ClientAllowSms) ==. ((val True))) &&. ((tr ^. TextMessageRecipientFailCount) <. ((val 5)))))))))))
 
         _ <- if limitOffsetOrder
             then do 
