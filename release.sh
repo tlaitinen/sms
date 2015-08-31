@@ -9,8 +9,8 @@ git branch $DATE
 git checkout $DATE
 popd
 mkdir -p ~/$BASE/backend ~/$BASE/frontend
-cp backend/dist/build/backend/backend ~/$BASE/backend
-cp backend/dist/build/minuterun/minuterun ~/$BASE/backend
+cp ~/.local/bin/backend ~/$BASE/backend
+cp ~/.local/bin/minuterun ~/$BASE/backend
 cp -r frontend/build/production/SMS/* ~/$BASE/frontend
 pushd ~/$BASE
 git add *
