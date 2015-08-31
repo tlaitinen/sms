@@ -99,6 +99,32 @@ Ext.define('SMS.view.main.MainController', {
                         location.reload();
                     });
                 }
+            },
+            'clientsgrid button[name=sendMessage]' : {
+                click: function(button) {
+                    var grid = button.up('grid'),
+                        textSearch = grid.down('textfield[itemId=textSearch]')
+                        monthCombo = grid.down('monthcombo');
+                    $.ajax({
+                        url:'backend/db/targetedtextmessage',
+                        type:'POST',
+                        dataType:'json',
+                        data: JSON.stringify({
+                            text: '',
+                            query: textSearch.getValue() ? textSearch.getValue() : null,
+                            dateOfBirthMonth: monthCombo.getValue() ? monthCombo.getValue() : null
+                        })
+                    }).done(function(data) {
+                         controller.redirectTo('maintab:maintab-textmessages');
+                         Ext.getStore('textmessages').reload();
+                         var record = Ext.create('SMS.model.TextMessage', window.yesodDsl.entityDefaults('TextMessage'));
+                         record.setId(data.id);
+                         setTimeout(function() {
+                             window.yesodDsl.openFormWindow('textmessageform', 610, 630, record);
+                         }, 1000);
+  
+                    });
+                }
             }
         });
     }

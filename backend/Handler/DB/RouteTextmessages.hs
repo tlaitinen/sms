@@ -516,7 +516,7 @@ postTextmessagesR  = lift $ runDB $ do
                     ])
             _ -> return ()
         result_tId <- P.insert (e1 :: TextMessage)
-        addTextMessageRecipients (authId) (result_tId)
+        addTextMessageRecipients (authId) (result_tId) (Nothing) (Nothing)
         e3 <- do
     
             return $ UserGroupContent {

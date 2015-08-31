@@ -31,6 +31,7 @@ function __(k,d) {
         'clientsgrid.emptyPaging' : 'Ei kanta-asiakkaita',
         'clientsgrid.add' : 'Uusi kanta-asiakas',
         'clientsgrid.remove' : 'Poista valitut kanta-asiakkaat',
+        'clientsgrid.sendMessage' : 'Lähetä viesti listan kanta-asiakkaille',
         'preview' : 'Esikatselu',
         'preview.title' : 'Esikatselu (voit sulkea ikkunan klikkaamalla kuvaa)',
         'previewFileId' : 'preview',

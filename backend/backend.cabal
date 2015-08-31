@@ -59,6 +59,7 @@ library
         Handler.DB.RouteClientsClient
         Handler.DB.RouteIncomingtextmessages
         Handler.DB.RouteTextmessages
+        Handler.DB.RouteTargetedtextmessage
         Handler.DB.RouteTextmessagesTextMessage
         Handler.DB.RouteTextmessagesTextMessageReply
         Handler.DB.RouteTextmessagesTextMessageQueue

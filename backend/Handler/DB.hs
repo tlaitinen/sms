@@ -29,6 +29,7 @@ import Handler.DB.RouteClients
 import Handler.DB.RouteClientsClient
 import Handler.DB.RouteIncomingtextmessages
 import Handler.DB.RouteTextmessages
+import Handler.DB.RouteTargetedtextmessage
 import Handler.DB.RouteTextmessagesTextMessage
 import Handler.DB.RouteTextmessagesTextMessageReply
 import Handler.DB.RouteTextmessagesTextMessageQueue

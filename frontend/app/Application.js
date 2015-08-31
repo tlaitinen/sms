@@ -257,7 +257,8 @@ Ext.define('SMS.Application', {
                                    ],
                                     bottomToolbar: [
                                         { name: 'add', action:'add' },
-                                        { name: 'remove', action:'remove' }
+                                        { name: 'remove', action:'remove' },
+                                        { name: 'sendMessage' }
                                     ]
                                 }
                             ]
@@ -401,7 +402,7 @@ Ext.define('SMS.Application', {
                         }
                     }
                 };
-               var ydsl = yesodDsl(defs, __, config);
+               window.yesodDsl = yesodDsl(defs, __, config);
            });
        });
    }

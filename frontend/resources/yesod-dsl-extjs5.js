@@ -845,4 +845,8 @@ Ext.define(proxyName, {
             
         });
     });
+    return {
+        openFormWindow : openFormWindow,
+        entityDefaults : entityDefaults
+    }
 };

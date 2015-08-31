@@ -53,7 +53,7 @@ route /textmessages {
             insertedByUserId = $auth.id,
             text = $request.text
         };
-        addTextMessageRecipients $auth.id tId;
+        addTextMessageRecipients $auth.id tId Nothing Nothing;
         insert UserGroupContent from {
             userGroupId = $auth.defaultUserGroupId,
             textMessageContentId = tId
@@ -64,6 +64,24 @@ route /textmessages {
 
     }
 
+}
+route /targetedtextmessage {
+    post {
+        tId <- insert TextMessage from {
+            insertionTime = now(),
+            insertedByUserId = $auth.id,
+            text = $request.text
+        };
+        addTextMessageRecipients $auth.id tId $request.query $request.dateOfBirthMonth;
+        insert UserGroupContent from {
+            userGroupId = $auth.defaultUserGroupId,
+            textMessageContentId = tId
+        };
+        return {
+            'id' = tId
+        };
+
+    }
 }
 route /textmessages/#TextMessageId {
     get {

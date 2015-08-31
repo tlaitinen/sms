@@ -1198,6 +1198,44 @@
             "path": [
                 {
                     "references": "null",
+                    "value": "targetedtextmessage",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [
+                        {
+                            "references": null,
+                            "name": "text",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "query",
+                            "type": null
+                        },
+                        {
+                            "references": null,
+                            "name": "dateOfBirthMonth",
+                            "type": null
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "name": "id",
+                            "type": null
+                        }
+                    ],
+                    "type": "POST",
+                    "public": false
+                }
+            ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
                     "value": "textmessages",
                     "type": "string"
                 },

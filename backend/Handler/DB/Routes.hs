@@ -33,6 +33,7 @@ import Handler.DB.RouteClients
 import Handler.DB.RouteClientsClient
 import Handler.DB.RouteIncomingtextmessages
 import Handler.DB.RouteTextmessages
+import Handler.DB.RouteTargetedtextmessage
 import Handler.DB.RouteTextmessagesTextMessage
 import Handler.DB.RouteTextmessagesTextMessageReply
 import Handler.DB.RouteTextmessagesTextMessageQueue
@@ -68,6 +69,7 @@ mkYesodSubData "DB" [parseRoutes|
 /clients/#ClientId        ClientsClientIdR      DELETE PUT
 /incomingtextmessages        IncomingtextmessagesR      POST
 /textmessages        TextmessagesR      GET POST
+/targetedtextmessage        TargetedtextmessageR      POST
 /textmessages/#TextMessageId        TextmessagesTextMessageIdR      GET PUT DELETE
 /textmessages/#TextMessageId/reply        TextmessagesTextMessageIdReplyR      POST
 /textmessages/#TextMessageId/queue        TextmessagesTextMessageIdQueueR      POST
