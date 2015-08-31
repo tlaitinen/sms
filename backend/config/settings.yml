@@ -32,5 +32,5 @@ admin-password: "_env:ADMINPASSWORD:SMS"
 max-email-size: "_env:MAXEMAILSIZE:10000000"
 smtp-address: "_env:SMTPADDRESS:127.0.0.1"
 sender-email: "_env:SENDEREMAIL:sms@example.com"
-
+spellCheckLanguage: "_env:SPELLCHECKLANGUAGE:Fi"
 #analytics: UA-YOURCODE
