@@ -94,8 +94,20 @@ function __(k,d) {
         'upload.button' : 'Lisää tositteita tiputtamalla tiedostoja tähän.',
         'upload.uploading' : 'Ladataan...',
         'usergroupform.title' : 'Käyttäjäryhmän tietojen muokkaaminen',
-        'usergroupform.createPeriods' : 'Luotavien kirjanpitokuukausien lkm.'
-
+        'usergroupform.createPeriods' : 'Luotavien kirjanpitokuukausien lkm.',
+        'emptyMonthCombo' : 'Suodata lista syntymäkuukauden perusteella',
+        'month1' : 'Tammikuu',
+        'month2' : 'Helmikuu',
+        'month3' : 'Maaliskuu',
+        'month4' : 'Huhtikuu',
+        'month5' : 'Toukokuu',
+        'month6' : 'Kesäkuu',
+        'month7' : 'Heinäkuu',
+        'month8' : 'Elokuu',
+        'month9' : 'Syyskuu',
+        'month10': 'Lokakuu',
+        'month11': 'Marraskuu',
+        'month12' : 'Joulukuu'
     };
     var parts = k.split('.');
     if (k in strings) {

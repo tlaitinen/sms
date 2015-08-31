@@ -80,6 +80,7 @@ getClientsR  = lift $ runDB $ do
     let defaultOffset = (maybe Nothing PP.fromPathPiece defaultOffsetParam) :: Maybe Int64
     let defaultLimit = (maybe Nothing PP.fromPathPiece defaultLimitParam) :: Maybe Int64
     (filterParam_query) <- lookupGetParam "query"
+    (filterParam_dateOfBirthMonth) <- lookupGetParam "dateOfBirthMonth"
     let baseQuery limitOffsetOrder = from $ \(c ) -> do
         let cId' = c ^. ClientId
         where_ (hasReadPerm (val authId) (c ^. ClientId))
@@ -241,6 +242,11 @@ getClientsR  = lift $ runDB $ do
             Just localParam -> do 
                 
                 where_ $ ((c ^. ClientFirstName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))) ||. (((c ^. ClientLastName) `ilike` (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%"))))) ||. (((c ^. ClientEmail) `ilike` (just (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%")))))) ||. (((c ^. ClientPhone) `ilike` (just (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%")))))) ||. ((c ^. ClientCard) `ilike` (just (((val "%")) ++. (((val (localParam :: Text))) ++. ((val "%")))))))))
+            Nothing -> return ()
+        case FS.getDefaultFilter filterParam_dateOfBirthMonth defaultFilterJson "dateOfBirthMonth" of
+            Just localParam -> do 
+                
+                where_ $ ((extractSubField "MONTH" $ c ^. ClientDateOfBirth)) ==. ((val (localParam :: Double)))
             Nothing -> return ()
         return (c ^. ClientId, c ^. ClientFirstName, c ^. ClientLastName, c ^. ClientEmail, c ^. ClientPhone, c ^. ClientDateOfBirth, c ^. ClientCard, c ^. ClientAllowSms, c ^. ClientAllowEmail, c ^. ClientDeletedVersionId, c ^. ClientActiveId, c ^. ClientActiveStartTime, c ^. ClientActiveEndTime, c ^. ClientInsertionTime, c ^. ClientInsertedByUserId)
     count <- select $ do

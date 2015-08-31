@@ -21,7 +21,8 @@ route /clients {
                 or c.email ilike "%" || $$ || "%"
                 or c.phone ilike "%" || $$ || "%"
                 or c.card ilike "%" || $$ || "%";
-              
+        if param "dateOfBirthMonth" = $$ then
+            where extract(month from c.dateOfBirth) = $$;      
 
     }
     post {

@@ -674,11 +674,13 @@ Ext.define(proxyName, {
                                                             select: function(combo) {
                                                                 store.filters.removeAtKey(tb.filterField);
                                                                 var v = combo.getValue();
-                                                                store.addFilter(new Ext.util.Filter({
-                                                                        id: tb.filterField,
-                                                                        property: tb.filterField,
-                                                                        value: ''+((v != undefined) ? v : 0)
-                                                                    }));
+                                                                if (v != '__EMPTY_VALUE__') {
+                                                                    store.addFilter(new Ext.util.Filter({
+                                                                            id: tb.filterField,
+                                                                            property: tb.filterField,
+                                                                            value: ''+((v != undefined) ? v : 0)
+                                                                        }));
+                                                                }
                                                             },
                                                             change: function(combo) {
                                                                 if (combo.getValue() == '') {

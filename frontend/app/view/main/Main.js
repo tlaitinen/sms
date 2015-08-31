@@ -8,7 +8,8 @@
 Ext.define('SMS.view.main.Main', {
     extend: 'Ext.container.Container',
     requires: [
-        'SMS.view.main.MainController'
+        'SMS.view.main.MainController',
+        'SMS.view.MonthCombo'
     ],
 
     xtype: 'app-main',

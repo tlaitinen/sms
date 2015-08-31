@@ -226,6 +226,12 @@ Ext.define('SMS.Application', {
                                         saveBtnText: __('rowedit.save'),
                                         cancelBtnText: __('rowedit.cancel')
                                     },
+                                    toolbar: [
+                                        {
+                                            xtype:'monthcombo',
+                                            filterField: 'dateOfBirthMonth'
+                                        }
+                                    ],
                                     columns: [ 
                                         { field:'firstName', editor: { allowBlank:false}, flex:3 }, 
                                         { field:'lastName', editor: { allowBlank:false}, flex:5 }, 
