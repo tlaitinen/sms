@@ -42,6 +42,7 @@ library
         Handler.DB.Routes
         Handler.DB.Esqueleto
         Handler.DB.PathPieces
+        Handler.SpellCheck
         Handler.DB.Validation
         Handler.DB.FilterSort
         Handler.DB.RouteFiles

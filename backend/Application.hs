@@ -34,6 +34,7 @@ import qualified Data.Text as T
 -- Don't forget to add new modules to your cabal file!
 import Handler.Common
 import Handler.File
+import Handler.SpellCheck
 import Handler.SetUserPassword
 import Handler.UploadFiles
 import Handler.DB

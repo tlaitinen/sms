@@ -130,7 +130,7 @@ Ext.define('SMS.view.main.MainController', {
                          );
                      });
                 }
-            }
+            }      
         });
     }
 

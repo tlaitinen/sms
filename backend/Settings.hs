@@ -58,6 +58,7 @@ data AppSettings = AppSettings
     , appMaxEmailSize           :: Int
     , appSmtpAddress            :: String
     , appSenderEmail            :: Text
+    , appSpellCheckLanguage     :: Text
     }
 
 instance FromJSON AppSettings where
@@ -89,6 +90,7 @@ instance FromJSON AppSettings where
         appMaxEmailSize           <- o .: "max-email-size" 
         appSmtpAddress            <- o .: "smtp-address"
         appSenderEmail            <- o .: "sender-email"
+        appSpellCheckLanguage     <- o .: "spell-check-language"
 
         return AppSettings {..}
 

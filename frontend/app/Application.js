@@ -77,7 +77,25 @@ Ext.define('SMS.Application', {
                     return true;
                 }
             }
+            function stripTags(x) {
+                return x.replace(/(<([^>]+)>)/ig,"");
+            }
             $.get("resources/backend.json").done(function(defs) {
+                var htmlEditorExtra = {
+                    enableAlignments : false,
+                    enableColors : false,
+                    enableFont : false,
+                    enableFontSize : false,
+                    enableFormat : false,
+                    enableLinks : false,
+                    enableLists : false,
+                    enableSourceEdit : false,
+                    listeners : {
+                        render: function(htmleditor) {
+                            htmleditor.getToolbar().hide();
+                        }
+                    }
+                };
                 var config = {
                     name: 'SMS',
                     urlBase: 'backend/db',
@@ -139,14 +157,16 @@ Ext.define('SMS.Application', {
                                     filters: [ 'textMessageId' ],
                                     items: [
                                         {
-                                            xtype:'textareafield',
+                                            xtype:'htmleditor',
                                             name:'replyToText',
                                             hidden:true,
-                                            readOnly:true
+                                            readOnly:true,
+                                            extra: htmlEditorExtra
                                         },
                                         {
-                                            xtype:'textareafield',
-                                            name:'text'
+                                            xtype:'htmleditor',
+                                            name:'text',
+                                            extra: htmlEditorExtra
                                         },
                                         {
                                             xtype:'textfield',

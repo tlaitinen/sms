@@ -23,17 +23,47 @@ Ext.define('SMS.controller.TextMessageForm', {
         });
 
     },
+
+    html2text: function(html) {
+        var tag = document.createElement('div');
+        tag.innerHTML = html;
+        return tag.innerText;
+    }, 
+    spellCheckHtmlEditor: function(htmlEditor) {
+        var controller = this;
+        $.ajax({
+            url:'backend/spell-check',
+            dataType:'json',
+            data: {
+                text: controller.html2text(htmlEditor.getValue())
+            }
+        }).done(function (data) {
+            var v = controller.html2text(htmlEditor.getValue());
+            var words = v.split(/\s+/);
+            for (var i = 0; i < words.length; i++) {
+                var w = words[i];
+                var tmp = w.replace(/[\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&()*+,\-.\/:;<=>?@\[\]^_`{|}~]/, ''); 
+                if (_.contains(data.unknownWords, tmp)) {
+                    words[i] = w.replace(tmp, '<span style="background-color: #ffaaaa">' + tmp + '</span>');
+                }
+            }
+            htmlEditor.setValue(words.join(" "));
+            htmlEditor.up('form').down('textfield').focus();
+
+        });
+    },
     init: function() {
         var c = this;
         
+        spellCheck = _.debounce(function(htmlEditor) { c.spellCheckHtmlEditor(htmlEditor); }, 3000);
         this.control({
-           'textmessageform textareafield[name=text]' : {
-                change: function (textarea) {
-                    var form = textarea.up('form'),
+           'textmessageform [name=text]' : {
+                change: function (htmlEditor) {
+                    var form = htmlEditor.up('form'),
                         record = form.getRecord();
 
-                    var count = SmsCounter.count(textarea.getValue());
-
+                    var count = SmsCounter.count(c.html2text(htmlEditor.getValue()));
+                    spellCheck(htmlEditor);
 
 
                     form.down('textfield[name=length]').setValue(__('textmessageform.lengthMessage').replace("{0}", ''+count.length).replace("{1}", ''+count.messages).replace("{2}", ''+count.per_message).replace("{3}", ''+count.remaining));
@@ -44,7 +74,7 @@ Ext.define('SMS.controller.TextMessageForm', {
                render: function(form) {
                    var record = form.getRecord();
                    if (record.get('replyToTextMessageId')) {
-                       form.down('textareafield[name=replyToText]').show();
+                       form.down('[name=replyToText]').show();
                        form.up('window').setHeight(570);
                    }
                    if (record.get('queued') == null) {

@@ -7,3 +7,4 @@
 /upload-files UploadFilesR POST
 /file/#FileId FileR GET
 /set-user-password/#UserId SetUserPasswordR POST
+/spell-check SpellCheckR GET

@@ -1,10 +1,11 @@
 #!/usr/bin/python
 import enchant
 import sys
+import string
+def onlyLetters(w): return w.strip(string.punctuation)
 
 lang = sys.argv[1]
-words = sys.stdin.readlines()
+words = [ onlyLetters(w) for w in  sys.stdin.read().split() ]
 d = enchant.Dict(lang)
-for word in words:
-    w = word.lstrip().rstrip()
-    print int(d.check(w))
+unknown = set( [ w + "\n" for w in words if not d.check(w) ] )
+sys.stdout.writelines(unknown)

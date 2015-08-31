@@ -187,6 +187,15 @@ var yesodDsl = function(defs, __, config) {
                 res.hidden = itemCfg.hidden;
             if ('readOnly' in itemCfg)
                 res.readOnly = itemCfg.readOnly;
+            if ('extra' in itemCfg) {
+                for (var prop in itemCfg.extra) {
+                    if (itemCfg.extra.hasOwnProperty(prop)) {
+                        res[prop] = itemCfg.extra[prop];
+                    }
+                }
+            }
+
+
             if ('layout' in itemCfg)
                 res.layout = itemCfg.layout;
             if ('minLength' in itemCfg) {
