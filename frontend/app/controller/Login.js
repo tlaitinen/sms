@@ -53,21 +53,24 @@ Ext.define('SMS.controller.Login', {
     },
 
     init: function() {
-        var win = new Ext.Window({
-            id:'login',
-            layout:'fit',
-            width:'100%',
-            height:'100%',
-            closable:false,
-            resizable:false,
-            plain:true,
-            title: __('login.title'),
-            items: [{xtype:'login'}]
-        });
-        win.show();
-        this.loadUser();
+
         var c = this;
+        SMS.GlobalState.on('ready', function() {
+            var win = new Ext.Window({
+                id:'login',
+                layout:'fit',
+                width:'100%',
+                height:'100%',
+                closable:false,
+                resizable:false,
+                plain:true,
+                title: __('login.title'),
+                items: [{xtype:'login'}]
+            });
+            win.show();
         
+            c.loadUser();
+        });
         this.control({
            'login textfield[name=username]' : {
                keypress: function (tf, e, eOpts) {

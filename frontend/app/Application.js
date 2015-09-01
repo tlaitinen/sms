@@ -423,7 +423,11 @@ Ext.define('SMS.Application', {
                         }
                     }
                 };
-               window.yesodDsl = yesodDsl(defs, __, config);
+               var onReady = function() {
+                   console.log("onReady!");
+                   SMS.GlobalState.fireEvent('ready');
+               }
+               window.yesodDsl = yesodDsl(defs, __, config, onReady);
            });
        });
    }

@@ -1,5 +1,6 @@
 // requires underscore.js
-var yesodDsl = function(defs, __, config) {
+var yesodDsl = function(defs, __, config, onReady) {
+    
     var preloadStores = [],
         cb = {
         onLogin : function() {
@@ -103,6 +104,16 @@ var yesodDsl = function(defs, __, config) {
     function gridWidgetName(routeName, gridCfg) {
         return gridCfg.widget || (routeName + 'list');
     }
+    function gridClsName(routeName, gridCfg) {
+        return config.name + '.view.' + routeName + '.' + gridWidgetName(routeName, gridCfg);
+    }
+    function formWidgetName(routeName, formCfg) {
+        return formCfg.widget || (routeName + 'form');
+    }
+    function formClsName(routeName, formCfg) {
+        return config.name + '.view.' + routeName + '.' + formWidgetName(routeName, formCfg);
+    }
+
     function refreshGrids(routeName) {
         var reloaded = [];
         var routeCfg = config.routes[routeName] || {};
@@ -427,6 +438,7 @@ var yesodDsl = function(defs, __, config) {
         }
 
     });
+    var deferreds = {};
 
     defs.routes.forEach(function (r) {
 
@@ -437,9 +449,22 @@ var yesodDsl = function(defs, __, config) {
             modelName = config.name + '.model.' + name,
             storeName = config.name + '.store.' + name,
             comboName = config.name + '.view.' + name + '.Combo';
+        [proxyName, modelName, storeName, comboName].forEach(function (n) { 
+            deferreds[n] = $.Deferred(); 
+        });
         r.handlers.forEach(function (h) {
            
             var routeCfg = config.routes[name] || {};
+
+            var grids = routeCfg.grids || [],
+                forms = routeCfg.forms || [];
+            grids.forEach(function(gridCfg) {
+                deferreds[gridClsName(name, gridCfg)] = $.Deferred();
+            });
+            forms.forEach(function (formCfg) {
+                deferreds[formClsName(name, formCfg)] = $.Deferred();
+            });
+
 
             // create models and stores for GET handlers without parameters  
             if (h.type == "GET" && r.path.length == 1 && r.path[0].type == "string") {
@@ -477,8 +502,10 @@ Ext.define(proxyName, {
                             return this.applyEncoding(min);
                         }
                 }, function(proxyCls) {
+                    deferreds[proxyName].resolve();
                     var proxy = Ext.create(proxyCls);
                     defineModel(modelName, h.outputs, proxy, function(model) {
+                        deferreds[modelName].resolve();
                         var storeDef = {
                             extend: 'Ext.data.Store',
                             filters: [],
@@ -490,6 +517,7 @@ Ext.define(proxyName, {
                             autoSync : routeCfg.autoSync || false
                         };
                         Ext.define(storeName, storeDef, function(storeClass) {
+                            deferreds[storeName].resolve();
                             Ext.data.StoreManager.register(storeClass);
 
 
@@ -523,13 +551,12 @@ Ext.define(proxyName, {
                                     forceSelection: comboCfg.forceSelection || false
                                 };
                                     
-                                Ext.define(comboName, cfg);
+                                Ext.define(comboName, cfg, function(comboCls) {
+                                    deferreds[comboName].resolve();
+                                });
                             } 
 
                             var globalStore = createStore(storeClass, name);
-                            // grids on demand by config
-                            var grids = routeCfg.grids || [],
-                                forms = routeCfg.forms || [];
 
 
                             grids.forEach(function(gridCfg) {
@@ -549,7 +576,7 @@ Ext.define(proxyName, {
                                         }), false)
                                 });
                                 var widgetName = gridWidgetName(name, gridCfg);
-                                var listName  = config.name + '.view.' + name + '.' + widgetName;
+                                var listName  = gridClsName(name, gridCfg);
                                 Ext.define(listName, {
                                     extend: 'Ext.grid.Panel',
                                     alias: 'widget.' + widgetName,
@@ -730,6 +757,8 @@ Ext.define(proxyName, {
                                         }
                                         return toolbar;
                                     })()
+                                }, function(listCls) {
+                                    deferreds[listName].resolve();
                                 });
                             });
 
@@ -738,8 +767,8 @@ Ext.define(proxyName, {
                                 entityRouteInfo = entityName ? routeInfo(entityRoute) : undefined;
                             forms.forEach(function (formCfg) {
 
-                                var widgetName = formCfg.widget || (name + 'form');
-                                var formName  = config.name + '.view.' + name + '.' + widgetName;
+                                var widgetName = formWidgetName(name, formCfg);
+                                var formName  = formClsName(name, formCfg);
                                 Ext.define(formName, {
                                     extend: 'Ext.form.Panel',
                                     alias: 'widget.' + widgetName,
@@ -841,6 +870,8 @@ Ext.define(proxyName, {
 
                                 });
 
+                            }, function (formCls) {
+                                deferreds[formName].resolve();
                             });
                         });
                     });
@@ -854,6 +885,12 @@ Ext.define(proxyName, {
             
         });
     });
+    var dfs = [];
+    for (var df in deferreds) {
+        dfs.push(df);
+    }
+    $.when.apply($, dfs).then(onReady);
+
     return {
         openFormWindow : openFormWindow,
         entityDefaults : entityDefaults
