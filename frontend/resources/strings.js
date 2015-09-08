@@ -2,6 +2,7 @@ function __(k,d) {
     var strings = {
         'textmessageform.title' : 'Lähetettävän tekstiviestin muokkaus',
         'text' : 'Teksti',
+        'textEditor' : 'Teksti',
         'textmessageform.abort' : 'Keskeytä tekstiviestin lähetys',
         'textmessageform.send' : 'Lähetä tekstiviesti vastaanottajille',
         'textmessageform.replyToText' : 'Vastaus viestiin',

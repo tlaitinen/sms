@@ -367,7 +367,10 @@ var yesodDsl = function(defs, __, config, onReady) {
                 title: __(formName + ".title"),
                 items: [ { xtype: formName } ]
             });
-            win.down(formName).loadRecord(record);
+            var form = win.down(formName);
+
+            form.loadRecord(record);
+            form.fireEvent('recordloaded', form);
             win.show();
             win.query('combobox').forEach(function (cb) { 
                 if ('configStore' in cb) {

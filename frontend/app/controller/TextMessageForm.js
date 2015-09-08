@@ -57,13 +57,17 @@ Ext.define('SMS.controller.TextMessageForm', {
         
         spellCheck = _.debounce(function(htmlEditor) { c.spellCheckHtmlEditor(htmlEditor); }, 3000);
         this.control({
-           'textmessageform [name=text]' : {
+           'textmessageform [name=textEditor]' : {
+                
                 change: function (htmlEditor) {
                     var form = htmlEditor.up('form'),
-                        record = form.getRecord();
+                        record = form.getRecord(),
+                        textValue = c.html2text(htmlEditor.getValue());
+                   
 
-                    var count = SmsCounter.count(c.html2text(htmlEditor.getValue()));
+                    var count = SmsCounter.count(textValue);
                     spellCheck(htmlEditor);
+                    record.set('text', textValue);
 
 
                     form.down('textfield[name=length]').setValue(__('textmessageform.lengthMessage').replace("{0}", ''+count.length).replace("{1}", ''+count.messages).replace("{2}", ''+count.per_message).replace("{3}", ''+count.remaining));
@@ -71,6 +75,12 @@ Ext.define('SMS.controller.TextMessageForm', {
                 }
            },
            'textmessageform' : {
+               recordloaded: function(form) {
+                   console.log('beforeshow');
+                   var record = form.getRecord();
+                   var htmlEditor = form.down('[name=textEditor]');
+                   htmlEditor.setValue(record.get('text'));
+               },
                render: function(form) {
                    var record = form.getRecord();
                    if (record.get('replyToTextMessageId')) {
@@ -88,6 +98,7 @@ Ext.define('SMS.controller.TextMessageForm', {
                        }
 
                    }
+          
                }
            },
            'textmessageform button[name=send]' :{

@@ -165,7 +165,7 @@ Ext.define('SMS.Application', {
                                         },
                                         {
                                             xtype:'htmleditor',
-                                            name:'text',
+                                            name:'textEditor',
                                             extra: htmlEditorExtra
                                         },
                                         {
