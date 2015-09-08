@@ -594,7 +594,6 @@ Ext.define(proxyName, {
                                                     createToolTip(view, gridCfg.tooltip);
 
                                                 if (gridCfg.preload != false) {
-                                                    console.log("render load");
                                                     store.load();
                                                 }
                                             },
@@ -712,7 +711,6 @@ Ext.define(proxyName, {
                                                                 store.removeFilter(tb.filterField, true);
                                                                 var v = combo.getValue();
                                                                 if (v != '__EMPTY_VALUE__') {
-                                                                    console.log("not empty value: " + v);
                                                                     store.addFilter(new Ext.util.Filter({
                                                                             id: tb.filterField,
                                                                             property: tb.filterField,
@@ -722,7 +720,6 @@ Ext.define(proxyName, {
                                                             },
                                                             change: function(combo) {
                                                                 if (combo.getValue() == '') {
-                                                                    console.log("change to empty value: " + tb.filterField);
                                                                     store.removeFilter(tb.filterField);
                                                                 }
                                                             }
@@ -741,15 +738,15 @@ Ext.define(proxyName, {
                                                     change: {
                                                         buffer: 500,
                                                         fn: function(textField) {
-                                                            store.removeFilter('query', true);
                                                             if (textField.getValue() != '') {
+                                                                store.removeFilter('query', true);
                                                                 store.addFilter(new Ext.util.Filter({
                                                                     id: 'query',
                                                                     property: 'query',
                                                                     value: '' + textField.getValue()
                                                                 }));
                                                             } else {
-                                                                store.reload();
+                                                                store.removeFilter('query');
                                                             }
                                                         }
                                                     }
