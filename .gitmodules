@@ -1,0 +1,3 @@
+[submodule "backend/mailchimp"]
+	path = backend/mailchimp
+	url = git@github.com:tlaitinen/mailchimp.git

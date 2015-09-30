@@ -4,5 +4,6 @@ flags:
     dev: false
 packages:
 - '.'
+- mailchimp
 extra-deps: []
 resolver: lts-3.2
