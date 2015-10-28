@@ -112,6 +112,7 @@ function __(k,d) {
         'month11': 'Marraskuu',
         'month12' : 'Joulukuu'
     };
+    /*
      strings = {
         'textmessageform.title' : 'Modifying text message to send',
         'text' : 'Text',
@@ -214,6 +215,7 @@ function __(k,d) {
         'month11': 'November',
         'month12' : 'December'
     };
+        */
     var parts = k.split('.');
     if (k in strings) {
         while (k in strings) {
