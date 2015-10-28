@@ -36,13 +36,13 @@ library
         Handler.Utils
         Handler.UploadFiles
         Handler.TextMessage
+        Handler.SpellCheck
         Handler.DB
         Handler.DB.Internal
         Handler.DB.Enums
         Handler.DB.Routes
         Handler.DB.Esqueleto
         Handler.DB.PathPieces
-        Handler.SpellCheck
         Handler.DB.Validation
         Handler.DB.FilterSort
         Handler.DB.RouteFiles

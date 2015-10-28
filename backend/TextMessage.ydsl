@@ -17,6 +17,7 @@ entity TextMessageRecipient {
     delivered Maybe UTCTime;
     failed Maybe UTCTime;
     failCount Int default 0;
+    failReason Maybe Text;
 }
 route /incomingtextmessages {
     post {
@@ -199,12 +200,14 @@ route /textmessagerecipientsqueue {
             where hasReadPerm $auth.id tm.id
                 and hasReadPerm $auth.id c.id
                 and tr.accepted is Nothing
+                and tr.sent is Nothing
+                and tr.delivered is Nothing
                 and (not (tm.queued is Nothing))
                 and tm.aborted is Nothing
                 and tm.deletedVersionId is Nothing
                 and c.deletedVersionId is Nothing
                 and c.allowSms = True
-                and tr.failCount < 5
+                and tr.failCount < 2
                 order by c.lastName asc, c.firstName asc
                 limit 10;
     }
@@ -218,6 +221,8 @@ route /textmessagerecipients/#TextMessageRecipientId/accept {
             and (not (tm.queued is Nothing))
             and tm.aborted is Nothing
             and hasWritePerm $auth.id tr.textMessageId
+            and tr.sent is Nothing
+            and tr.delivered is Nothing
             and c.allowSms = True
             and tr.accepted is Nothing;
         update TextMessageRecipient identified by $1 with {
@@ -242,9 +247,11 @@ route /textmessagerecipients/#TextMessageRecipientId/fail {
             and hasWritePerm $auth.id tr.textMessageId
             and tr.sent is Nothing
             and tr.failed is Nothing
+            and tr.delivered is Nothing
             and (not (tr.accepted is Nothing));
         update TextMessageRecipient identified by $1 with {
-            failed = now()
+            failed = now(),
+            failReason = $request.reason
         };
     }
 }
@@ -252,8 +259,6 @@ route /textmessagerecipients/#TextMessageRecipientId/delivered {
     post {
         require TextMessageRecipient as tr where tr.id = $1
             and hasWritePerm $auth.id tr.textMessageId
-            and (not (tr.sent is Nothing))
-            and (not (tr.accepted is Nothing))
             and tr.delivered is Nothing;
         update TextMessageRecipient identified by $1 with {
             delivered = now()

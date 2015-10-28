@@ -77,7 +77,7 @@ postTextmessagerecipientsTextMessageRecipientIdAcceptR p1 = lift $ runDB $ do
             on ((c ^. ClientId) ==. (tr ^. TextMessageRecipientClientId))
             on ((tm ^. TextMessageId) ==. (tr ^. TextMessageRecipientTextMessageId))
             let trId' = tr ^. TextMessageRecipientId
-            where_ (((tr ^. TextMessageRecipientId) ==. (val p1)) &&. ((not_ ((tm ^. TextMessageQueued) `is` (nothing))) &&. (((tm ^. TextMessageAborted) `is` (nothing)) &&. ((hasWritePerm (val authId) (tr ^. TextMessageRecipientTextMessageId)) &&. (((c ^. ClientAllowSms) ==. ((val True))) &&. ((tr ^. TextMessageRecipientAccepted) `is` (nothing)))))))
+            where_ (((tr ^. TextMessageRecipientId) ==. (val p1)) &&. ((not_ ((tm ^. TextMessageQueued) `is` (nothing))) &&. (((tm ^. TextMessageAborted) `is` (nothing)) &&. ((hasWritePerm (val authId) (tr ^. TextMessageRecipientTextMessageId)) &&. (((tr ^. TextMessageRecipientSent) `is` (nothing)) &&. (((tr ^. TextMessageRecipientDelivered) `is` (nothing)) &&. (((c ^. ClientAllowSms) ==. ((val True))) &&. ((tr ^. TextMessageRecipientAccepted) `is` (nothing)))))))))
 
             limit 1
             return tr

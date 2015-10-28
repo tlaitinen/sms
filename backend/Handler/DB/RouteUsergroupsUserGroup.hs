@@ -78,15 +78,25 @@ putUsergroupsUserGroupIdR p1 = lift $ runDB $ do
     jsonBodyObj <- case jsonBody of
         A.Object o -> return o
         v -> sendResponseStatus status400 $ A.object [ "message" .= ("Expected JSON object in the request body, got: " ++ show v) ]
-    attr_createPeriods <- case HML.lookup "createPeriods" jsonBodyObj of 
+    attr_mailChimpListName <- case HML.lookup "mailChimpListName" jsonBodyObj of 
         Just v -> case A.fromJSON v of
             A.Success v' -> return v'
             A.Error err -> sendResponseStatus status400 $ A.object [
-                    "message" .= ("Could not parse value from attribute createPeriods in the JSON object in request body" :: Text),
+                    "message" .= ("Could not parse value from attribute mailChimpListName in the JSON object in request body" :: Text),
                     "error" .= err
                 ]
         Nothing -> sendResponseStatus status400 $ A.object [
-                "message" .= ("Expected attribute createPeriods in the JSON object in request body" :: Text)
+                "message" .= ("Expected attribute mailChimpListName in the JSON object in request body" :: Text)
+            ]
+    attr_mailChimpApiKey <- case HML.lookup "mailChimpApiKey" jsonBodyObj of 
+        Just v -> case A.fromJSON v of
+            A.Success v' -> return v'
+            A.Error err -> sendResponseStatus status400 $ A.object [
+                    "message" .= ("Could not parse value from attribute mailChimpApiKey in the JSON object in request body" :: Text),
+                    "error" .= err
+                ]
+        Nothing -> sendResponseStatus status400 $ A.object [
+                "message" .= ("Expected attribute mailChimpApiKey in the JSON object in request body" :: Text)
             ]
     attr_email <- case HML.lookup "email" jsonBodyObj of 
         Just v -> case A.fromJSON v of
@@ -178,9 +188,11 @@ putUsergroupsUserGroupIdR p1 = lift $ runDB $ do
                     ]
     
             return $ e {
-                            userGroupCreatePeriods = attr_createPeriods
-                    ,
                             userGroupEmail = attr_email
+                    ,
+                            userGroupMailChimpApiKey = attr_mailChimpApiKey
+                    ,
+                            userGroupMailChimpListName = attr_mailChimpListName
                     ,
                             userGroupName = attr_name
                     ,

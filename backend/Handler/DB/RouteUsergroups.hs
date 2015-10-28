@@ -91,13 +91,17 @@ getUsergroupsR  = lift $ runDB $ do
                 limit 10000
                 case defaultSortJson of 
                     Just xs -> mapM_ (\sjm -> case FS.s_field sjm of
-                            "createPeriods" -> case (FS.s_direction sjm) of 
-                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupCreatePeriods) ] 
-                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupCreatePeriods) ] 
-                                _      -> return ()
                             "email" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (ug  ^.  UserGroupEmail) ] 
                                 "DESC" -> orderBy [ desc (ug  ^.  UserGroupEmail) ] 
+                                _      -> return ()
+                            "mailChimpApiKey" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupMailChimpApiKey) ] 
+                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupMailChimpApiKey) ] 
+                                _      -> return ()
+                            "mailChimpListName" -> case (FS.s_direction sjm) of 
+                                "ASC"  -> orderBy [ asc (ug  ^.  UserGroupMailChimpListName) ] 
+                                "DESC" -> orderBy [ desc (ug  ^.  UserGroupMailChimpListName) ] 
                                 _      -> return ()
                             "current" -> case (FS.s_direction sjm) of 
                                 "ASC"  -> orderBy [ asc (ug  ^.  UserGroupCurrent) ] 
@@ -141,12 +145,21 @@ getUsergroupsR  = lift $ runDB $ do
                 "id" -> case (FS.f_value fjm >>= PP.fromPathPiece)  of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupId) (val v')
                     _        -> return ()
-                "createPeriods" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
-                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupCreatePeriods) ((val v'))
-                    _        -> return ()
                 "email" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupEmail) ((val v'))
                     _        -> return ()
+                "mailChimpApiKey" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupMailChimpApiKey) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupMailChimpApiKey) nothing
+                           
+                "mailChimpListName" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupMailChimpListName) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupMailChimpListName) nothing
+                           
                 "current" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupCurrent) ((val v'))
                     _        -> return ()
@@ -191,7 +204,7 @@ getUsergroupsR  = lift $ runDB $ do
                 
                 where_ $ (ug ^. UserGroupId) `in_` (subList_select $ from $ \(ugi) -> do {  ; where_ (((ugi ^. UserGroupItemUserId) `in_` (valList localParam)) &&. ((ugi ^. UserGroupItemDeletedVersionId) `is` (nothing))) ; return (ugi ^. UserGroupItemUserGroupId) ; })
             Nothing -> return ()
-        return (ug ^. UserGroupId, ug ^. UserGroupCreatePeriods, ug ^. UserGroupEmail, ug ^. UserGroupCurrent, ug ^. UserGroupName, ug ^. UserGroupActiveId, ug ^. UserGroupActiveStartTime, ug ^. UserGroupActiveEndTime, ug ^. UserGroupDeletedVersionId)
+        return (ug ^. UserGroupId, ug ^. UserGroupEmail, ug ^. UserGroupMailChimpApiKey, ug ^. UserGroupMailChimpListName, ug ^. UserGroupCurrent, ug ^. UserGroupName, ug ^. UserGroupActiveId, ug ^. UserGroupActiveStartTime, ug ^. UserGroupActiveEndTime, ug ^. UserGroupDeletedVersionId)
     count <- select $ do
         baseQuery False
         let countRows' = countRows
@@ -201,16 +214,17 @@ getUsergroupsR  = lift $ runDB $ do
     return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
-                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9)) -> A.object [
+                ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9), (Database.Esqueleto.Value f10)) -> A.object [
                     "id" .= toJSON f1,
-                    "createPeriods" .= toJSON f2,
-                    "email" .= toJSON f3,
-                    "current" .= toJSON f4,
-                    "name" .= toJSON f5,
-                    "activeId" .= toJSON f6,
-                    "activeStartTime" .= toJSON f7,
-                    "activeEndTime" .= toJSON f8,
-                    "deletedVersionId" .= toJSON f9                                    
+                    "email" .= toJSON f2,
+                    "mailChimpApiKey" .= toJSON f3,
+                    "mailChimpListName" .= toJSON f4,
+                    "current" .= toJSON f5,
+                    "name" .= toJSON f6,
+                    "activeId" .= toJSON f7,
+                    "activeStartTime" .= toJSON f8,
+                    "activeEndTime" .= toJSON f9,
+                    "deletedVersionId" .= toJSON f10                                    
                     ]
                 _ -> A.object []
             ) results)
@@ -240,15 +254,25 @@ postUsergroupsR  = lift $ runDB $ do
         Nothing -> sendResponseStatus status400 $ A.object [
                 "message" .= ("Expected attribute email in the JSON object in request body" :: Text)
             ]
-    attr_createPeriods <- case HML.lookup "createPeriods" jsonBodyObj of 
+    attr_mailChimpListName <- case HML.lookup "mailChimpListName" jsonBodyObj of 
         Just v -> case A.fromJSON v of
             A.Success v' -> return v'
             A.Error err -> sendResponseStatus status400 $ A.object [
-                    "message" .= ("Could not parse value from attribute createPeriods in the JSON object in request body" :: Text),
+                    "message" .= ("Could not parse value from attribute mailChimpListName in the JSON object in request body" :: Text),
                     "error" .= err
                 ]
         Nothing -> sendResponseStatus status400 $ A.object [
-                "message" .= ("Expected attribute createPeriods in the JSON object in request body" :: Text)
+                "message" .= ("Expected attribute mailChimpListName in the JSON object in request body" :: Text)
+            ]
+    attr_mailChimpApiKey <- case HML.lookup "mailChimpApiKey" jsonBodyObj of 
+        Just v -> case A.fromJSON v of
+            A.Success v' -> return v'
+            A.Error err -> sendResponseStatus status400 $ A.object [
+                    "message" .= ("Could not parse value from attribute mailChimpApiKey in the JSON object in request body" :: Text),
+                    "error" .= err
+                ]
+        Nothing -> sendResponseStatus status400 $ A.object [
+                "message" .= ("Expected attribute mailChimpApiKey in the JSON object in request body" :: Text)
             ]
     attr_name <- case HML.lookup "name" jsonBodyObj of 
         Just v -> case A.fromJSON v of
@@ -266,9 +290,11 @@ postUsergroupsR  = lift $ runDB $ do
         e1 <- do
     
             return $ UserGroup {
-                            userGroupCreatePeriods = attr_createPeriods
-                    ,
                             userGroupEmail = attr_email
+                    ,
+                            userGroupMailChimpApiKey = attr_mailChimpApiKey
+                    ,
+                            userGroupMailChimpListName = attr_mailChimpListName
                     ,
                             userGroupCurrent = Active
                     ,

@@ -71,11 +71,28 @@ postTextmessagerecipientsTextMessageRecipientIdFailR :: forall master. (
     => TextMessageRecipientId -> HandlerT DB (HandlerT master IO) A.Value
 postTextmessagerecipientsTextMessageRecipientIdFailR p1 = lift $ runDB $ do
     authId <- lift $ requireAuthId
+    jsonResult <- parseJsonBody
+    jsonBody <- case jsonResult of
+         A.Error err -> sendResponseStatus status400 $ A.object [ "message" .= ( "Could not decode JSON object from request body : " ++ err) ]
+         A.Success o -> return o
+    jsonBodyObj <- case jsonBody of
+        A.Object o -> return o
+        v -> sendResponseStatus status400 $ A.object [ "message" .= ("Expected JSON object in the request body, got: " ++ show v) ]
+    attr_reason <- case HML.lookup "reason" jsonBodyObj of 
+        Just v -> case A.fromJSON v of
+            A.Success v' -> return v'
+            A.Error err -> sendResponseStatus status400 $ A.object [
+                    "message" .= ("Could not parse value from attribute reason in the JSON object in request body" :: Text),
+                    "error" .= err
+                ]
+        Nothing -> sendResponseStatus status400 $ A.object [
+                "message" .= ("Expected attribute reason in the JSON object in request body" :: Text)
+            ]
     __currentTime <- liftIO $ getCurrentTime
     _ <- do
         result <- select $ from $ \(tr ) -> do
             let trId' = tr ^. TextMessageRecipientId
-            where_ (((tr ^. TextMessageRecipientId) ==. (val p1)) &&. ((hasWritePerm (val authId) (tr ^. TextMessageRecipientTextMessageId)) &&. (((tr ^. TextMessageRecipientSent) `is` (nothing)) &&. (((tr ^. TextMessageRecipientFailed) `is` (nothing)) &&. (not_ ((tr ^. TextMessageRecipientAccepted) `is` (nothing)))))))
+            where_ (((tr ^. TextMessageRecipientId) ==. (val p1)) &&. ((hasWritePerm (val authId) (tr ^. TextMessageRecipientTextMessageId)) &&. (((tr ^. TextMessageRecipientSent) `is` (nothing)) &&. (((tr ^. TextMessageRecipientFailed) `is` (nothing)) &&. (((tr ^. TextMessageRecipientDelivered) `is` (nothing)) &&. (not_ ((tr ^. TextMessageRecipientAccepted) `is` (nothing))))))))
 
             limit 1
             return tr
@@ -98,6 +115,8 @@ postTextmessagerecipientsTextMessageRecipientIdFailR p1 = lift $ runDB $ do
     
             return $ e {
                             textMessageRecipientFailed = (Just __currentTime)
+                    ,
+                            textMessageRecipientFailReason = attr_reason
     
                 }
         vErrors <- lift $ validate e2

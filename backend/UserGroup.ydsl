@@ -16,8 +16,9 @@ entity UserGroupContent {
 
 entity UserGroup {
     instance of Named, Versioned, Deletable, Restricted;
-    createPeriods Int32 default 1;
     email Text default "";
+    mailChimpApiKey Maybe Text;
+    mailChimpListName Maybe Text;
 
     current Checkmark default CheckmarkActive;
     unique UserGroup current, name;
@@ -79,13 +80,14 @@ route /usergroups {
       }
     post {
         ugId <- insert UserGroup from {
-            name             = $request.name,
-            createPeriods    = $request.createPeriods,
-            email            = $request.email,
-            deletedVersionId = Nothing,
-            activeId         = Nothing,
-            activeStartTime  = now(),
-            activeEndTime    = Nothing
+            name              = $request.name,
+            mailChimpApiKey   = $request.mailChimpApiKey,
+            mailChimpListName = $request.mailChimpListName,
+            email             = $request.email,
+            deletedVersionId  = Nothing,
+            activeId          = Nothing,
+            activeStartTime   = now(),
+            activeEndTime     = Nothing
         };
         insert UserGroupContent from {
             userGroupId = $auth.defaultUserGroupId,
@@ -115,7 +117,8 @@ route /usergroups/#UserGroupId {
         update UserGroup identified by $1 with {
             name = $request.name,
             email = $request.email,
-            createPeriods = $request.createPeriods,
+            mailChimpApiKey   = $request.mailChimpApiKey,
+            mailChimpListName = $request.mailChimpListName,
             activeStartTime = now()
         };
     }

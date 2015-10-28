@@ -162,13 +162,13 @@
                         },
                         {
                             "references": null,
-                            "name": "name",
-                            "type": "string"
+                            "name": "insertionTime",
+                            "type": "utctime"
                         },
                         {
                             "references": null,
-                            "name": "insertionTime",
-                            "type": "utctime"
+                            "name": "name",
+                            "type": "string"
                         }
                     ],
                     "outputs": [],
@@ -216,14 +216,14 @@
                 {
                     "inputs": [
                         {
-                            "references": "UserGroup",
-                            "name": "userGroupId",
-                            "type": "integer"
-                        },
-                        {
                             "references": null,
                             "name": "userGroupContentIdList",
                             "type": null
+                        },
+                        {
+                            "references": "UserGroup",
+                            "name": "userGroupId",
+                            "type": "integer"
                         }
                     ],
                     "outputs": [],
@@ -233,13 +233,13 @@
                 {
                     "inputs": [
                         {
-                            "references": "File",
-                            "name": "fileId",
-                            "type": "integer"
+                            "references": null,
+                            "name": "userGroupIdList",
+                            "type": null
                         },
                         {
                             "references": null,
-                            "name": "userGroupIdList",
+                            "name": "fileId",
                             "type": null
                         }
                     ],
@@ -296,12 +296,17 @@
                         },
                         {
                             "references": null,
-                            "name": "createPeriods",
-                            "type": "integer"
+                            "name": "email",
+                            "type": "string"
                         },
                         {
                             "references": null,
-                            "name": "email",
+                            "name": "mailChimpApiKey",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "mailChimpListName",
                             "type": "string"
                         },
                         {
@@ -342,12 +347,17 @@
                     "inputs": [
                         {
                             "references": null,
-                            "name": "createPeriods",
-                            "type": "integer"
+                            "name": "email",
+                            "type": "string"
                         },
                         {
                             "references": null,
-                            "name": "email",
+                            "name": "mailChimpApiKey",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "mailChimpListName",
                             "type": "string"
                         },
                         {
@@ -384,17 +394,22 @@
                     "inputs": [
                         {
                             "references": null,
-                            "name": "name",
+                            "name": "email",
                             "type": "string"
                         },
                         {
                             "references": null,
-                            "name": "createPeriods",
-                            "type": "integer"
+                            "name": "mailChimpApiKey",
+                            "type": "string"
                         },
                         {
                             "references": null,
-                            "name": "email",
+                            "name": "mailChimpListName",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
                             "type": "string"
                         }
                     ],
@@ -465,14 +480,14 @@
                 {
                     "inputs": [
                         {
-                            "references": "UserGroup",
+                            "references": null,
                             "name": "userGroupId",
-                            "type": "integer"
+                            "type": null
                         },
                         {
-                            "references": "User",
+                            "references": null,
                             "name": "userId",
-                            "type": "integer"
+                            "type": null
                         },
                         {
                             "references": "UserGroupMode",
@@ -743,16 +758,6 @@
                 {
                     "inputs": [
                         {
-                            "references": "UserGroup",
-                            "name": "defaultUserGroupId",
-                            "type": "integer"
-                        },
-                        {
-                            "references": null,
-                            "name": "name",
-                            "type": "string"
-                        },
-                        {
                             "references": null,
                             "name": "firstName",
                             "type": "string"
@@ -773,8 +778,18 @@
                             "type": "string"
                         },
                         {
+                            "references": "UserGroup",
+                            "name": "defaultUserGroupId",
+                            "type": "integer"
+                        },
+                        {
                             "references": null,
                             "name": "timeZone",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "name",
                             "type": "string"
                         }
                     ],
@@ -1341,13 +1356,13 @@
                     "inputs": [
                         {
                             "references": null,
-                            "name": "text",
-                            "type": "string"
+                            "name": "insertionTime",
+                            "type": "utctime"
                         },
                         {
                             "references": null,
-                            "name": "insertionTime",
-                            "type": "utctime"
+                            "name": "text",
+                            "type": "string"
                         }
                     ],
                     "outputs": [],
@@ -1532,6 +1547,11 @@
                         },
                         {
                             "references": null,
+                            "name": "failReason",
+                            "type": "string"
+                        },
+                        {
+                            "references": null,
                             "name": "firstName",
                             "type": "string"
                         },
@@ -1687,6 +1707,11 @@
                             "references": "Client",
                             "name": "clientId",
                             "type": "integer"
+                        },
+                        {
+                            "references": null,
+                            "name": "reason",
+                            "type": "string"
                         }
                     ],
                     "outputs": [],
@@ -1868,17 +1893,24 @@
             "fields": [
                 {
                     "references": null,
-                    "default": 1,
-                    "name": "createPeriods",
-                    "type": "integer",
-                    "optional": false
-                },
-                {
-                    "references": null,
                     "default": "",
                     "name": "email",
                     "type": "string",
                     "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "mailChimpApiKey",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "mailChimpListName",
+                    "type": "string",
+                    "optional": true
                 },
                 {
                     "references": null,
@@ -2329,6 +2361,13 @@
                     "name": "failCount",
                     "type": "integer",
                     "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "failReason",
+                    "type": "string",
+                    "optional": true
                 }
             ]
         }

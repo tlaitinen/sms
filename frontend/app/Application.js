@@ -387,7 +387,7 @@ Ext.define('SMS.Application', {
                             forms: [
                                 {
                                     widget: 'usergroupform',
-                                    items: [ 'name', 'email', 'createPeriods' ]
+                                    items: [ 'name', 'email', 'mailChimpApiKey', 'mailChimpListName' ]
                                 }
                             ]
                         },

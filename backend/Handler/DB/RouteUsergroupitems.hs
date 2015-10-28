@@ -178,12 +178,21 @@ getUsergroupitemsR  = lift $ runDB $ do
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserDeletedVersionId) nothing
                            
-                "createPeriods" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
-                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupCreatePeriods) ((val v'))
-                    _        -> return ()
                 "ug.email" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupEmail) ((val v'))
                     _        -> return ()
+                "mailChimpApiKey" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupMailChimpApiKey) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupMailChimpApiKey) nothing
+                           
+                "mailChimpListName" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupMailChimpListName) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupMailChimpListName) nothing
+                           
                 "ug.current" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupCurrent) ((val v'))
                     _        -> return ()

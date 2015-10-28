@@ -22,6 +22,7 @@ import qualified Handler.DB.PathPieces as PP
 import Prelude
 import Control.Monad (forM_, when)
 import Control.Monad.Catch (MonadThrow)
+import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import Database.Esqueleto
 import qualified Database.Esqueleto as E
 import qualified Database.Persist as P
@@ -83,8 +84,9 @@ UserGroupContent json
     textMessageContentId TextMessageId Maybe   default=NULL
     deletedVersionId VersionId Maybe   default=NULL
 UserGroup json
-    createPeriods Int32  "default=1"
     email Text  "default=''"
+    mailChimpApiKey Text Maybe  
+    mailChimpListName Text Maybe  
     current Checkmark  "default=True" nullable
     name Text  
     activeId UserGroupId Maybe   default=NULL
@@ -156,6 +158,7 @@ TextMessageRecipient json
     delivered UTCTime Maybe  
     failed UTCTime Maybe  
     failCount Int  "default=0"
+    failReason Text Maybe  
 |]
 newFile :: Text -> Int32 -> Text -> UTCTime -> File
 newFile contentType_ size_ name_ insertionTime_ = File {
@@ -182,8 +185,9 @@ newUserGroupContent userGroupId_ = UserGroupContent {
 }    
 newUserGroup :: Text -> UserGroup
 newUserGroup name_ = UserGroup {
-    userGroupCreatePeriods = 1,
     userGroupEmail = "",
+    userGroupMailChimpApiKey = Nothing,
+    userGroupMailChimpListName = Nothing,
     userGroupCurrent = Active,
     userGroupName = name_,
     userGroupActiveId = Nothing,
@@ -263,7 +267,8 @@ newTextMessageRecipient textMessageId_ clientId_ = TextMessageRecipient {
     textMessageRecipientSent = Nothing,
     textMessageRecipientDelivered = Nothing,
     textMessageRecipientFailed = Nothing,
-    textMessageRecipientFailCount = 0
+    textMessageRecipientFailCount = 0,
+    textMessageRecipientFailReason = Nothing
 }    
 class Named a where
     namedName :: a -> Text
@@ -284,6 +289,13 @@ data NamedInstanceId = NamedInstanceFileId FileId
     | NamedInstanceUserId UserId
     deriving (Eq, Ord)
 
+reflectNamedInstanceId :: NamedInstanceId -> (Text, Int64)
+reflectNamedInstanceId x = case x of
+    NamedInstanceFileId key -> ("File", fromSqlKey key)
+    NamedInstanceUserGroupId key -> ("UserGroup", fromSqlKey key)
+    NamedInstanceUserId key -> ("User", fromSqlKey key)
+
+
 instance Named NamedInstance where
     namedName x = case x of
         NamedInstanceFile (Entity _ e) -> fileName e
@@ -291,6 +303,20 @@ instance Named NamedInstance where
         NamedInstanceUser (Entity _ e) -> userName e
     
 data NamedInstanceFilterType = NamedInstanceNameFilter (SqlExpr (Database.Esqueleto.Value (Text)) -> SqlExpr (Database.Esqueleto.Value Bool))
+lookupNamedInstance :: forall (m :: * -> *). (MonadIO m) =>
+    NamedInstanceId -> SqlPersistT m (Maybe NamedInstance)
+lookupNamedInstance k = case k of
+        NamedInstanceFileId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ NamedInstanceFile $ Entity key val
+        NamedInstanceUserGroupId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ NamedInstanceUserGroup $ Entity key val
+        NamedInstanceUserId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ NamedInstanceUser $ Entity key val
+
+    
 selectNamed :: forall (m :: * -> *). 
     (MonadLogger m, MonadIO m, MonadThrow m, MonadBaseControl IO m) => 
     [[NamedInstanceFilterType]] -> SqlPersistT m [NamedInstance]
@@ -402,6 +428,13 @@ data HasInsertInfoInstanceId = HasInsertInfoInstanceFileId FileId
     | HasInsertInfoInstanceTextMessageId TextMessageId
     deriving (Eq, Ord)
 
+reflectHasInsertInfoInstanceId :: HasInsertInfoInstanceId -> (Text, Int64)
+reflectHasInsertInfoInstanceId x = case x of
+    HasInsertInfoInstanceFileId key -> ("File", fromSqlKey key)
+    HasInsertInfoInstanceClientId key -> ("Client", fromSqlKey key)
+    HasInsertInfoInstanceTextMessageId key -> ("TextMessage", fromSqlKey key)
+
+
 instance HasInsertInfo HasInsertInfoInstance where
     hasInsertInfoInsertionTime x = case x of
         HasInsertInfoInstanceFile (Entity _ e) -> fileInsertionTime e
@@ -414,6 +447,20 @@ instance HasInsertInfo HasInsertInfoInstance where
         HasInsertInfoInstanceTextMessage (Entity _ e) -> textMessageInsertedByUserId e
     
 data HasInsertInfoInstanceFilterType = HasInsertInfoInstanceInsertionTimeFilter (SqlExpr (Database.Esqueleto.Value (UTCTime)) -> SqlExpr (Database.Esqueleto.Value Bool))    | HasInsertInfoInstanceInsertedByUserIdFilter (SqlExpr (Database.Esqueleto.Value (Maybe UserId)) -> SqlExpr (Database.Esqueleto.Value Bool))
+lookupHasInsertInfoInstance :: forall (m :: * -> *). (MonadIO m) =>
+    HasInsertInfoInstanceId -> SqlPersistT m (Maybe HasInsertInfoInstance)
+lookupHasInsertInfoInstance k = case k of
+        HasInsertInfoInstanceFileId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ HasInsertInfoInstanceFile $ Entity key val
+        HasInsertInfoInstanceClientId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ HasInsertInfoInstanceClient $ Entity key val
+        HasInsertInfoInstanceTextMessageId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ HasInsertInfoInstanceTextMessage $ Entity key val
+
+    
 selectHasInsertInfo :: forall (m :: * -> *). 
     (MonadLogger m, MonadIO m, MonadThrow m, MonadBaseControl IO m) => 
     [[HasInsertInfoInstanceFilterType]] -> SqlPersistT m [HasInsertInfoInstance]
@@ -531,7 +578,36 @@ data RestrictedInstanceId = RestrictedInstanceFileId FileId
     | RestrictedInstanceTextMessageId TextMessageId
     deriving (Eq, Ord)
 
+reflectRestrictedInstanceId :: RestrictedInstanceId -> (Text, Int64)
+reflectRestrictedInstanceId x = case x of
+    RestrictedInstanceFileId key -> ("File", fromSqlKey key)
+    RestrictedInstanceUserGroupId key -> ("UserGroup", fromSqlKey key)
+    RestrictedInstanceUserId key -> ("User", fromSqlKey key)
+    RestrictedInstanceClientId key -> ("Client", fromSqlKey key)
+    RestrictedInstanceTextMessageId key -> ("TextMessage", fromSqlKey key)
+
+
 instance Restricted RestrictedInstance where
+lookupRestrictedInstance :: forall (m :: * -> *). (MonadIO m) =>
+    RestrictedInstanceId -> SqlPersistT m (Maybe RestrictedInstance)
+lookupRestrictedInstance k = case k of
+        RestrictedInstanceFileId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ RestrictedInstanceFile $ Entity key val
+        RestrictedInstanceUserGroupId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ RestrictedInstanceUserGroup $ Entity key val
+        RestrictedInstanceUserId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ RestrictedInstanceUser $ Entity key val
+        RestrictedInstanceClientId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ RestrictedInstanceClient $ Entity key val
+        RestrictedInstanceTextMessageId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ RestrictedInstanceTextMessage $ Entity key val
+
+    
 selectRestricted :: forall (m :: * -> *). 
     (MonadLogger m, MonadIO m, MonadThrow m, MonadBaseControl IO m) => 
      SqlPersistT m [RestrictedInstance]
@@ -604,6 +680,15 @@ data VersionedInstanceId = VersionedInstanceFileId FileId
     | VersionedInstanceTextMessageId TextMessageId
     deriving (Eq, Ord)
 
+reflectVersionedInstanceId :: VersionedInstanceId -> (Text, Int64)
+reflectVersionedInstanceId x = case x of
+    VersionedInstanceFileId key -> ("File", fromSqlKey key)
+    VersionedInstanceUserGroupId key -> ("UserGroup", fromSqlKey key)
+    VersionedInstanceUserId key -> ("User", fromSqlKey key)
+    VersionedInstanceClientId key -> ("Client", fromSqlKey key)
+    VersionedInstanceTextMessageId key -> ("TextMessage", fromSqlKey key)
+
+
 instance Versioned VersionedInstance where
     versionedActiveId x = case x of
         VersionedInstanceFile (Entity _ e) -> (fmap VersionedInstanceFileId) $ fileActiveId e
@@ -627,6 +712,26 @@ instance Versioned VersionedInstance where
         VersionedInstanceTextMessage (Entity _ e) -> textMessageActiveEndTime e
     
 data VersionedInstanceFilterType = VersionedInstanceActiveStartTimeFilter (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)) -> SqlExpr (Database.Esqueleto.Value Bool))    | VersionedInstanceActiveEndTimeFilter (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)) -> SqlExpr (Database.Esqueleto.Value Bool))
+lookupVersionedInstance :: forall (m :: * -> *). (MonadIO m) =>
+    VersionedInstanceId -> SqlPersistT m (Maybe VersionedInstance)
+lookupVersionedInstance k = case k of
+        VersionedInstanceFileId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ VersionedInstanceFile $ Entity key val
+        VersionedInstanceUserGroupId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ VersionedInstanceUserGroup $ Entity key val
+        VersionedInstanceUserId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ VersionedInstanceUser $ Entity key val
+        VersionedInstanceClientId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ VersionedInstanceClient $ Entity key val
+        VersionedInstanceTextMessageId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ VersionedInstanceTextMessage $ Entity key val
+
+    
 selectVersioned :: forall (m :: * -> *). 
     (MonadLogger m, MonadIO m, MonadThrow m, MonadBaseControl IO m) => 
     [[VersionedInstanceFilterType]] -> SqlPersistT m [VersionedInstance]
@@ -813,6 +918,17 @@ data DeletableInstanceId = DeletableInstanceFileId FileId
     | DeletableInstanceTextMessageId TextMessageId
     deriving (Eq, Ord)
 
+reflectDeletableInstanceId :: DeletableInstanceId -> (Text, Int64)
+reflectDeletableInstanceId x = case x of
+    DeletableInstanceFileId key -> ("File", fromSqlKey key)
+    DeletableInstanceUserGroupContentId key -> ("UserGroupContent", fromSqlKey key)
+    DeletableInstanceUserGroupId key -> ("UserGroup", fromSqlKey key)
+    DeletableInstanceUserGroupItemId key -> ("UserGroupItem", fromSqlKey key)
+    DeletableInstanceUserId key -> ("User", fromSqlKey key)
+    DeletableInstanceClientId key -> ("Client", fromSqlKey key)
+    DeletableInstanceTextMessageId key -> ("TextMessage", fromSqlKey key)
+
+
 instance Deletable DeletableInstance where
     deletableDeletedVersionId x = case x of
         DeletableInstanceFile (Entity _ e) -> fileDeletedVersionId e
@@ -824,6 +940,32 @@ instance Deletable DeletableInstance where
         DeletableInstanceTextMessage (Entity _ e) -> textMessageDeletedVersionId e
     
 data DeletableInstanceFilterType = DeletableInstanceDeletedVersionIdFilter (SqlExpr (Database.Esqueleto.Value (Maybe VersionId)) -> SqlExpr (Database.Esqueleto.Value Bool))
+lookupDeletableInstance :: forall (m :: * -> *). (MonadIO m) =>
+    DeletableInstanceId -> SqlPersistT m (Maybe DeletableInstance)
+lookupDeletableInstance k = case k of
+        DeletableInstanceFileId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ DeletableInstanceFile $ Entity key val
+        DeletableInstanceUserGroupContentId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ DeletableInstanceUserGroupContent $ Entity key val
+        DeletableInstanceUserGroupId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ DeletableInstanceUserGroup $ Entity key val
+        DeletableInstanceUserGroupItemId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ DeletableInstanceUserGroupItem $ Entity key val
+        DeletableInstanceUserId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ DeletableInstanceUser $ Entity key val
+        DeletableInstanceClientId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ DeletableInstanceClient $ Entity key val
+        DeletableInstanceTextMessageId key -> runMaybeT $ do
+            val <- MaybeT $ get key
+            return $ DeletableInstanceTextMessage $ Entity key val
+
+    
 selectDeletable :: forall (m :: * -> *). 
     (MonadLogger m, MonadIO m, MonadThrow m, MonadBaseControl IO m) => 
     [[DeletableInstanceFilterType]] -> SqlPersistT m [DeletableInstance]

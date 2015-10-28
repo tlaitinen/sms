@@ -63,7 +63,9 @@ minuteRun settings = do
                 TextMessageRecipientAccepted =. val Nothing
             ]
         where_ $ tr ^. TextMessageRecipientFailed <. val (Just $ addUTCTime (-600) now)
-        where_ $ tr ^. TextMessageRecipientFailCount <. val 5
+        where_ $ isNothing $ tr ^. TextMessageRecipientSent
+        where_ $ isNothing $ tr ^. TextMessageRecipientDelivered
+        where_ $ tr ^. TextMessageRecipientFailCount <. val 2
     update $ \tr -> do
         set tr [
                 TextMessageRecipientAccepted =. val Nothing
@@ -93,7 +95,7 @@ minuteRun settings = do
         where_ $ isNothing $ tm ^. TextMessagePhone
         where_ $ notExists $ from $ \tr -> do
             where_ $ tr ^. TextMessageRecipientTextMessageId ==. tm ^. TextMessageId
-            where_ $ isNothing $ tr ^. TextMessageRecipientSent 
+            where_ $ (isNothing $ tr ^. TextMessageRecipientSent) ||. (isNothing $ tr ^. TextMessageRecipientFailed)
         where_ $ isNothing $ tm ^. TextMessageDeletedVersionId        
     return ()
     where
