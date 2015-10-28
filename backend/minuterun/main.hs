@@ -95,7 +95,7 @@ minuteRun settings = do
         where_ $ isNothing $ tm ^. TextMessagePhone
         where_ $ notExists $ from $ \tr -> do
             where_ $ tr ^. TextMessageRecipientTextMessageId ==. tm ^. TextMessageId
-            where_ $ (isNothing $ tr ^. TextMessageRecipientSent) ||. (isNothing $ tr ^. TextMessageRecipientFailed)
+            where_ $ (isNothing $ tr ^. TextMessageRecipientSent) E.||. (isNothing $ tr ^. TextMessageRecipientFailed)
         where_ $ isNothing $ tm ^. TextMessageDeletedVersionId        
     return ()
     where

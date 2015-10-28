@@ -80,7 +80,7 @@ getTextmessagerecipientsqueueR  = lift $ runDB $ do
         _ <- if limitOffsetOrder
             then do 
                 offset 0
-                limit 10
+                limit 5
                 orderBy [ asc (c ^. ClientLastName), asc (c ^. ClientFirstName) ]
 
                  
