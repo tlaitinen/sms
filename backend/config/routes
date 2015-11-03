@@ -8,3 +8,4 @@
 /file/#FileId FileR GET
 /set-user-password/#UserId SetUserPasswordR POST
 /spell-check SpellCheckR GET
+/clients/csv ClientsCsvR GET

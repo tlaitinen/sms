@@ -279,7 +279,8 @@ Ext.define('SMS.Application', {
                                     bottomToolbar: [
                                         { name: 'add', action:'add' },
                                         { name: 'remove', action:'remove' },
-                                        { name: 'sendMessage' }
+                                        { name: 'sendMessage' },
+                                        { name: 'export' }
                                     ]
                                 }
                             ]

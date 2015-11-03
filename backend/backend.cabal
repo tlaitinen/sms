@@ -42,6 +42,7 @@ library
         Handler.DB.Enums
         Handler.DB.Routes
         Handler.DB.Esqueleto
+        Handler.ClientsCsv
         Handler.DB.PathPieces
         Handler.DB.Validation
         Handler.DB.FilterSort
@@ -82,6 +83,7 @@ library
         attoparsec -any,
         time -any,
         vector -any,
+        cassava -any,
         esqueleto -any,
         yesod-persistent -any,
         old-locale -any,

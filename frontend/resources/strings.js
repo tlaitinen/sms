@@ -31,8 +31,8 @@ function __(k,d) {
         'clientsgrid.title' : 'Kanta-asiakkaat',
         'clientsgrid.emptyPaging' : 'Ei kanta-asiakkaita',
         'clientsgrid.add' : 'Uusi kanta-asiakas',
-        'clientsgrid.remove' : 'Poista valitut kanta-asiakkaat',
-        'clientsgrid.sendMessage' : 'Lähetä viesti listan kanta-asiakkaille',
+        'clientsgrid.remove' : 'Poista valitut',
+        'clientsgrid.sendMessage' : 'Lähetä viesti näkyville',
         'preview' : 'Esikatselu',
         'preview.title' : 'Esikatselu (voit sulkea ikkunan klikkaamalla kuvaa)',
         'previewFileId' : 'preview',
@@ -110,7 +110,8 @@ function __(k,d) {
         'month9' : 'Syyskuu',
         'month10': 'Lokakuu',
         'month11': 'Marraskuu',
-        'month12' : 'Joulukuu'
+        'month12' : 'Joulukuu',
+        'clientsgrid.export' : 'Lataa kaikki CSV-muodossa'
     };
     /*
      strings = {

@@ -100,6 +100,11 @@ Ext.define('SMS.view.main.MainController', {
                     });
                 }
             },
+            'clientsgrid button[name=export]' : {
+                click: function(button) {
+                    $("body").append('<iframe src="backend/clients/csv" style="display: none;" ></iframe>');
+                }
+            },
             'clientsgrid button[name=sendMessage]' : {
                 click: function(button) {
                     var grid = button.up('grid'),
