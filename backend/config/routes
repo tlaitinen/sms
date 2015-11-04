@@ -9,3 +9,4 @@
 /set-user-password/#UserId SetUserPasswordR POST
 /spell-check SpellCheckR GET
 /clients/csv ClientsCsvR GET
+/clients/xlsx ClientsXlsxR GET

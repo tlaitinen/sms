@@ -102,7 +102,7 @@ Ext.define('SMS.view.main.MainController', {
             },
             'clientsgrid button[name=export]' : {
                 click: function(button) {
-                    $("body").append('<iframe src="backend/clients/csv" style="display: none;" ></iframe>');
+                    $("body").append('<iframe src="backend/clients/xlsx" style="display: none;" ></iframe>');
                 }
             },
             'clientsgrid button[name=sendMessage]' : {

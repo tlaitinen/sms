@@ -111,7 +111,7 @@ function __(k,d) {
         'month10': 'Lokakuu',
         'month11': 'Marraskuu',
         'month12' : 'Joulukuu',
-        'clientsgrid.export' : 'Lataa kaikki CSV-muodossa'
+        'clientsgrid.export' : 'Lataa kaikki XLSX-muodossa'
     };
     /*
      strings = {

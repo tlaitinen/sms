@@ -43,6 +43,7 @@ library
         Handler.DB.Routes
         Handler.DB.Esqueleto
         Handler.ClientsCsv
+        Handler.ClientsXlsx
         Handler.DB.PathPieces
         Handler.DB.Validation
         Handler.DB.FilterSort
@@ -103,6 +104,7 @@ library
         yesod-core -any,
         yesod-auth -any,
         scientific -any,
+        xlsx -any,
         yesod-static -any,
         yesod-form -any,
         bytestring -any,
@@ -120,6 +122,7 @@ library
         directory -any,
         warp -any,
         data-default -any,
+        old-time -any,
         aeson -any,
         conduit -any,
         yesod-auth-hashdb -any,
