@@ -194,6 +194,11 @@
                         },
                         {
                             "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
                             "name": "insertionTime",
                             "type": "utctime"
                         }
@@ -423,6 +428,11 @@
                             "references": null,
                             "name": "name",
                             "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
                         }
                     ],
                     "outputs": [],
@@ -749,6 +759,11 @@
                             "references": null,
                             "name": "name",
                             "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
                         }
                     ],
                     "outputs": [],
@@ -994,6 +1009,11 @@
                     "inputs": [
                         {
                             "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
                             "name": "insertionTime",
                             "type": "utctime"
                         }
@@ -1004,6 +1024,11 @@
                 },
                 {
                     "inputs": [
+                        {
+                            "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
+                        },
                         {
                             "references": null,
                             "name": "insertionTime",
@@ -1378,6 +1403,11 @@
                         },
                         {
                             "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
                             "name": "insertionTime",
                             "type": "utctime"
                         }
@@ -1446,6 +1476,11 @@
                         },
                         {
                             "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
+                        },
+                        {
+                            "references": null,
                             "name": "insertionTime",
                             "type": "utctime"
                         }
@@ -1480,6 +1515,11 @@
                             "references": null,
                             "name": "text",
                             "type": "string"
+                        },
+                        {
+                            "references": null,
+                            "name": "activeStartTime",
+                            "type": "utctime"
                         },
                         {
                             "references": null,
@@ -1802,7 +1842,7 @@
                     "default": null,
                     "name": "activeStartTime",
                     "type": "utctime",
-                    "optional": true
+                    "optional": false
                 },
                 {
                     "references": null,
@@ -1938,7 +1978,7 @@
                     "default": null,
                     "name": "activeStartTime",
                     "type": "utctime",
-                    "optional": true
+                    "optional": false
                 },
                 {
                     "references": null,
@@ -2074,7 +2114,7 @@
                     "default": null,
                     "name": "activeStartTime",
                     "type": "utctime",
-                    "optional": true
+                    "optional": false
                 },
                 {
                     "references": null,
@@ -2189,7 +2229,7 @@
                     "default": null,
                     "name": "activeStartTime",
                     "type": "utctime",
-                    "optional": true
+                    "optional": false
                 },
                 {
                     "references": null,
@@ -2285,7 +2325,7 @@
                     "default": null,
                     "name": "activeStartTime",
                     "type": "utctime",
-                    "optional": true
+                    "optional": false
                 },
                 {
                     "references": null,
@@ -2368,6 +2408,32 @@
                     "name": "failReason",
                     "type": "string",
                     "optional": true
+                }
+            ]
+        },
+        {
+            "name": "MailChimpListItem",
+            "fields": [
+                {
+                    "references": "Client",
+                    "default": null,
+                    "name": "clientId",
+                    "type": "integer",
+                    "optional": false
+                },
+                {
+                    "references": "UserGroup",
+                    "default": null,
+                    "name": "userGroupId",
+                    "type": "integer",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "syncTime",
+                    "type": "utctime",
+                    "optional": false
                 }
             ]
         }
@@ -2457,7 +2523,7 @@
                     "default": null,
                     "name": "activeStartTime",
                     "type": "utctime",
-                    "optional": true
+                    "optional": false
                 },
                 {
                     "references": null,

@@ -2,7 +2,7 @@ import "UserGroup.ydsl";
 
 class Versioned {
     activeId        Maybe ClassInstanceId;
-    activeStartTime Maybe UTCTime;
+    activeStartTime UTCTime;
     activeEndTime   Maybe UTCTime;
 
 }

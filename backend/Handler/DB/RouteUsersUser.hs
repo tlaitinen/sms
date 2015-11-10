@@ -348,7 +348,7 @@ putUsersUserIdR p1 = lift $ runDB $ do
                     ,
                             userName = attr_name
                     ,
-                            userActiveStartTime = (Just __currentTime)
+                            userActiveStartTime = __currentTime
     
                 }
         vErrors <- lift $ validate e5

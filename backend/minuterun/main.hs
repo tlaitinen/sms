@@ -10,7 +10,7 @@ import qualified Data.ByteString.Lazy as LB
 import Text.Printf
 import Data.Maybe (fromMaybe)
 import qualified Database.Persist
-import Import hiding (Option, (==.), (>=.), isNothing, update, (=.), on, joinPath, fileSize, (<.)) 
+import Import hiding (Option, (==.), (>=.), isNothing, update, (=.), on, joinPath, fileSize, (<.), (>.), (!=.), (||.)) 
 import System.Console.GetOpt
 import Control.Monad.Trans.Resource (runResourceT, ResourceT)
 import Database.Persist.Postgresql          (createPostgresqlPool, pgConnStr,
@@ -22,7 +22,7 @@ import Database.Esqueleto
 import qualified Database.Esqueleto as E
 import Data.Time.Clock (getCurrentTime, addUTCTime)
 import Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
-
+import qualified Data.Aeson as A
 import qualified Control.Exception as E
 import System.Exit
 import qualified Data.Map as Map
@@ -31,6 +31,8 @@ import Network.Mail.SMTP
 import Network.Mail.Mime
 import System.FilePath
 import qualified Data.List as L
+import qualified Web.Mailchimp as MC
+import qualified Web.Mailchimp.Lists as MCL
 
 
 fmtDay :: Day -> Text
@@ -38,6 +40,76 @@ fmtDay day = T.pack $ printf "%d.%d.%d" d m (y `mod` 100)
     where (y,m,d) = toGregorian day
 
 mkMessage "App" "messages" "fi"
+
+syncMailChimp :: AppSettings -> UTCTime -> SqlPersistT (LoggingT IO) ()
+syncMailChimp settings now = do
+    userGroups <- select $ from $ \ug -> do
+        where_ $ not_ $ isNothing $ ug ^. UserGroupMailChimpApiKey
+        where_ $ not_ $ isNothing $ ug ^. UserGroupMailChimpListName
+        where_ $ isNothing $ ug ^. UserGroupDeletedVersionId
+        return ug 
+    forM_ userGroups syncList     
+    where
+        syncList ug = do
+            subscribes <- updatesQuery ug True
+            unsubscribes <- updatesQuery ug False
+            oldEmails <- selectDistinct $ from $ \(c `InnerJoin` li `InnerJoin` pc) -> do
+                on $ pc ^. ClientActiveId ==. just (c ^. ClientId)
+                on $ li ^. MailChimpListItemClientId ==. c ^. ClientId
+                on $ existsUserGroupClientContent ug c
+                where_ $ isNothing $ c ^. ClientDeletedVersionId
+                where_ $ c ^. ClientEmail !=. pc ^. ClientEmail
+                where_ $ not_ $ isNothing $ pc ^. ClientEmail
+                where_ $ pc ^. ClientActiveStartTime >. li ^. MailChimpListItemSyncTime
+                return $ pc ^. ClientEmail
+            let unsubscribeEmails = L.nub $ [ clientMailChimpEmail c | ((Entity _ c),_) <- unsubscribes ] ++ [ MCL.Email $ fromMaybe "" e | (E.Value e) <- oldEmails ] 
+                mcfg = (userGroupMailChimpApiKey ug) >>= MC.mailchimpKey >>= Just. MC.defaultMailchimpConfig
+            case (mcfg, userGroupMailChimpListName ug) of
+                (Just cfg, Just ln) -> do
+                    let lId = MCL.ListId ln
+                    mr <- liftIO $ MC.runMailchimpLogging cfg $ do
+
+                        when (not $ null unsubscribeEmails) $ do
+                            _ <- MCL.batchUnsubscribe lId unsubscribeEmails (Just True) (Just False) (Just False)
+                            return ()
+                        if not $ null subscribes 
+                            then fmap Just $ 
+                                MCL.batchSubscribe lId (subscriberInfo subscribes) (Just False) (Just True) (Just True)
+                            else return Nothing    
+                    maybe (forM_ updateListItem subscribes) (return ()) mr                
+                _ -> return ()
+        clientMailChimpEmail c = MCL.Email $ fromMaybe "" $ clientEmail c         
+        updateListItem (Entity _ c, Entity liId li) r 
+
+            | clientMailChimpEmail c `inMailChimpResults` (bsrAdds r ++ bsrUpdates r) = do
+                update $ \l -> do
+                    set l [ MailChimpListItemSyncTime =. val now ]
+                    where_ $ MailChimpListItemId ==. val liId
+            | otherwise = return ()
+        subscriberInfo xs = [ 
+                (MCL.Email $ fromMaybe "" $ clientEmail c,
+                 MCL.EmailTypeHTML,
+                [ 
+                    ("FIRSTNAME", A.String $ clientFirstName c),
+                    ("LASTNAME", A.String $ clientLastName c) 
+                ])
+                | ((Entity _ c),_) <- xs
+            ]
+        updatesQuery ug allowEmail = select $ from $ \(c `LeftOuterJoin` li) -> do
+            on $ li ?. MailChimpListItemClientId ==. just (c ^. ClientId)
+            on $ existsUserGroupClientContent ug c
+            where_ $ isNothing $ c ^. ClientDeletedVersionId
+            where_ $ c ^. ClientAllowEmail ==. val allowEmail
+            when allowEmail $ where_ $ not_ $ isNothing $ c ^. ClientEmail 
+            where_ $ isNothing (li ?. MailChimpListItemSyncTime)
+                ||. (just (c ^. ClientActiveStartTime) >. li ?. MailChimpListItemSyncTime)
+            return (c, li)
+     
+        existsUserGroupClientContent (Entity ugId _) c = exists $ from $ \ugc -> do
+            where_ $ ugc ^. UserGroupContentUserGroupId ==. val ugId
+            where_ $ ugc ^. UserGroupContentClientContentId ==. just (c ^. ClientId)
+            where_ $ isNothing $ ugc ^. UserGroupContentDeletedVersionId
+ 
 
 minuteRun :: AppSettings -> SqlPersistT (LoggingT IO) ()
 minuteRun settings = do
@@ -56,6 +128,7 @@ minuteRun settings = do
     -}
 
     now <- liftIO getCurrentTime        
+    syncMailChimp settings now
     update $ \tr -> do
         set tr [ 
                 TextMessageRecipientFailCount =. tr ^. TextMessageRecipientFailCount +. val 1,
@@ -95,7 +168,7 @@ minuteRun settings = do
         where_ $ isNothing $ tm ^. TextMessagePhone
         where_ $ notExists $ from $ \tr -> do
             where_ $ tr ^. TextMessageRecipientTextMessageId ==. tm ^. TextMessageId
-            where_ $ (isNothing $ tr ^. TextMessageRecipientSent) E.||. (isNothing $ tr ^. TextMessageRecipientFailed)
+            where_ $ (isNothing $ tr ^. TextMessageRecipientSent) E.&&. (isNothing $ tr ^. TextMessageRecipientFailed)
         where_ $ isNothing $ tm ^. TextMessageDeletedVersionId        
     return ()
     where

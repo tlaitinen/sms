@@ -173,12 +173,9 @@ getUsersR  = lift $ runDB $ do
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserActiveId) nothing
                            
-                "activeStartTime" -> case FS.f_value fjm of
-                    Just value -> case PP.fromPathPiece value of 
-                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserActiveStartTime) (just ((val v')))
-                            _        -> return ()
-                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserActiveStartTime) nothing
-                           
+                "activeStartTime" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserActiveStartTime) ((val v'))
+                    _        -> return ()
                 "activeEndTime" -> case FS.f_value fjm of
                     Just value -> case PP.fromPathPiece value of 
                             (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserActiveEndTime) (just ((val v')))
@@ -359,7 +356,7 @@ postUsersR  = lift $ runDB $ do
                     ,
                             userActiveId = Nothing
                     ,
-                            userActiveStartTime = (Just __currentTime)
+                            userActiveStartTime = __currentTime
                     ,
                             userActiveEndTime = Nothing
                     ,

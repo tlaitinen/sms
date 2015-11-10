@@ -33,6 +33,7 @@ import qualified Data.Text as T
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
 import Handler.Common
+import Handler.MailChimp
 import Handler.ClientsCsv
 import Handler.ClientsXlsx
 import Handler.File
@@ -86,14 +87,15 @@ makeFoundation appSettings = do
     where
         ensureAdminUser s = do
             ugs <- selectList [ UserGroupName ==. "Default" ] []
+
+            now <- liftIO getCurrentTime
             defaultUgId <- case ugs of
                 (x:_) -> return $ entityKey x
                 _ -> do
-                    now <- liftIO getCurrentTime
-                    insert $ newUserGroup "Default"
+                    insert $ newUserGroup "Default" now
             users <- selectList [ UserName ==. (appAdminUser s) ] []
             when (null users) $ void $ do
-                u <- liftIO $ setPassword (appAdminPassword s) $ newUser defaultUgId (appAdminUser s)
+                u <- liftIO $ setPassword (appAdminPassword s) $ newUser defaultUgId (appAdminUser s) now
                 uId <- insert u
                 insert $ newUserGroupItem defaultUgId uId UserGroupModeReadWrite
                 insert $ (newUserGroupContent defaultUgId) {

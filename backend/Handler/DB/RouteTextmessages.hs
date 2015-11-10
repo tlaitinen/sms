@@ -237,7 +237,7 @@ getTextmessagesR  = lift $ runDB $ do
                            
                 "c.activeStartTime" -> case FS.f_value fjm of
                     Just value -> case PP.fromPathPiece value of 
-                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ?.  ClientActiveStartTime) (just (just ((val v'))))
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ?.  ClientActiveStartTime) (just ((val v')))
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (c  ?.  ClientActiveStartTime) nothing
                            
@@ -315,7 +315,7 @@ getTextmessagesR  = lift $ runDB $ do
                            
                 "rt.activeStartTime" -> case FS.f_value fjm of
                     Just value -> case PP.fromPathPiece value of 
-                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageActiveStartTime) (just (just ((val v'))))
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageActiveStartTime) (just ((val v')))
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (rt  ?.  TextMessageActiveStartTime) nothing
                            
@@ -388,12 +388,9 @@ getTextmessagesR  = lift $ runDB $ do
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageActiveId) nothing
                            
-                "activeStartTime" -> case FS.f_value fjm of
-                    Just value -> case PP.fromPathPiece value of 
-                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageActiveStartTime) (just ((val v')))
-                            _        -> return ()
-                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageActiveStartTime) nothing
-                           
+                "activeStartTime" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageActiveStartTime) ((val v'))
+                    _        -> return ()
                 "activeEndTime" -> case FS.f_value fjm of
                     Just value -> case PP.fromPathPiece value of 
                             (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (t  ^.  TextMessageActiveEndTime) (just ((val v')))
@@ -499,7 +496,7 @@ postTextmessagesR  = lift $ runDB $ do
                     ,
                             textMessageActiveId = Nothing
                     ,
-                            textMessageActiveStartTime = Nothing
+                            textMessageActiveStartTime = __currentTime
                     ,
                             textMessageActiveEndTime = Nothing
                     ,

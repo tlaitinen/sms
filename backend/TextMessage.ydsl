@@ -23,6 +23,7 @@ route /incomingtextmessages {
     post {
         tId <- insert TextMessage from {
             insertionTime = now(),
+            activeStartTime = now(),
             insertedByUserId = $auth.id,
             phone = $request.phone,
             text = $request.text
@@ -53,6 +54,7 @@ route /textmessages {
     post {
         tId <- insert TextMessage from {
             insertionTime = now(),
+            activeStartTime = now(),
             insertedByUserId = $auth.id,
             text = $request.text
         };
@@ -72,6 +74,7 @@ route /targetedtextmessage {
     post {
         tId <- insert TextMessage from {
             insertionTime = now(),
+            activeStartTime = now(),
             insertedByUserId = $auth.id,
             text = $request.text
         };
@@ -111,7 +114,8 @@ route /textmessages/#TextMessageId {
             deletedVersionId = versionId
         };
         update TextMessage identified by $1 with {
-            text = $request.text
+            text = $request.text,
+            activeStartTime = now()
         };
     }
     delete {
@@ -124,7 +128,8 @@ route /textmessages/#TextMessageId {
             userId = $auth.id
         };
         update TextMessage identified by $1 with {
-            deletedVersionId = versionId
+            deletedVersionId = versionId,
+            activeEndTime = now()
         };
     }
 
@@ -136,6 +141,7 @@ route /textmessages/#TextMessageId/reply {
             and (not (t.phone is Nothing));
         tId <- insert TextMessage from {
                 insertionTime = now(),
+                activeStartTime = now(),
                 insertedByUserId = $auth.id,
                 text = "",
                 replyToTextMessageId = $1

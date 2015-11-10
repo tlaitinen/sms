@@ -117,3 +117,8 @@ instance Validatable TextMessageRecipient where
         results <- sequence [
             ]
         return $ catMaybes results
+instance Validatable MailChimpListItem where
+    validate v = do
+        results <- sequence [
+            ]
+        return $ catMaybes results

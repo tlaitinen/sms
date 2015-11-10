@@ -171,12 +171,9 @@ getFilesR  = lift $ runDB $ do
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileActiveId) nothing
                            
-                "activeStartTime" -> case FS.f_value fjm of
-                    Just value -> case PP.fromPathPiece value of 
-                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileActiveStartTime) (just ((val v')))
-                            _        -> return ()
-                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileActiveStartTime) nothing
-                           
+                "activeStartTime" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileActiveStartTime) ((val v'))
+                    _        -> return ()
                 "activeEndTime" -> case FS.f_value fjm of
                     Just value -> case PP.fromPathPiece value of 
                             (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (f  ^.  FileActiveEndTime) (just ((val v')))

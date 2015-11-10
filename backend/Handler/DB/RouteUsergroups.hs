@@ -172,12 +172,9 @@ getUsergroupsR  = lift $ runDB $ do
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveId) nothing
                            
-                "activeStartTime" -> case FS.f_value fjm of
-                    Just value -> case PP.fromPathPiece value of 
-                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveStartTime) (just ((val v')))
-                            _        -> return ()
-                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveStartTime) nothing
-                           
+                "activeStartTime" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveStartTime) ((val v'))
+                    _        -> return ()
                 "activeEndTime" -> case FS.f_value fjm of
                     Just value -> case PP.fromPathPiece value of 
                             (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveEndTime) (just ((val v')))
@@ -302,7 +299,7 @@ postUsergroupsR  = lift $ runDB $ do
                     ,
                             userGroupActiveId = Nothing
                     ,
-                            userGroupActiveStartTime = (Just __currentTime)
+                            userGroupActiveStartTime = __currentTime
                     ,
                             userGroupActiveEndTime = Nothing
                     ,

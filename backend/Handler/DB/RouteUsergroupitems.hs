@@ -160,12 +160,9 @@ getUsergroupitemsR  = lift $ runDB $ do
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserActiveId) nothing
                            
-                "u.activeStartTime" -> case FS.f_value fjm of
-                    Just value -> case PP.fromPathPiece value of 
-                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserActiveStartTime) (just ((val v')))
-                            _        -> return ()
-                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserActiveStartTime) nothing
-                           
+                "u.activeStartTime" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserActiveStartTime) ((val v'))
+                    _        -> return ()
                 "u.activeEndTime" -> case FS.f_value fjm of
                     Just value -> case PP.fromPathPiece value of 
                             (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (u  ^.  UserActiveEndTime) (just ((val v')))
@@ -205,12 +202,9 @@ getUsergroupitemsR  = lift $ runDB $ do
                             _        -> return ()
                     Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveId) nothing
                            
-                "ug.activeStartTime" -> case FS.f_value fjm of
-                    Just value -> case PP.fromPathPiece value of 
-                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveStartTime) (just ((val v')))
-                            _        -> return ()
-                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveStartTime) nothing
-                           
+                "ug.activeStartTime" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
+                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveStartTime) ((val v'))
+                    _        -> return ()
                 "ug.activeEndTime" -> case FS.f_value fjm of
                     Just value -> case PP.fromPathPiece value of 
                             (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (ug  ^.  UserGroupActiveEndTime) (just ((val v')))

@@ -31,19 +31,20 @@ library
         Settings.StaticFiles
         Handler.Common
         Handler.SetUserPassword
+        Handler.MailChimp
         Handler.File
         Handler.Home
         Handler.Utils
         Handler.UploadFiles
         Handler.TextMessage
         Handler.SpellCheck
+        Handler.ClientsCsv
+        Handler.ClientsXlsx
         Handler.DB
         Handler.DB.Internal
         Handler.DB.Enums
         Handler.DB.Routes
         Handler.DB.Esqueleto
-        Handler.ClientsCsv
-        Handler.ClientsXlsx
         Handler.DB.PathPieces
         Handler.DB.Validation
         Handler.DB.FilterSort
@@ -160,6 +161,8 @@ executable minuterun
     main-is: main.hs
     build-depends:
         text -any,
+        mailchimp -any,
+        aeson -any,
         bytestring -any,
         temporary -any,
         persistent-postgresql -any,

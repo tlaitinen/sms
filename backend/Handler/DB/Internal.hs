@@ -70,7 +70,7 @@ File json
     previewOfFileId FileId Maybe   default=NULL
     name Text  
     activeId FileId Maybe   default=NULL
-    activeStartTime UTCTime Maybe  
+    activeStartTime UTCTime  
     activeEndTime UTCTime Maybe  
     deletedVersionId VersionId Maybe   default=NULL
     insertionTime UTCTime  
@@ -90,7 +90,7 @@ UserGroup json
     current Checkmark  "default=True" nullable
     name Text  
     activeId UserGroupId Maybe   default=NULL
-    activeStartTime UTCTime Maybe  
+    activeStartTime UTCTime  
     activeEndTime UTCTime Maybe  
     deletedVersionId VersionId Maybe   default=NULL
     UniqueUserGroup current name !force
@@ -113,7 +113,7 @@ User json
     config Text  "default='{}'"
     name Text  
     activeId UserId Maybe   default=NULL
-    activeStartTime UTCTime Maybe  
+    activeStartTime UTCTime  
     activeEndTime UTCTime Maybe  
     deletedVersionId VersionId Maybe   default=NULL
     UniqueUser current name !force
@@ -132,7 +132,7 @@ Client json
     allowEmail Bool  "default=True"
     deletedVersionId VersionId Maybe   default=NULL
     activeId ClientId Maybe   default=NULL
-    activeStartTime UTCTime Maybe  
+    activeStartTime UTCTime  
     activeEndTime UTCTime Maybe  
     insertionTime UTCTime  
     insertedByUserId UserId Maybe   default=NULL
@@ -146,7 +146,7 @@ TextMessage json
     aborted UTCTime Maybe  
     deletedVersionId VersionId Maybe   default=NULL
     activeId TextMessageId Maybe   default=NULL
-    activeStartTime UTCTime Maybe  
+    activeStartTime UTCTime  
     activeEndTime UTCTime Maybe  
     insertionTime UTCTime  
     insertedByUserId UserId Maybe   default=NULL
@@ -159,15 +159,19 @@ TextMessageRecipient json
     failed UTCTime Maybe  
     failCount Int  "default=0"
     failReason Text Maybe  
+MailChimpListItem json
+    clientId ClientId  
+    userGroupId UserGroupId  
+    syncTime UTCTime  
 |]
-newFile :: Text -> Int32 -> Text -> UTCTime -> File
-newFile contentType_ size_ name_ insertionTime_ = File {
+newFile :: Text -> Int32 -> Text -> UTCTime -> UTCTime -> File
+newFile contentType_ size_ name_ activeStartTime_ insertionTime_ = File {
     fileContentType = contentType_,
     fileSize = size_,
     filePreviewOfFileId = Nothing,
     fileName = name_,
     fileActiveId = Nothing,
-    fileActiveStartTime = Nothing,
+    fileActiveStartTime = activeStartTime_,
     fileActiveEndTime = Nothing,
     fileDeletedVersionId = Nothing,
     fileInsertionTime = insertionTime_,
@@ -183,15 +187,15 @@ newUserGroupContent userGroupId_ = UserGroupContent {
     userGroupContentTextMessageContentId = Nothing,
     userGroupContentDeletedVersionId = Nothing
 }    
-newUserGroup :: Text -> UserGroup
-newUserGroup name_ = UserGroup {
+newUserGroup :: Text -> UTCTime -> UserGroup
+newUserGroup name_ activeStartTime_ = UserGroup {
     userGroupEmail = "",
     userGroupMailChimpApiKey = Nothing,
     userGroupMailChimpListName = Nothing,
     userGroupCurrent = Active,
     userGroupName = name_,
     userGroupActiveId = Nothing,
-    userGroupActiveStartTime = Nothing,
+    userGroupActiveStartTime = activeStartTime_,
     userGroupActiveEndTime = Nothing,
     userGroupDeletedVersionId = Nothing
 }    
@@ -202,8 +206,8 @@ newUserGroupItem userGroupId_ userId_ mode_ = UserGroupItem {
     userGroupItemMode = mode_,
     userGroupItemDeletedVersionId = Nothing
 }    
-newUser :: UserGroupId -> Text -> User
-newUser defaultUserGroupId_ name_ = User {
+newUser :: UserGroupId -> Text -> UTCTime -> User
+newUser defaultUserGroupId_ name_ activeStartTime_ = User {
     userFirstName = "",
     userLastName = "",
     userOrganization = "",
@@ -217,7 +221,7 @@ newUser defaultUserGroupId_ name_ = User {
     userConfig = "{}",
     userName = name_,
     userActiveId = Nothing,
-    userActiveStartTime = Nothing,
+    userActiveStartTime = activeStartTime_,
     userActiveEndTime = Nothing,
     userDeletedVersionId = Nothing
 }    
@@ -226,8 +230,8 @@ newVersion time_ userId_ = Version {
     versionTime = time_,
     versionUserId = userId_
 }    
-newClient :: UTCTime -> Client
-newClient insertionTime_ = Client {
+newClient :: UTCTime -> UTCTime -> Client
+newClient activeStartTime_ insertionTime_ = Client {
     clientFirstName = "",
     clientLastName = "",
     clientEmail = Nothing,
@@ -238,13 +242,13 @@ newClient insertionTime_ = Client {
     clientAllowEmail = True,
     clientDeletedVersionId = Nothing,
     clientActiveId = Nothing,
-    clientActiveStartTime = Nothing,
+    clientActiveStartTime = activeStartTime_,
     clientActiveEndTime = Nothing,
     clientInsertionTime = insertionTime_,
     clientInsertedByUserId = Nothing
 }    
-newTextMessage :: Text -> UTCTime -> TextMessage
-newTextMessage text_ insertionTime_ = TextMessage {
+newTextMessage :: Text -> UTCTime -> UTCTime -> TextMessage
+newTextMessage text_ activeStartTime_ insertionTime_ = TextMessage {
     textMessageText = text_,
     textMessagePhone = Nothing,
     textMessageSenderClientId = Nothing,
@@ -254,7 +258,7 @@ newTextMessage text_ insertionTime_ = TextMessage {
     textMessageAborted = Nothing,
     textMessageDeletedVersionId = Nothing,
     textMessageActiveId = Nothing,
-    textMessageActiveStartTime = Nothing,
+    textMessageActiveStartTime = activeStartTime_,
     textMessageActiveEndTime = Nothing,
     textMessageInsertionTime = insertionTime_,
     textMessageInsertedByUserId = Nothing
@@ -269,6 +273,12 @@ newTextMessageRecipient textMessageId_ clientId_ = TextMessageRecipient {
     textMessageRecipientFailed = Nothing,
     textMessageRecipientFailCount = 0,
     textMessageRecipientFailReason = Nothing
+}    
+newMailChimpListItem :: ClientId -> UserGroupId -> UTCTime -> MailChimpListItem
+newMailChimpListItem clientId_ userGroupId_ syncTime_ = MailChimpListItem {
+    mailChimpListItemClientId = clientId_,
+    mailChimpListItemUserGroupId = userGroupId_,
+    mailChimpListItemSyncTime = syncTime_
 }    
 class Named a where
     namedName :: a -> Text
@@ -643,7 +653,7 @@ selectRestricted  = do
         ]
 class Versioned a where
     versionedActiveId :: a -> Maybe VersionedInstanceId
-    versionedActiveStartTime :: a -> Maybe UTCTime
+    versionedActiveStartTime :: a -> UTCTime
     versionedActiveEndTime :: a -> Maybe UTCTime
 data VersionedInstanceFieldName = VersionedActiveId    | VersionedActiveStartTime    | VersionedActiveEndTime 
 instance Versioned File where
@@ -711,7 +721,7 @@ instance Versioned VersionedInstance where
         VersionedInstanceClient (Entity _ e) -> clientActiveEndTime e
         VersionedInstanceTextMessage (Entity _ e) -> textMessageActiveEndTime e
     
-data VersionedInstanceFilterType = VersionedInstanceActiveStartTimeFilter (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)) -> SqlExpr (Database.Esqueleto.Value Bool))    | VersionedInstanceActiveEndTimeFilter (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)) -> SqlExpr (Database.Esqueleto.Value Bool))
+data VersionedInstanceFilterType = VersionedInstanceActiveStartTimeFilter (SqlExpr (Database.Esqueleto.Value (UTCTime)) -> SqlExpr (Database.Esqueleto.Value Bool))    | VersionedInstanceActiveEndTimeFilter (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)) -> SqlExpr (Database.Esqueleto.Value Bool))
 lookupVersionedInstance :: forall (m :: * -> *). (MonadIO m) =>
     VersionedInstanceId -> SqlPersistT m (Maybe VersionedInstance)
 lookupVersionedInstance k = case k of
@@ -795,7 +805,7 @@ selectVersioned filters = do
         , map VersionedInstanceTextMessage result_TextMessage
 
         ]
-data VersionedInstanceUpdateType = VersionedInstanceUpdateActiveStartTime (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)))    | VersionedInstanceUpdateActiveEndTime (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)))
+data VersionedInstanceUpdateType = VersionedInstanceUpdateActiveStartTime (SqlExpr (Database.Esqueleto.Value (UTCTime)))    | VersionedInstanceUpdateActiveEndTime (SqlExpr (Database.Esqueleto.Value (Maybe UTCTime)))
 updateVersioned :: forall (m :: * -> *). 
     (MonadLogger m, MonadIO m, MonadThrow m, MonadBaseControl IO m) => 
     [[VersionedInstanceFilterType]] -> [VersionedInstanceUpdateType] -> SqlPersistT m ()

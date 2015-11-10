@@ -211,6 +211,8 @@ putTextmessagesTextMessageIdR p1 = lift $ runDB $ do
     
             return $ e {
                             textMessageText = attr_text
+                    ,
+                            textMessageActiveStartTime = __currentTime
     
                 }
         vErrors <- lift $ validate e5
@@ -273,6 +275,8 @@ deleteTextmessagesTextMessageIdR p1 = lift $ runDB $ do
     
             return $ e {
                             textMessageDeletedVersionId = (Just result_versionId)
+                    ,
+                            textMessageActiveEndTime = (Just __currentTime)
     
                 }
         vErrors <- lift $ validate e3

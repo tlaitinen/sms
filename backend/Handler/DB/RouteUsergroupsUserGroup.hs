@@ -196,7 +196,7 @@ putUsergroupsUserGroupIdR p1 = lift $ runDB $ do
                     ,
                             userGroupName = attr_name
                     ,
-                            userGroupActiveStartTime = (Just __currentTime)
+                            userGroupActiveStartTime = __currentTime
     
                 }
         vErrors <- lift $ validate e5

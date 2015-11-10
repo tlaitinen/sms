@@ -204,7 +204,7 @@ putFilesFileIdR p1 = lift $ runDB $ do
             return $ e {
                             fileName = attr_name
                     ,
-                            fileActiveStartTime = (Just __currentTime)
+                            fileActiveStartTime = __currentTime
     
                 }
         vErrors <- lift $ validate e5

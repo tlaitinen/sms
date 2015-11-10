@@ -46,9 +46,9 @@ postUploadFilesR = do
     let fileObj = (newFile (I.fileContentType fi) 
                           (fromIntegral size)
                           (I.fileName fi)
-                          now) {
+                          now now) {
             fileInsertedByUserId = Just userId,
-            fileActiveStartTime = Just now
+            fileActiveStartTime = now
         }
     (fileId, extraFields) <- runDB $ do
         fileId' <- insert fileObj
@@ -61,7 +61,7 @@ postUploadFilesR = do
             then do
                 
                 previewFileId <- insert $ (newFile "image/jpeg" 0 
-                        (T.concat ["Preview of ", I.fileName fi]) now)
+                        (T.concat ["Preview of ", I.fileName fi]) now now)
                     {
                         filePreviewOfFileId = Just fileId'
                     }

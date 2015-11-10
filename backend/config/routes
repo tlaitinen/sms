@@ -10,3 +10,4 @@
 /spell-check SpellCheckR GET
 /clients/csv ClientsCsvR GET
 /clients/xlsx ClientsXlsxR GET
+/mailchimp MailChimpR GET POST

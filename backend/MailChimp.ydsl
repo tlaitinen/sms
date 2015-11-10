@@ -1,0 +1,8 @@
+import "Client.ydsl";
+import "UserGroup.ydsl";
+
+entity MailChimpListItem {
+    clientId        ClientId;
+    userGroupId     UserGroupId;
+    syncTime        UTCTime;
+}

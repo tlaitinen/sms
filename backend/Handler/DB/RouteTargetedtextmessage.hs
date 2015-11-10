@@ -131,7 +131,7 @@ postTargetedtextmessageR  = lift $ runDB $ do
                     ,
                             textMessageActiveId = Nothing
                     ,
-                            textMessageActiveStartTime = Nothing
+                            textMessageActiveStartTime = __currentTime
                     ,
                             textMessageActiveEndTime = Nothing
                     ,

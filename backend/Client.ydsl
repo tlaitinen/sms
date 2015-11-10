@@ -36,7 +36,8 @@ route /clients {
             allowSms = $request.allowSms,
             allowEmail = $request.allowEmail,
             insertionTime = now(),
-            insertedByUserId = $auth.id
+            insertedByUserId = $auth.id,
+            activeStartTime = now()
         };
         insert UserGroupContent from {
             userGroupId = $auth.defaultUserGroupId,
