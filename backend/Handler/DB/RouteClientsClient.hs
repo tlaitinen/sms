@@ -305,6 +305,8 @@ putClientsClientIdR p1 = lift $ runDB $ do
                             clientAllowSms = attr_allowSms
                     ,
                             clientAllowEmail = attr_allowEmail
+                    ,
+                            clientActiveStartTime = __currentTime
     
                 }
         vErrors <- lift $ validate e5

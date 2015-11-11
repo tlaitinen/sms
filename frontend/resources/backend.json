@@ -1026,11 +1026,6 @@
                     "inputs": [
                         {
                             "references": null,
-                            "name": "activeStartTime",
-                            "type": "utctime"
-                        },
-                        {
-                            "references": null,
                             "name": "insertionTime",
                             "type": "utctime"
                         },

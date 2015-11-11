@@ -56,11 +56,11 @@ syncMailChimp settings now = do
             oldEmails <- selectDistinct $ from $ \(c `InnerJoin` li `InnerJoin` pc) -> do
                 on $ pc ^. ClientActiveId ==. just (c ^. ClientId)
                 on $ li ^. MailChimpListItemClientId ==. c ^. ClientId
-                on $ existsUserGroupClientContent ugId c
+                where_ $ existsUserGroupClientContent ugId c
                 where_ $ isNothing $ c ^. ClientDeletedVersionId
                 where_ $ c ^. ClientEmail !=. pc ^. ClientEmail
                 where_ $ not_ $ isNothing $ pc ^. ClientEmail
-                where_ $ pc ^. ClientActiveStartTime >. li ^. MailChimpListItemSyncTime
+                where_ $ pc ^. ClientActiveEndTime >. just (li ^. MailChimpListItemSyncTime)
                 return $ pc ^. ClientEmail
             let unsubscribeEmails = L.nub $ [ clientMailChimpEmail c | ((Entity _ c),_) <- unsubscribes ] ++ [ MCL.Email $ fromMaybe "" e | (E.Value e) <- oldEmails ] 
                 mkey = (userGroupMailChimpApiKey ug) >>= MC.mailchimpKey
@@ -102,7 +102,7 @@ syncMailChimp settings now = do
             ]
         updatesQuery ugId allowEmail = select $ from $ \(c `LeftOuterJoin` li) -> do
             on $ li ?. MailChimpListItemClientId ==. just (c ^. ClientId)
-            on $ existsUserGroupClientContent ugId c
+            where_ $ existsUserGroupClientContent ugId c
             where_ $ isNothing $ c ^. ClientDeletedVersionId
             where_ $ c ^. ClientAllowEmail ==. val allowEmail
             when allowEmail $ where_ $ not_ $ isNothing $ c ^. ClientEmail 

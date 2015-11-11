@@ -80,7 +80,8 @@ route /clients/#ClientId {
             dateOfBirth = $request.dateOfBirth,
             card = $request.card,
             allowSms = $request.allowSms,
-            allowEmail = $request.allowEmail
+            allowEmail = $request.allowEmail,
+            activeStartTime = now()
         };
     }
 }
