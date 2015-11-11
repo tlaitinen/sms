@@ -12,7 +12,7 @@ class Deletable {
 
 entity Version {
     time UTCTime;
-    userId UserId;
+    userId Maybe UserId;
 }
 
 route /versions {

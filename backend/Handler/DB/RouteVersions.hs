@@ -79,7 +79,7 @@ getVersionsR  = lift $ runDB $ do
     let defaultLimit = (maybe Nothing PP.fromPathPiece defaultLimitParam) :: Maybe Int64
     let baseQuery limitOffsetOrder = from $ \(v ) -> do
         let vId' = v ^. VersionId
-        where_ ((v ^. VersionUserId) ==. (val authId))
+        where_ ((v ^. VersionUserId) ==. (val $ Just authId))
 
         _ <- if limitOffsetOrder
             then do 
@@ -116,9 +116,12 @@ getVersionsR  = lift $ runDB $ do
                 "time" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
                     (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (v  ^.  VersionTime) ((val v'))
                     _        -> return ()
-                "userId" -> case (FS.f_value fjm >>= PP.fromPathPiece) of 
-                    (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (v  ^.  VersionUserId) ((val v'))
-                    _        -> return ()
+                "userId" -> case FS.f_value fjm of
+                    Just value -> case PP.fromPathPiece value of 
+                            (Just v') -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (v  ^.  VersionUserId) (just ((val v')))
+                            _        -> return ()
+                    Nothing -> where_ $ defaultFilterOp (FS.f_negate fjm) (FS.f_comparison fjm) (v  ^.  VersionUserId) nothing
+                           
 
                 _ -> return ()
                 ) xs

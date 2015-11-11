@@ -120,7 +120,7 @@ User json
     deriving Typeable
 Version json
     time UTCTime  
-    userId UserId  
+    userId UserId Maybe   default=NULL
 Client json
     firstName Text  "default=''"
     lastName Text  "default=''"
@@ -229,10 +229,10 @@ newUser defaultUserGroupId_ name_ activeStartTime_ = User {
     userActiveEndTime = Nothing,
     userDeletedVersionId = Nothing
 }    
-newVersion :: UTCTime -> UserId -> Version
-newVersion time_ userId_ = Version {
+newVersion :: UTCTime -> Version
+newVersion time_ = Version {
     versionTime = time_,
-    versionUserId = userId_
+    versionUserId = Nothing
 }    
 newClient :: UTCTime -> UTCTime -> Client
 newClient activeStartTime_ insertionTime_ = Client {

@@ -93,7 +93,7 @@ deleteFileusergroupcontentsR  = lift $ runDB $ do
             return $ Version {
                             versionTime = __currentTime
                     ,
-                            versionUserId = authId
+                            versionUserId = (Just authId)
     
                 }
         vErrors <- lift $ validate e1

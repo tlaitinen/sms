@@ -153,7 +153,7 @@ putFilesFileIdR p1 = lift $ runDB $ do
             return $ Version {
                             versionTime = __currentTime
                     ,
-                            versionUserId = authId
+                            versionUserId = (Just authId)
     
                 }
         vErrors <- lift $ validate e2
@@ -243,7 +243,7 @@ deleteFilesFileIdR p1 = lift $ runDB $ do
             return $ Version {
                             versionTime = __currentTime
                     ,
-                            versionUserId = authId
+                            versionUserId = (Just authId)
     
                 }
         vErrors <- lift $ validate e2
