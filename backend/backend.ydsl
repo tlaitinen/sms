@@ -4,3 +4,4 @@ import "UserGroup.ydsl";
 import "Client.ydsl";
 import "TextMessage.ydsl";
 import "MailChimp.ydsl";
+import "Logging.ydsl";

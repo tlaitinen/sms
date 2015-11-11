@@ -44,6 +44,7 @@ import Handler.DB.RouteTextmessagerecipientsTextMessageRecipientAccept
 import Handler.DB.RouteTextmessagerecipientsTextMessageRecipientSent
 import Handler.DB.RouteTextmessagerecipientsTextMessageRecipientFail
 import Handler.DB.RouteTextmessagerecipientsTextMessageRecipientDelivered
+import Handler.DB.RouteUsagelogs
 
 import Yesod.Auth (requireAuth, requireAuthId, YesodAuth, AuthId, YesodAuthPersist)
 import Yesod.Core
@@ -80,5 +81,6 @@ mkYesodSubData "DB" [parseRoutes|
 /textmessagerecipients/#TextMessageRecipientId/sent        TextmessagerecipientsTextMessageRecipientIdSentR      POST
 /textmessagerecipients/#TextMessageRecipientId/fail        TextmessagerecipientsTextMessageRecipientIdFailR      POST
 /textmessagerecipients/#TextMessageRecipientId/delivered        TextmessagerecipientsTextMessageRecipientIdDeliveredR      POST
+/usagelogs        UsagelogsR      POST
 |]
 

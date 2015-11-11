@@ -122,3 +122,8 @@ instance Validatable MailChimpListItem where
         results <- sequence [
             ]
         return $ catMaybes results
+instance Validatable UsageLog where
+    validate v = do
+        results <- sequence [
+            ]
+        return $ catMaybes results

@@ -1,0 +1,15 @@
+entity UsageLog {
+    userId UserId;
+    time UTCTime;
+    data_ Text sql "data";
+}
+
+route /usagelogs {
+    post {
+        insert UsageLog from {
+            userId = $auth.id,
+            time = now(),
+            data_ = $request.data
+        };
+    }
+}

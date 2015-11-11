@@ -163,6 +163,10 @@ MailChimpListItem json
     clientId ClientId  
     userGroupId UserGroupId  
     syncTime UTCTime  
+UsageLog json
+    userId UserId  
+    time UTCTime  
+    data_ Text   "sql=data"
 |]
 newFile :: Text -> Int32 -> Text -> UTCTime -> UTCTime -> File
 newFile contentType_ size_ name_ activeStartTime_ insertionTime_ = File {
@@ -279,6 +283,12 @@ newMailChimpListItem clientId_ userGroupId_ syncTime_ = MailChimpListItem {
     mailChimpListItemClientId = clientId_,
     mailChimpListItemUserGroupId = userGroupId_,
     mailChimpListItemSyncTime = syncTime_
+}    
+newUsageLog :: UserId -> UTCTime -> Text -> UsageLog
+newUsageLog userId_ time_ data__ = UsageLog {
+    usageLogUserId = userId_,
+    usageLogTime = time_,
+    usageLogData_ = data__
 }    
 class Named a where
     namedName :: a -> Text

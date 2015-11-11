@@ -74,6 +74,7 @@ library
         Handler.DB.RouteTextmessagerecipientsTextMessageRecipientSent
         Handler.DB.RouteTextmessagerecipientsTextMessageRecipientFail
         Handler.DB.RouteTextmessagerecipientsTextMessageRecipientDelivered
+        Handler.DB.RouteUsagelogs
     build-depends:
         unordered-containers -any,
         transformers -any,

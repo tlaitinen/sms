@@ -40,6 +40,7 @@ import Handler.DB.RouteTextmessagerecipientsTextMessageRecipientAccept
 import Handler.DB.RouteTextmessagerecipientsTextMessageRecipientSent
 import Handler.DB.RouteTextmessagerecipientsTextMessageRecipientFail
 import Handler.DB.RouteTextmessagerecipientsTextMessageRecipientDelivered
+import Handler.DB.RouteUsagelogs
 
 import Handler.DB.Routes
 import Yesod.Core

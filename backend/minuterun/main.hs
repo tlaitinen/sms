@@ -50,22 +50,24 @@ syncMailChimp settings now = do
         return ug 
     forM_ userGroups syncList     
     where
-        syncList ug = do
-            subscribes <- updatesQuery ug True
-            unsubscribes <- updatesQuery ug False
+        syncList (Entity ugId ug) = do
+            subscribes <- updatesQuery ugId True
+            unsubscribes <- updatesQuery ugId False
             oldEmails <- selectDistinct $ from $ \(c `InnerJoin` li `InnerJoin` pc) -> do
                 on $ pc ^. ClientActiveId ==. just (c ^. ClientId)
                 on $ li ^. MailChimpListItemClientId ==. c ^. ClientId
-                on $ existsUserGroupClientContent ug c
+                on $ existsUserGroupClientContent ugId c
                 where_ $ isNothing $ c ^. ClientDeletedVersionId
                 where_ $ c ^. ClientEmail !=. pc ^. ClientEmail
                 where_ $ not_ $ isNothing $ pc ^. ClientEmail
                 where_ $ pc ^. ClientActiveStartTime >. li ^. MailChimpListItemSyncTime
                 return $ pc ^. ClientEmail
             let unsubscribeEmails = L.nub $ [ clientMailChimpEmail c | ((Entity _ c),_) <- unsubscribes ] ++ [ MCL.Email $ fromMaybe "" e | (E.Value e) <- oldEmails ] 
-                mcfg = (userGroupMailChimpApiKey ug) >>= MC.mailchimpKey >>= Just. MC.defaultMailchimpConfig
-            case (mcfg, userGroupMailChimpListName ug) of
-                (Just cfg, Just ln) -> do
+                mkey = (userGroupMailChimpApiKey ug) >>= MC.mailchimpKey
+                
+            case (mkey, userGroupMailChimpListName ug) of
+                (Just key, Just ln) -> do
+                    cfg <- MC.defaultMailchimpConfig key
                     let lId = MCL.ListId ln
                     mr <- liftIO $ MC.runMailchimpLogging cfg $ do
 
@@ -76,16 +78,19 @@ syncMailChimp settings now = do
                             then fmap Just $ 
                                 MCL.batchSubscribe lId (subscriberInfo subscribes) (Just False) (Just True) (Just True)
                             else return Nothing    
-                    maybe (forM_ updateListItem subscribes) (return ()) mr                
+                    maybe (return ()) (\r -> forM_ subscribes $ updateListItem r ugId) mr                
                 _ -> return ()
         clientMailChimpEmail c = MCL.Email $ fromMaybe "" $ clientEmail c         
-        updateListItem (Entity _ c, Entity liId li) r 
+        updateListItem r ugId (Entity cId c, mli) 
 
-            | clientMailChimpEmail c `inMailChimpResults` (bsrAdds r ++ bsrUpdates r) = do
-                update $ \l -> do
-                    set l [ MailChimpListItemSyncTime =. val now ]
-                    where_ $ MailChimpListItemId ==. val liId
+            | clientMailChimpEmail c `inMailChimpResults` (MCL.bsrAdds r ++ MCL.bsrUpdates r) = case mli of
+                    Just (Entity liId _) -> update $ \l -> do 
+                        set l [ MailChimpListItemSyncTime =. val now ] 
+                        where_ $ l ^. MailChimpListItemId ==. val liId
+                    Nothing -> void $ insert $ newMailChimpListItem cId ugId now
             | otherwise = return ()
+        inMailChimpResults e rs = e `elem` (map MCL.erEmail rs)    
+
         subscriberInfo xs = [ 
                 (MCL.Email $ fromMaybe "" $ clientEmail c,
                  MCL.EmailTypeHTML,
@@ -95,9 +100,9 @@ syncMailChimp settings now = do
                 ])
                 | ((Entity _ c),_) <- xs
             ]
-        updatesQuery ug allowEmail = select $ from $ \(c `LeftOuterJoin` li) -> do
+        updatesQuery ugId allowEmail = select $ from $ \(c `LeftOuterJoin` li) -> do
             on $ li ?. MailChimpListItemClientId ==. just (c ^. ClientId)
-            on $ existsUserGroupClientContent ug c
+            on $ existsUserGroupClientContent ugId c
             where_ $ isNothing $ c ^. ClientDeletedVersionId
             where_ $ c ^. ClientAllowEmail ==. val allowEmail
             when allowEmail $ where_ $ not_ $ isNothing $ c ^. ClientEmail 
@@ -105,7 +110,7 @@ syncMailChimp settings now = do
                 ||. (just (c ^. ClientActiveStartTime) >. li ?. MailChimpListItemSyncTime)
             return (c, li)
      
-        existsUserGroupClientContent (Entity ugId _) c = exists $ from $ \ugc -> do
+        existsUserGroupClientContent ugId c = exists $ from $ \ugc -> do
             where_ $ ugc ^. UserGroupContentUserGroupId ==. val ugId
             where_ $ ugc ^. UserGroupContentClientContentId ==. just (c ^. ClientId)
             where_ $ isNothing $ ugc ^. UserGroupContentDeletedVersionId
@@ -129,6 +134,7 @@ minuteRun settings = do
 
     now <- liftIO getCurrentTime        
     syncMailChimp settings now
+    {-
     update $ \tr -> do
         set tr [ 
                 TextMessageRecipientFailCount =. tr ^. TextMessageRecipientFailCount +. val 1,
@@ -139,6 +145,7 @@ minuteRun settings = do
         where_ $ isNothing $ tr ^. TextMessageRecipientSent
         where_ $ isNothing $ tr ^. TextMessageRecipientDelivered
         where_ $ tr ^. TextMessageRecipientFailCount <. val 2
+    -}
     update $ \tr -> do
         set tr [
                 TextMessageRecipientAccepted =. val Nothing

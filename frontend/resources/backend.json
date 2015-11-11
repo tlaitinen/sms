@@ -1796,6 +1796,29 @@
                     "public": false
                 }
             ]
+        },
+        {
+            "path": [
+                {
+                    "references": "null",
+                    "value": "usagelogs",
+                    "type": "string"
+                }
+            ],
+            "handlers": [
+                {
+                    "inputs": [
+                        {
+                            "references": null,
+                            "name": "data",
+                            "type": "string"
+                        }
+                    ],
+                    "outputs": [],
+                    "type": "POST",
+                    "public": false
+                }
+            ]
         }
     ],
     "entities": [
@@ -2433,6 +2456,32 @@
                     "default": null,
                     "name": "syncTime",
                     "type": "utctime",
+                    "optional": false
+                }
+            ]
+        },
+        {
+            "name": "UsageLog",
+            "fields": [
+                {
+                    "references": "User",
+                    "default": null,
+                    "name": "userId",
+                    "type": "integer",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "time",
+                    "type": "utctime",
+                    "optional": false
+                },
+                {
+                    "references": null,
+                    "default": null,
+                    "name": "data_",
+                    "type": "string",
                     "optional": false
                 }
             ]
