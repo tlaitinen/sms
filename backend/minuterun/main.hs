@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeFamilies #-}
 import Prelude ()
 import System.IO.Temp
 import Settings           
@@ -15,7 +17,7 @@ import System.Console.GetOpt
 import Control.Monad.Trans.Resource (runResourceT, ResourceT)
 import Database.Persist.Postgresql          (createPostgresqlPool, pgConnStr,
                                              pgPoolSize, runSqlPool)
-import Control.Monad.Logger (runStdoutLoggingT, LoggingT)
+import Control.Monad.Logger (runNoLoggingT, NoLoggingT)
 import Control.Concurrent 
 import Handler.DB
 import Database.Esqueleto
@@ -41,7 +43,7 @@ fmtDay day = T.pack $ printf "%d.%d.%d" d m (y `mod` 100)
 
 mkMessage "App" "messages" "fi"
 
-syncMailChimp :: AppSettings -> UTCTime -> SqlPersistT (LoggingT IO) ()
+syncMailChimp :: AppSettings -> UTCTime -> SqlPersistT (NoLoggingT IO) ()
 syncMailChimp settings now = do
     userGroups <- select $ from $ \ug -> do
         where_ $ not_ $ isNothing $ ug ^. UserGroupMailChimpApiKey
@@ -50,6 +52,10 @@ syncMailChimp settings now = do
         return ug 
     forM_ userGroups syncList     
     where
+        url = T.concat [
+                appRoot settings, 
+                "/backend/mailchimp"
+            ] 
         syncList (Entity ugId ug) = do
             subscribes <- updatesQuery ugId True
             unsubscribes <- updatesQuery ugId False
@@ -72,14 +78,41 @@ syncMailChimp settings now = do
                     mr <- liftIO $ MC.runMailchimpLogging cfg $ do
 
                         when (not $ null unsubscribeEmails) $ do
+                            liftIO $ putStrLn $ T.concat [ "Unsubscribing ", T.pack $ show unsubscribeEmails ]
                             _ <- MCL.batchUnsubscribe lId unsubscribeEmails (Just True) (Just False) (Just False)
                             return ()
-                        if not $ null subscribes 
-                            then fmap Just $ 
-                                MCL.batchSubscribe lId (subscriberInfo subscribes) (Just False) (Just True) (Just True)
+                        let info = subscriberInfo subscribes    
+                        if not $ null info
+                            then do
+                                hs <- MCL.webhooks lId
+                                forM_ (badWebHooks hs) $ \u -> void $ MCL.webhookDelete lId u
+                                when (missingWebHook hs url) $ do
+                                    liftIO $ putStrLn $ T.concat [ "Adding webhook ", url ]
+                                    void $ MCL.webhookAdd lId url 
+                                        (Just $ MCL.WebhookActions {
+                                            MCL.waSubscribe   = Just False,
+                                            MCL.waUnsubscribe = Just True,
+                                            MCL.waProfile     = Just True,
+                                            MCL.waCleaned     = Just False,
+                                            MCL.waUpemail     = Just False,
+                                            MCL.waCampaign    = Just False
+                                        })
+                                        (Just $ MCL.WebhookSources {
+                                            MCL.wsUser        = Just True,
+                                            MCL.wsAdmin       = Just True,
+                                            MCL.wsApi         = Just False
+                                        })
+
+
+                                liftIO $ print info
+                                r <- MCL.batchSubscribe lId info (Just False) (Just True) (Just True)
+                                liftIO $ print r
+                                return $ Just r
                             else return Nothing    
                     maybe (return ()) (\r -> forM_ subscribes $ updateListItem r ugId) mr                
                 _ -> return ()
+        badWebHooks hs = [ MCL.wrUrl r | r <- hs, MCL.wrUrl r /= url ]        
+        missingWebHook hs url = url `notElem` [ MCL.wrUrl r | r <- hs ]
         clientMailChimpEmail c = MCL.Email $ fromMaybe "" $ clientEmail c         
         updateListItem r ugId (Entity cId c, mli) 
 
@@ -95,10 +128,11 @@ syncMailChimp settings now = do
                 (MCL.Email $ fromMaybe "" $ clientEmail c,
                  MCL.EmailTypeHTML,
                 [ 
-                    ("FIRSTNAME", A.String $ clientFirstName c),
-                    ("LASTNAME", A.String $ clientLastName c) 
+                    ("FNAME", A.String $ clientFirstName c),
+                    ("LNAME", A.String $ clientLastName c) 
                 ])
-                | ((Entity _ c),_) <- xs
+                | ((Entity _ c),_) <- xs,
+                  T.length (fromMaybe "" $ clientEmail c) >= 3 
             ]
         updatesQuery ugId allowEmail = select $ from $ \(c `LeftOuterJoin` li) -> do
             on $ li ?. MailChimpListItemClientId ==. just (c ^. ClientId)
@@ -116,7 +150,7 @@ syncMailChimp settings now = do
             where_ $ isNothing $ ugc ^. UserGroupContentDeletedVersionId
  
 
-minuteRun :: AppSettings -> SqlPersistT (LoggingT IO) ()
+minuteRun :: AppSettings -> SqlPersistT (NoLoggingT IO) ()
 minuteRun settings = do
     {-
     rows <- select $ from $ \tm `CrossJoin` c) -> do
@@ -189,8 +223,8 @@ minuteRun settings = do
 main :: IO ()
 main = do
     settings <- loadAppSettings [configSettingsYml] [] useEnv
-    pool <- runStdoutLoggingT $ createPostgresqlPool
+    pool <- runNoLoggingT $ createPostgresqlPool
         (pgConnStr  $ appDatabaseConf settings)
         (pgPoolSize $ appDatabaseConf settings)
-    runStdoutLoggingT (runSqlPool (minuteRun settings) pool)
+    runNoLoggingT (runSqlPool (minuteRun settings) pool)
 
