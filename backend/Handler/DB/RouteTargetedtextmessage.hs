@@ -152,7 +152,7 @@ postTargetedtextmessageR  = lift $ runDB $ do
         e3 <- do
     
             return $ UserGroupContent {
-                            userGroupContentUserGroupId = userDefaultUserGroupId __auth
+                            userGroupContentUserGroupId = (userDefaultUserGroupId __auth)
                     ,
                             userGroupContentFileContentId = Nothing
                     ,

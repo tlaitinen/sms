@@ -422,7 +422,7 @@ getTextmessagesR  = lift $ runDB $ do
         orderBy []
         return $ (countRows' :: SqlExpr (Database.Esqueleto.Value Int))
     results <- select $ baseQuery True
-    return $ A.object [
+    (return $ A.object [
         "totalCount" .= ((\(Database.Esqueleto.Value v) -> (v::Int)) (head count)),
         "result" .= (toJSON $ map (\row -> case row of
                 ((Database.Esqueleto.Value f1), (Database.Esqueleto.Value f2), (Database.Esqueleto.Value f3), (Database.Esqueleto.Value f4), (Database.Esqueleto.Value f5), (Database.Esqueleto.Value f6), (Database.Esqueleto.Value f7), (Database.Esqueleto.Value f8), (Database.Esqueleto.Value f9), (Database.Esqueleto.Value f10), (Database.Esqueleto.Value f11), (Database.Esqueleto.Value f12), (Database.Esqueleto.Value f13), (Database.Esqueleto.Value f14), (Database.Esqueleto.Value f15), (Database.Esqueleto.Value f16), (Database.Esqueleto.Value f17)) -> A.object [
@@ -446,7 +446,7 @@ getTextmessagesR  = lift $ runDB $ do
                     ]
                 _ -> A.object []
             ) results)
-       ]
+       ])
 postTextmessagesR :: forall master. (
     YesodAuthPersist master,
     AuthEntity master ~ User,
@@ -517,7 +517,7 @@ postTextmessagesR  = lift $ runDB $ do
         e3 <- do
     
             return $ UserGroupContent {
-                            userGroupContentUserGroupId = userDefaultUserGroupId __auth
+                            userGroupContentUserGroupId = (userDefaultUserGroupId __auth)
                     ,
                             userGroupContentFileContentId = Nothing
                     ,

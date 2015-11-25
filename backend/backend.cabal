@@ -154,6 +154,7 @@ library
                 NoMonomorphismRestriction DeriveDataTypeable ViewPatterns
                 TupleSections RecordWildCards
     hs-source-dirs: . app
+    ghc-options: -DFromJSON_Day
 
 executable minuterun
     

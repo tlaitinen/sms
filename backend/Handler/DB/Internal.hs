@@ -10,6 +10,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-overlapping-patterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
@@ -1232,12 +1233,14 @@ userGroupContentContentIdExpr2FromString _ _ _ _ = Nothing
 instance ToJSON Day where
     toJSON = toJSON . show
 
+#ifdef FromJSON_Day
 instance FromJSON Day where
     parseJSON x = do
         s <- parseJSON x
         case reads s of
             (d, _):_ -> return d
             [] -> mzero 
+#endif
 
 instance ToJSON TimeOfDay where
     toJSON = toJSON . show

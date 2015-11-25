@@ -10,7 +10,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Maybe
 import qualified  Database.Persist as P
-
+import qualified Data.Aeson as A
 nonEmpty "" = return False
 nonEmpty _ = return True
 
